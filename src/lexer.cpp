@@ -88,7 +88,7 @@ namespace Parsing {
 					case TT_INT:
 						token.type = TT_INT;
 						bool int_ok;
-						token.tok_int = current.toLong(&int_ok);
+						token.tok_int = static_cast<int64_t>(current.toLongLong(&int_ok));
 						Q_ASSERT_X(int_ok, "Lexer::lex", "int token invalid");  // TODO: Error handling (int token invalid)
 						break;
 					case TT_DOUBLE:

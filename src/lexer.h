@@ -35,7 +35,7 @@ namespace Parsing {
 		union {
 			char tok_string[64];
 			bool tok_bool;
-			long tok_int;
+			int64_t tok_int;
 			double tok_double;
 		};
 	};
