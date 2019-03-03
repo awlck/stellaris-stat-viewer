@@ -12,13 +12,7 @@
 #include <QtWidgets/QProgressDialog>
 #include <QtWidgets/QTabWidget>
 
-#include "lexer.h"
-
-enum class LoadStage {
-	Lexing,
-	Parsing,
-	Galaxy
-};
+#include "parser.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	tabs = new QTabWidget;
@@ -33,45 +27,24 @@ void MainWindow::openFileSelected() {
 	QString which = QFileDialog::getOpenFileName(this, tr("Select gamestate file"), QString(), tr("Stellaris Game State Files (gamestate)"));
 	if (which == "") return;  // Cancel was clicked
 	gamestateLoadBegin();
-	Parsing::Lexer lexer;
-	lexer.lex(QFileInfo(which), Parsing::FileType::SaveFile);
+	Parsing::Parser parser(QFileInfo(which), Parsing::FileType::SaveFile);
+	connect(&parser, &Parsing::Parser::progress, this, &MainWindow::parserProgressUpdate);
 	gamestateLoadDone();
 }
 
-void MainWindow::parserProgressUpdate(int current, int max) {
-	gamestateLoadUpdate(LoadStage::Parsing, current, max);
-}
-
-void MainWindow::galaxyProgressUpdate(int current, int max) {
-	gamestateLoadUpdate(LoadStage::Galaxy, current, max);
+void MainWindow::parserProgressUpdate(unsigned long current, unsigned long max) {
+	currentProgressDialog->setMaximum(max);
+	currentProgressDialog->setValue(current);
 }
 
 void MainWindow::gamestateLoadBegin() {
-	currentProgressDialog = new QProgressDialog(tr("(1/3) Lexing gamestate file..."), tr("Cancel"), 0, 0, this);
+	currentProgressDialog = new QProgressDialog(tr("(1/2) Loading gamestate file..."), tr("Cancel"), 0, 0, this);
 	currentProgressDialog->setWindowModality(Qt::WindowModal);
 	currentProgressDialog->setMinimumDuration(500);
 }
 
-void MainWindow::gamestateLoadUpdate(LoadStage stage, int current, int max) {
-	static LoadStage previousLoadStage = LoadStage::Lexing;
-	if (previousLoadStage != stage) {
-		switch (stage) {
-			case LoadStage::Lexing:
-				currentProgressDialog->setLabelText(tr("(1/3) Lexing gamestate file..."));
-				currentProgressDialog->setMaximum(max);
-				break;
-			case LoadStage::Parsing:
-				currentProgressDialog->setLabelText(tr("(2/3) Parsing gamestate file..."));
-				currentProgressDialog->setMaximum(max);
-				break;
-			case LoadStage::Galaxy:
-				currentProgressDialog->setLabelText(tr("(3/3) Building galaxy..."));
-				currentProgressDialog->setMaximum(max);
-				break;
-		}
-		previousLoadStage = stage;
-	}
-	currentProgressDialog->setValue(current);
+void MainWindow::gamestateLoadSwitch() {
+	currentProgressDialog->setLabelText(tr("(2/3) Building Galaxy..."));
 }
 
 void MainWindow::gamestateLoadDone() {

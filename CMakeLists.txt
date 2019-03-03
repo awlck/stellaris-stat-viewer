@@ -9,6 +9,5 @@ set(CMAKE_AUTOMOC ON)
 add_executable(stellaris_stat_viewer WIN32 MACOSX_BUNDLE
         src/main.cpp
         src/mainwindow.cpp src/mainwindow.h
-        src/lexer.cpp src/lexer.h
         src/parser.cpp src/parser.h)
 target_link_libraries(stellaris_stat_viewer Qt5::Widgets)

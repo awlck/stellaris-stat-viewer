@@ -23,12 +23,11 @@ public:
 private slots:
 	void openFileSelected();
 
-	void parserProgressUpdate(int current, int max);
-	void galaxyProgressUpdate(int current, int max);
+	void parserProgressUpdate(unsigned long current, unsigned long max);
 
 private:
 	void gamestateLoadBegin();
-	void gamestateLoadUpdate(LoadStage stage, int current, int max);
+	void gamestateLoadSwitch();
 	void gamestateLoadDone();
 
 	QAction *openFileAction;
