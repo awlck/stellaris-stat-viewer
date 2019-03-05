@@ -32,14 +32,15 @@ namespace Parsing {
 			file->close();
 			delete file;
 		}
+		QObject::~QObject();
 	}
 
-	unsigned int Parser::lex(unsigned int atLeast) {
+	int Parser::lex(int atLeast) {
 		if (atLeast == 0) atLeast = queueCapacity;
 		QString current;
 		QChar c;
 		TokenType assumption = TT_NONE;
-		unsigned int tokensRead = 0;
+		int tokensRead = 0;
 		unsigned int len = 0;
 		bool haveOpenQuote = false;
 		while (!stream->atEnd() && tokensRead < atLeast && lexQueue.count() < queueCapacity-1) {
@@ -148,5 +149,21 @@ namespace Parsing {
 			Q_ASSERT_X(assumption == TT_NONE, "Parser::lex", "unexpected EOF");
 		}
 		return tokensRead;
+	}
+
+	static inline bool typeHasChildren(NodeType t) {
+		switch (t) {
+			case NT_COMPOUND:
+			case NT_INTLIST:
+			case NT_DOUBLELIST:
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	AstNode::~AstNode() {
+		if (typeHasChildren(type)) delete val.Child;
+		delete nextSibling;
 	}
 }

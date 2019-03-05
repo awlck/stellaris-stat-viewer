@@ -47,17 +47,56 @@ namespace Parsing {
 		NoFile
 	};
 
+	enum NodeType {
+		NT_INDETERMINATE = 0,
+		NT_COMPOUND,
+		NT_STRING,
+		NT_BOOL,
+		NT_INT,
+		NT_DOUBLE,
+		NT_INTLIST,
+		NT_INTLIST_MEMBER,
+		NT_DOUBLELIST,
+		NT_DOUBLELIST_MEMBER,
+		NT_EMPTY
+	};
+
+	enum RelationType {
+		RT_NONE = 0,
+		RT_EQ,
+		RT_GT,
+		RT_GE,
+		RT_LT,
+		RT_LE
+	};
+
+	struct AstNode {
+		~AstNode();
+		char myName[64] = {'\0'};
+		NodeType type = NT_INDETERMINATE;
+		AstNode *nextSibling = nullptr;
+		RelationType relation = RT_NONE;
+		union {
+			char Str[64];
+			bool Bool;
+			int64_t Int;
+			double Double;
+			AstNode *Child;
+		} val = {{'\0'}};
+	};
+
 	class Parser : public QObject {
 		Q_OBJECT
 	public:
 		explicit Parser(QString *text);
 		Parser(const QFileInfo &fileInfo, FileType ftype);
 		Parser(QTextStream *stream, const QString &filename, FileType ftype);
-		~Parser();
+		~Parser() override;
+
 	signals:
 		void progress(unsigned long current, unsigned long total);
 	private:
-		unsigned int lex(unsigned int atLeast = 0);
+		int lex(int atLeast = 0);
 
 		bool shouldDeleteStream;
 		FileType fileType;
