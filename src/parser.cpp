@@ -73,11 +73,11 @@ namespace Parsing {
 				switch (assumption) {
 					case TT_STRING:
 						// Check if our "string" might be a bool after all
-						if (current.compare("yes", Qt::CaseInsensitive)) {
+						if (current.compare("yes", Qt::CaseInsensitive) == 0) {
 							token.type = TT_BOOL;
 							token.tok_bool = true;
 						}
-						else if (current.compare("no", Qt::CaseInsensitive)) {
+						else if (current.compare("no", Qt::CaseInsensitive) == 0) {
 							token.type = TT_BOOL;
 							token.tok_bool = false;
 						}
