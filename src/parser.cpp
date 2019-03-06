@@ -440,8 +440,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 					else {
 						token.type = TT_STRING;
 						QByteArray next = current.toUtf8();
-						Q_ASSERT_X(next.size() < 64, "Parser::lex", "string too long");  // TODO: Error handling (string too long)
-						qstrcpy(token.tok.String, next.data());
+						qstrncpy(token.tok.String, next.data(), 64);
 					}
 					break;
 				case TT_INT:
