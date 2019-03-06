@@ -17,11 +17,13 @@ if(MSVC)
     target_compile_options(stellaris_stat_viewer PRIVATE
             "/we4716"   # treat "Function does not return a value" as an error
             "/we4715"   # treat "Not all control paths return a value" as an error
+            # MSVC unfortunately does not provide a fallthrough warning.
     )
 else()
     target_compile_options(stellaris_stat_viewer PRIVATE
             "-Wall"     # enable "Wall" warnings
             "-Wextra"   # enable "Wextra" warnings
-            "-Werror=return-type"   # treat return value-related warnings as errors
+            "-Wimplicit-fallthrough"    # explicitly enable warnings about switch fallthrough
+            "-Werror=return-type"       # treat return value-related warnings as errors
     )
 endif()

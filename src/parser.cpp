@@ -17,6 +17,7 @@ namespace Parsing {
 			case NT_COMPOUND:
 			case NT_INTLIST:
 			case NT_DOUBLELIST:
+			case NT_COMPOUNDLIST:
 				return true;
 			default:
 				return false;
@@ -71,7 +72,10 @@ namespace Parsing {
 		HaveNameLtEq,
 		HaveNameOpen,
 		BegunIntList,
-		BegunDoubleList
+		BegunDoubleList,
+		BegunCompoundList,
+		BegunStringList,
+		BegunBoolList
 	};
 
 #define ADD_AS_CHILD(node) do { \
@@ -110,6 +114,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 					things.push(nextNode);
 				} else if (currentToken.type == TT_CBRACE) {
 					things.pop();
+					if (things.top()->type == NT_COMPOUNDLIST) state = State::BegunCompoundList;
 				} else {
 					PARSE_ERROR(PE_INVALID_IN_COMPOUND);
 				}
@@ -161,13 +166,13 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 				break;
 			case State::HaveNameGt:
 				if (currentToken.type == TT_EQUALS) state = State::HaveNameGtEq;
-				else if (currentToken.type == TT_INT) {
+				else if (currentToken.type == TT_INT) {  // "stuff > 30"
 					state = State::CompoundRoot;
 					things.top()->type = NT_INT;
 					things.top()->val.Int = currentToken.tok.Int;
 					things.top()->relation = RT_GT;
 					things.pop();
-				} else if (currentToken.type == TT_DOUBLE) {
+				} else if (currentToken.type == TT_DOUBLE) {  // "stuff > 23.5"
 					state = State::CompoundRoot;
 					things.top()->type = NT_DOUBLE;
 					things.top()->val.Double = currentToken.tok.Double;
@@ -176,13 +181,13 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 				} else PARSE_ERROR(PE_INVALID_AFTER_RELATION);
 				break;
 			case State::HaveNameGtEq:
-				if (currentToken.type == TT_INT) {
+				if (currentToken.type == TT_INT) {  // "stuff >= 30"
 					state = State::CompoundRoot;
 					things.top()->type = NT_INT;
 					things.top()->val.Int = currentToken.tok.Int;
 					things.top()->relation = RT_GE;
 					things.pop();
-				} else if (currentToken.type == TT_DOUBLE) {
+				} else if (currentToken.type == TT_DOUBLE) {  // "stuff >= 23.5"
 					state = State::CompoundRoot;
 					things.top()->type = NT_DOUBLE;
 					things.top()->val.Double = currentToken.tok.Double;
@@ -192,13 +197,13 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 					break;
 			case State::HaveNameLt:
 				if (currentToken.type == TT_EQUALS) state = State::HaveNameLtEq;
-				else if (currentToken.type == TT_INT) {
+				else if (currentToken.type == TT_INT) {  // "stuff < 30"
 					state = State::CompoundRoot;
 					things.top()->type = NT_INT;
 					things.top()->val.Int = currentToken.tok.Int;
 					things.top()->relation = RT_LT;
 					things.pop();
-				} else if (currentToken.type == TT_DOUBLE) {
+				} else if (currentToken.type == TT_DOUBLE) {  // "stuff < 23.5"
 					state = State::CompoundRoot;
 					things.top()->type = NT_DOUBLE;
 					things.top()->val.Double = currentToken.tok.Double;
@@ -207,13 +212,13 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 				} else PARSE_ERROR(PE_INVALID_AFTER_RELATION);
 				break;
 			case State::HaveNameLtEq:
-				if (currentToken.type == TT_INT) {
+				if (currentToken.type == TT_INT) {  // "stuff <= 30"
 					state = State::CompoundRoot;
 					things.top()->type = NT_INT;
 					things.top()->val.Int = currentToken.tok.Int;
 					things.top()->relation = RT_LE;
 					things.pop();
-				} else if (currentToken.type == TT_DOUBLE) {
+				} else if (currentToken.type == TT_DOUBLE) {  // "stuff <= 23.5"
 					state = State::CompoundRoot;
 					things.top()->type = NT_DOUBLE;
 					things.top()->val.Double = currentToken.tok.Double;
@@ -221,20 +226,29 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 					things.pop();
 				} else PARSE_ERROR(PE_INVALID_AFTER_RELATION);
 				break;
-			case State::HaveNameOpen:
+			case State::HaveNameOpen:  // "stuff = {"
 				switch (currentToken.type) {
-				case TT_STRING: {
-					things.top()->type = NT_COMPOUND;
-					AstNode *nextNode = new AstNode;
-					nextNode->type = NT_INDETERMINATE;
-					state = State::HaveName;
-					qstrcpy(nextNode->myName, currentToken.tok.String);
-					ADD_AS_CHILD(nextNode);
-					things.push(nextNode);
+				case TT_STRING: {  // compound or string list
+					if (lookahead(1) == TT_EQUALS) {
+						things.top()->type = NT_COMPOUND;
+						AstNode *nextNode = new AstNode;
+						nextNode->type = NT_INDETERMINATE;
+						state = State::HaveName;
+						qstrcpy(nextNode->myName, currentToken.tok.String);
+						ADD_AS_CHILD(nextNode);
+						things.push(nextNode);
+					} else if (lookahead(1) == TT_STRING || lookahead(1) == TT_CBRACE) {
+						state = State::BegunStringList;
+						things.top()->type = NT_STRINGLIST;
+						AstNode *member = new AstNode;
+						member->type = NT_STRINGLIST_MEMBER;
+						qstrcpy(member->val.Str, currentToken.tok.String);
+						ADD_AS_CHILD(member);
+					}
 				}
 					break;
 				case TT_INT: {
-					if (lookahead(1) == TT_INT) {
+					if (lookahead(1) == TT_INT || lookahead(1) == TT_CBRACE) {
 						state = State::BegunIntList;
 						things.top()->type = NT_INTLIST;
 						AstNode *member = new AstNode;
@@ -262,6 +276,24 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 					ADD_AS_CHILD(member);
 				}
 					break;
+				case TT_BOOL: {
+					state = State::BegunBoolList;
+					things.top()->type = NT_BOOLLIST;
+					AstNode *member = new AstNode;
+					member->type = NT_BOOLLIST_MEMBER;
+					member->val.Bool = currentToken.tok.Bool;
+					ADD_AS_CHILD(member);
+				}
+					break;
+				case TT_OBRACE: {
+					state = State::CompoundRoot;
+					things.top()->type = NT_COMPOUNDLIST;
+					AstNode *member = new AstNode;
+					member->type = NT_COMPUNDLIST_MEMBER;
+					ADD_AS_CHILD(member);
+					things.push(member);
+				}
+					break;
 				case TT_CBRACE:
 					state = State::CompoundRoot;
 					things.top()->type = NT_EMPTY;
@@ -270,6 +302,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 				default:
 					PARSE_ERROR(PE_INVALID_AFTER_OPEN);
 				}
+				break;
 			case State::BegunIntList:
 				if (currentToken.type == TT_CBRACE) {
 					state = State::CompoundRoot;
@@ -291,7 +324,42 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 					member->val.Double = currentToken.tok.Double;
 					ADD_AS_CHILD(member);
 				} else PARSE_ERROR(PE_INVALID_IN_DOUBLE_LIST);
-					break;
+				break;
+			case State::BegunCompoundList:
+				if (currentToken.type == TT_OBRACE) {
+					state = State::CompoundRoot;
+					AstNode *member = new AstNode;
+					member->type = NT_COMPUNDLIST_MEMBER;
+					ADD_AS_CHILD(member);
+					things.push(member);
+				} else if (currentToken.type == TT_CBRACE) {
+					state = State::CompoundRoot;
+					things.pop();
+				}
+				else PARSE_ERROR(PE_INVALID_IN_COMPOUND_LIST);
+				break;
+			case State::BegunStringList:
+				if (currentToken.type == TT_STRING) {
+					AstNode *member = new AstNode;
+					member->type = NT_STRINGLIST_MEMBER;
+					qstrcpy(member->val.Str, currentToken.tok.String);
+					ADD_AS_CHILD(member);
+				} else if (currentToken.type == TT_CBRACE) {
+					state = State::CompoundRoot;
+					things.pop();
+				} else PARSE_ERROR(PE_INVALID_IN_STRING_LIST);
+				break;
+			case State::BegunBoolList:
+				if (currentToken.type == TT_BOOL) {
+					AstNode *member = new AstNode;
+					member->type = NT_BOOLLIST_MEMBER;
+					member->val.Bool = currentToken.tok.Bool;
+					ADD_AS_CHILD(member);
+				} else if (currentToken.type == TT_CBRACE) {
+					state = State::CompoundRoot;
+					things.pop();
+				} else PARSE_ERROR(PE_INVALID_IN_BOOL_LIST);
+				break;
 			}
 			if (things.empty())  // an extraneous closing brace caused our implicit root node to be closed
 				PARSE_ERROR(PE_TOO_MANY_CLOSE_BRACES);
@@ -370,6 +438,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 						token.tok.Bool = false;
 					}
 					else {
+						token.type = TT_STRING;
 						QByteArray next = current.toUtf8();
 						Q_ASSERT_X(next.size() < 64, "Parser::lex", "string too long");  // TODO: Error handling (string too long)
 						qstrcpy(token.tok.String, next.data());
@@ -433,6 +502,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 		}
 
 		if (stream->atEnd()) {
+			lexerDone = true;
 			// TODO: Error handling (EOF while token incomplete)
 			Q_ASSERT_X(assumption == TT_NONE, "Parser::lex", "unexpected EOF");
 		}
