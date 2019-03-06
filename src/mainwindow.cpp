@@ -27,12 +27,18 @@ void MainWindow::openFileSelected() {
 	QString which = QFileDialog::getOpenFileName(this, tr("Select gamestate file"), QString(), tr("Stellaris Game State Files (gamestate)"));
 	if (which == "") return;  // Cancel was clicked
 	gamestateLoadBegin();
-	Parsing::Parser parser(QFileInfo(which), Parsing::FileType::SaveFile);
+	Parsing::Parser parser(QFileInfo(which), Parsing::FileType::SaveFile, this);
 	connect(&parser, &Parsing::Parser::progress, this, &MainWindow::parserProgressUpdate);
+	Parsing::AstNode *result = parser.parse();
+	Q_ASSERT_X(result != nullptr, "Parser::parse", "a parse error occurred");
 	gamestateLoadDone();
 }
 
-void MainWindow::parserProgressUpdate(unsigned long current, unsigned long max) {
+void MainWindow::parserProgressUpdate(Parsing::Parser *parser, qint64 current, qint64 max) {
+	if (currentProgressDialog->wasCanceled()) {
+		parser->cancel();
+		return;
+	}
 	currentProgressDialog->setMaximum(max);
 	currentProgressDialog->setValue(current);
 }

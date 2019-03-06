@@ -1,30 +1,57 @@
-//
-// Created by Adrian Welcker on 2019-03-03.
-//
+/* parser.cpp: A parser for PDS script/declaration files.
+ *
+ * Copyright 2019 by Adrian "ArdiMaster" Welcker, distributed
+ * under the MIT License - see file "LICENSE" for details.
+ */
 
 #include "parser.h"
 
+#include <QtCore/QStack>
 #include <QtCore/QTextStream>
 
+#define everyNth(which, n, what) do { if ((((which)++) % (n)) == 0) {(what); (which) = 1;} } while (0)
+
 namespace Parsing {
-	Parser::Parser(QString *text) :
+	static inline bool typeHasChildren(NodeType t) {
+		switch (t) {
+			case NT_COMPOUND:
+			case NT_INTLIST:
+			case NT_DOUBLELIST:
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	AstNode::~AstNode() {
+		if (typeHasChildren(type)) delete val.firstChild;
+		delete nextSibling;
+	}
+
+	Parser::Parser(QString *text, QObject *parent) : QObject::QObject(parent),
 			shouldDeleteStream(true), fileType(FileType::NoFile),
 			file(nullptr), filename(tr("<string>")) {
 		filename = tr("<string>");
 		stream = new QTextStream(text, QIODevice::ReadOnly);
+		totalSize = text->toUtf8().size();
 	}
 
-	Parser::Parser(const QFileInfo &fileInfo, FileType ftype) :
+	Parser::Parser(const QFileInfo &fileInfo, FileType ftype, QObject *parent) : QObject::QObject(parent),
 			shouldDeleteStream(true), fileType(ftype) {
 		filename = fileInfo.absoluteFilePath();
 		file = new QFile(filename);
 		file->open(QIODevice::ReadOnly);
 		stream = new QTextStream(file);
+		totalSize = file->size();
 	}
 
-	Parser::Parser(QTextStream *stream, const QString &filename, FileType ftype) :
-			shouldDeleteStream(false), fileType(ftype),
-			file(nullptr), filename(filename), stream(stream) { }
+	Parser::Parser(QTextStream *stream, const QString &filename, FileType ftype, QObject *parent) :
+			QObject::QObject(parent), shouldDeleteStream(false), fileType(ftype),
+			file(nullptr), filename(filename), stream(stream) {
+		// Get the total size of stuff to be processed, if possible.
+		QIODevice *device = stream->device();
+		totalSize = device ? device->size() : 0;
+	}
 
 	Parser::~Parser() {
 		if (shouldDeleteStream) delete stream;
@@ -32,7 +59,267 @@ namespace Parsing {
 			file->close();
 			delete file;
 		}
-		QObject::~QObject();
+	}
+
+	enum class State {
+		CompoundRoot,
+		HaveName,
+		HaveNameEquals,
+		HaveNameGt,
+		HaveNameGtEq,
+		HaveNameLt,
+		HaveNameLtEq,
+		HaveNameOpen,
+		BegunIntList,
+		BegunDoubleList
+	};
+
+#define ADD_AS_CHILD(node) do { \
+if (things.top()->val.firstChild) { things.top()->val.lastChild->nextSibling = (node); things.top()->val.lastChild = (node); } \
+else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (node); } \
+} while (0)
+
+#define PARSE_ERROR(error) do { latestParserError = { (error), currentToken }; delete root; return nullptr; } while (0)
+
+	AstNode* Parser::parse() {
+		lex();  // Initially fill token queue
+		AstNode *root = new AstNode;
+		root->type = NT_COMPOUND;
+		qstrcpy(root->myName, "tree_root");
+		QStack<AstNode *> things;
+		things.push(root);
+		State state = State::CompoundRoot;
+		Token currentToken = {0, 0, TT_NONE, {{'\0'}}};
+
+		while ((!lexerDone || !lexQueue.empty()) && !shouldCancel) {
+			currentToken = getNextToken();
+			switch (state) {
+			case State::CompoundRoot:
+				if (currentToken.type == TT_STRING) {
+					state = State::HaveName;
+					AstNode *nextNode = new AstNode;
+					qstrcpy(nextNode->myName, currentToken.tok.String);
+					ADD_AS_CHILD(nextNode);
+					things.push(nextNode);
+				} else if (currentToken.type == TT_INT) {
+					state = State::HaveName;
+					AstNode * nextNode = new AstNode;
+					QString tmp = QString::number(currentToken.tok.Int);
+					qstrcpy(nextNode->myName, tmp.toUtf8().data());
+					ADD_AS_CHILD(nextNode);
+					things.push(nextNode);
+				} else if (currentToken.type == TT_CBRACE) {
+					things.pop();
+				} else {
+					PARSE_ERROR(PE_INVALID_IN_COMPOUND);
+				}
+				break;
+			case State::HaveName:  // Having read a name
+				if (currentToken.type == TT_EQUALS) state = State::HaveNameEquals;
+				else if (currentToken.type == TT_GT) state = State::HaveNameGt;
+				else if (currentToken.type == TT_LT) state = State::HaveNameLt;
+				else PARSE_ERROR(PE_INVALID_AFTER_NAME);
+				break;
+			case State::HaveNameEquals:  // Having read a name immediately followed by an equals sign
+				switch (currentToken.type) {
+				case TT_OBRACE:  // Could be compound or list
+					state = State::HaveNameOpen;
+					break;
+				case TT_INT:  // something simple like "stuff = 30"
+					state = State::CompoundRoot;
+					things.top()->type = NT_INT;
+					things.top()->val.Int = currentToken.tok.Int;
+					things.top()->relation = RT_EQ;
+					things.pop();
+					break;
+				case TT_DOUBLE:  // something similarly simple like "stuff = 23.5"
+					state = State::CompoundRoot;
+					things.top()->type = NT_DOUBLE;
+					things.top()->val.Double = currentToken.tok.Double;
+					things.top()->relation = RT_EQ;
+					things.pop();
+					break;
+				case TT_BOOL:  // something even simpler like "stuff = yes"
+					state = State::CompoundRoot;
+					things.top()->type = NT_BOOL;
+					things.top()->val.Bool = currentToken.tok.Bool;
+					// "stuff > yes" wouldn't really make sense, but for the sake of completeness...
+					things.top()->relation = RT_EQ;
+					things.pop();
+					break;
+				case TT_STRING:
+					state = State::CompoundRoot;
+					things.top()->type = NT_STRING;
+					qstrcpy(things.top()->val.Str, currentToken.tok.String);
+					// again, kinda redundant, but...
+					things.top()->relation = RT_EQ;
+					things.pop();
+					break;
+				default:
+					PARSE_ERROR(PE_INVALID_AFTER_EQUALS);
+				}
+				break;
+			case State::HaveNameGt:
+				if (currentToken.type == TT_EQUALS) state = State::HaveNameGtEq;
+				else if (currentToken.type == TT_INT) {
+					state = State::CompoundRoot;
+					things.top()->type = NT_INT;
+					things.top()->val.Int = currentToken.tok.Int;
+					things.top()->relation = RT_GT;
+					things.pop();
+				} else if (currentToken.type == TT_DOUBLE) {
+					state = State::CompoundRoot;
+					things.top()->type = NT_DOUBLE;
+					things.top()->val.Double = currentToken.tok.Double;
+					things.top()->relation = RT_GT;
+					things.pop();
+				} else PARSE_ERROR(PE_INVALID_AFTER_RELATION);
+				break;
+			case State::HaveNameGtEq:
+				if (currentToken.type == TT_INT) {
+					state = State::CompoundRoot;
+					things.top()->type = NT_INT;
+					things.top()->val.Int = currentToken.tok.Int;
+					things.top()->relation = RT_GE;
+					things.pop();
+				} else if (currentToken.type == TT_DOUBLE) {
+					state = State::CompoundRoot;
+					things.top()->type = NT_DOUBLE;
+					things.top()->val.Double = currentToken.tok.Double;
+					things.top()->relation = RT_GE;
+					things.pop();
+				} else PARSE_ERROR(PE_INVALID_AFTER_RELATION);
+					break;
+			case State::HaveNameLt:
+				if (currentToken.type == TT_EQUALS) state = State::HaveNameLtEq;
+				else if (currentToken.type == TT_INT) {
+					state = State::CompoundRoot;
+					things.top()->type = NT_INT;
+					things.top()->val.Int = currentToken.tok.Int;
+					things.top()->relation = RT_LT;
+					things.pop();
+				} else if (currentToken.type == TT_DOUBLE) {
+					state = State::CompoundRoot;
+					things.top()->type = NT_DOUBLE;
+					things.top()->val.Double = currentToken.tok.Double;
+					things.top()->relation = RT_LT;
+					things.pop();
+				} else PARSE_ERROR(PE_INVALID_AFTER_RELATION);
+				break;
+			case State::HaveNameLtEq:
+				if (currentToken.type == TT_INT) {
+					state = State::CompoundRoot;
+					things.top()->type = NT_INT;
+					things.top()->val.Int = currentToken.tok.Int;
+					things.top()->relation = RT_LE;
+					things.pop();
+				} else if (currentToken.type == TT_DOUBLE) {
+					state = State::CompoundRoot;
+					things.top()->type = NT_DOUBLE;
+					things.top()->val.Double = currentToken.tok.Double;
+					things.top()->relation = RT_LE;
+					things.pop();
+				} else PARSE_ERROR(PE_INVALID_AFTER_RELATION);
+				break;
+			case State::HaveNameOpen:
+				switch (currentToken.type) {
+				case TT_STRING: {
+					things.top()->type = NT_COMPOUND;
+					AstNode *nextNode = new AstNode;
+					nextNode->type = NT_INDETERMINATE;
+					state = State::HaveName;
+					qstrcpy(nextNode->myName, currentToken.tok.String);
+					ADD_AS_CHILD(nextNode);
+					things.push(nextNode);
+				}
+					break;
+				case TT_INT: {
+					if (lookahead(1) == TT_INT) {
+						state = State::BegunIntList;
+						things.top()->type = NT_INTLIST;
+						AstNode *member = new AstNode;
+						member->type = NT_INTLIST_MEMBER;
+						member->val.Int = currentToken.tok.Int;
+						ADD_AS_CHILD(member);
+					} else if (lookahead(1) == TT_EQUALS) {
+						things.top()->type = NT_COMPOUND;
+						AstNode *nextNode = new AstNode;
+						nextNode->type = NT_INDETERMINATE;
+						state = State::HaveName;
+						QString tmp = QString::number(currentToken.tok.Int);
+						qstrcpy(nextNode->myName, tmp.toUtf8().data());
+						ADD_AS_CHILD(nextNode);
+						things.push(nextNode);
+					} else PARSE_ERROR(PE_INVALID_COMBO_AFTER_OPEN);
+				}
+					break;
+				case TT_DOUBLE: {
+					state = State::BegunDoubleList;
+					things.top()->type = NT_DOUBLELIST;
+					AstNode *member = new AstNode;
+					member->type = NT_DOUBLELIST_MEMBER;
+					member->val.Double = currentToken.tok.Double;
+					ADD_AS_CHILD(member);
+				}
+					break;
+				case TT_CBRACE:
+					state = State::CompoundRoot;
+					things.top()->type = NT_EMPTY;
+					things.pop();
+					break;
+				default:
+					PARSE_ERROR(PE_INVALID_AFTER_OPEN);
+				}
+			case State::BegunIntList:
+				if (currentToken.type == TT_CBRACE) {
+					state = State::CompoundRoot;
+					things.pop();
+				} else if (currentToken.type == TT_INT) {
+					AstNode *member = new AstNode;
+					member->type = NT_INTLIST_MEMBER;
+					member->val.Int = currentToken.tok.Int;
+					ADD_AS_CHILD(member);
+				} else PARSE_ERROR(PE_INVALID_IN_INT_LIST);
+				break;
+			case State::BegunDoubleList:
+				if (currentToken.type == TT_CBRACE) {
+					state = State::CompoundRoot;
+					things.pop();
+				} else if (currentToken.type == TT_DOUBLE) {
+					AstNode *member = new AstNode;
+					member->type = NT_DOUBLELIST_MEMBER;
+					member->val.Double = currentToken.tok.Double;
+					ADD_AS_CHILD(member);
+				} else PARSE_ERROR(PE_INVALID_IN_DOUBLE_LIST);
+					break;
+			}
+			if (things.empty())  // an extraneous closing brace caused our implicit root node to be closed
+				PARSE_ERROR(PE_TOO_MANY_CLOSE_BRACES);
+		}
+
+		if (things.size() > 1 || state != State::CompoundRoot) {
+			// all input is consumed, but the parser isn't "at rest"
+			PARSE_ERROR(PE_UNEXPECTED_END);
+		}
+		if (shouldCancel) PARSE_ERROR(PE_CANCELLED);
+
+		return root;
+	}
+
+	void Parser::cancel() {
+		shouldCancel = true;
+	}
+
+	ParserError Parser::getLatestParserError() {
+		return latestParserError;
+	}
+
+	Token Parser::getNextToken() {
+		if (lexQueue.isEmpty()) {
+			lex();
+			everyNth(lexCalls1, 100, emit progress(this, totalProgress, totalSize));
+		}
+		return lexQueue.dequeue();
 	}
 
 	int Parser::lex(int atLeast) {
@@ -46,6 +333,7 @@ namespace Parsing {
 		while (!stream->atEnd() && tokensRead < atLeast && lexQueue.count() < queueCapacity-1) {
 			c = stream->read(1)[0];
 			charPos++;
+			totalProgress++;
 			if (haveOpenQuote || (!c.isSpace() && c != '{' && c != '}' && c != '=' && c != '<' && c != '>')) {
 				if (c == '"') {
 					if (haveOpenQuote) {  // This ends a quoted string
@@ -71,39 +359,39 @@ namespace Parsing {
 				token.line = line;
 				token.firstChar = charPos - len;
 				switch (assumption) {
-					case TT_STRING:
-						// Check if our "string" might be a bool after all
-						if (current.compare("yes", Qt::CaseInsensitive) == 0) {
-							token.type = TT_BOOL;
-							token.tok_bool = true;
-						}
-						else if (current.compare("no", Qt::CaseInsensitive) == 0) {
-							token.type = TT_BOOL;
-							token.tok_bool = false;
-						}
-						else {
-							QByteArray next = current.toUtf8();
-							Q_ASSERT_X(next.size() < 64, "Parser::lex", "string too long");  // TODO: Error handling (string too long)
-							qstrcpy(token.tok_string, next.data());
-						}
-						break;
-					case TT_INT:
-						token.type = TT_INT;
-						bool int_ok;
-						token.tok_int = static_cast<int64_t>(current.toLongLong(&int_ok));
-						Q_ASSERT_X(int_ok, "Parser::lex", "int token invalid");  // TODO: Error handling (int token invalid)
-						break;
-					case TT_DOUBLE:
-						token.type = TT_DOUBLE;
-						bool double_ok;
-						token.tok_double = current.toDouble(&double_ok);
-						Q_ASSERT_X(double_ok, "Parser::lex", "double token invalid");  // TODO: Error handling (double token invalid)
-						break;
-					case TT_NONE:  // Special character
-						break;
-					default:
-						Q_UNREACHABLE();
-						abort();  // TODO: Error handling (invalid token type!)
+				case TT_STRING:
+					// Check if our "string" might be a bool after all
+					if (current.compare("yes", Qt::CaseInsensitive) == 0) {
+						token.type = TT_BOOL;
+						token.tok.Bool = true;
+					}
+					else if (current.compare("no", Qt::CaseInsensitive) == 0) {
+						token.type = TT_BOOL;
+						token.tok.Bool = false;
+					}
+					else {
+						QByteArray next = current.toUtf8();
+						Q_ASSERT_X(next.size() < 64, "Parser::lex", "string too long");  // TODO: Error handling (string too long)
+						qstrcpy(token.tok.String, next.data());
+					}
+					break;
+				case TT_INT:
+					token.type = TT_INT;
+					bool int_ok;
+					token.tok.Int = static_cast<qint64>(current.toLongLong(&int_ok));
+					Q_ASSERT_X(int_ok, "Parser::lex", "int token invalid");  // TODO: Error handling (int token invalid)
+					break;
+				case TT_DOUBLE:
+					token.type = TT_DOUBLE;
+					bool double_ok;
+					token.tok.Double = current.toDouble(&double_ok);
+					Q_ASSERT_X(double_ok, "Parser::lex", "double token invalid");  // TODO: Error handling (double token invalid)
+					break;
+				case TT_NONE:  // Special character
+					break;
+				default:
+					Q_UNREACHABLE();
+					abort();  // TODO: Error handling (invalid token type!)
 				}
 				if (assumption != TT_NONE) {
 					lexQueue.append(token);
@@ -148,22 +436,14 @@ namespace Parsing {
 			// TODO: Error handling (EOF while token incomplete)
 			Q_ASSERT_X(assumption == TT_NONE, "Parser::lex", "unexpected EOF");
 		}
+		everyNth(lexCalls2, 1000, totalProgress = totalSize != 0 ? stream->pos() : 0);
 		return tokensRead;
 	}
 
-	static inline bool typeHasChildren(NodeType t) {
-		switch (t) {
-			case NT_COMPOUND:
-			case NT_INTLIST:
-			case NT_DOUBLELIST:
-				return true;
-			default:
-				return false;
-		}
-	}
-
-	AstNode::~AstNode() {
-		if (typeHasChildren(type)) delete val.Child;
-		delete nextSibling;
+	TokenType Parser::lookahead(int n) {
+		Q_ASSERT_X(n >= 1, "Parser::lookahead", "invalid lookahead");
+		if (lexQueue.size() < n) lex(n);
+		if (lexQueue.size() < n) return TT_NONE;
+		return lexQueue[n-1].type;
 	}
 }

@@ -1,6 +1,8 @@
-//
-// Created by Adrian Welcker on 2019-03-03.
-//
+/* parser.h: A parser for PDS script/declaration files (header file)
+ *
+ * Copyright 2019 by Adrian "ArdiMaster" Welcker, distributed
+ * under the MIT License - see file "LICENSE" for details.
+ */
 
 #pragma once
 
@@ -33,11 +35,11 @@ namespace Parsing {
 		unsigned long firstChar;
 		TokenType type;
 		union {
-			char tok_string[64];
-			bool tok_bool;
-			int64_t tok_int;
-			double tok_double;
-		};
+			char String[64];
+			bool Bool;
+			qint64 Int;
+			double Double;
+		} tok;
 	};
 	
 	enum class FileType {
@@ -76,37 +78,73 @@ namespace Parsing {
 		NodeType type = NT_INDETERMINATE;
 		AstNode *nextSibling = nullptr;
 		RelationType relation = RT_NONE;
-		union {
+		union NodeValue {
 			char Str[64];
 			bool Bool;
-			int64_t Int;
+			qint64 Int;
 			double Double;
-			AstNode *Child;
+			struct { AstNode *firstChild; AstNode *lastChild; };
 		} val = {{'\0'}};
+	};
+
+	enum ParseErr {
+		PE_INVALID_IN_COMPOUND,
+		PE_INVALID_AFTER_NAME,
+		PE_INVALID_AFTER_EQUALS,
+		PE_INVALID_AFTER_RELATION,
+		PE_INVALID_AFTER_OPEN,
+		PE_INVALID_COMBO_AFTER_OPEN,
+		PE_INVALID_IN_INT_LIST,
+		PE_INVALID_IN_DOUBLE_LIST,
+		PE_UNEXPECTED_END,
+		PE_TOO_MANY_CLOSE_BRACES,
+		PE_CANCELLED
+	};
+
+	struct ParserError {
+		ParseErr etype;
+		Token erroredToken;
 	};
 
 	class Parser : public QObject {
 		Q_OBJECT
 	public:
-		explicit Parser(QString *text);
-		Parser(const QFileInfo &fileInfo, FileType ftype);
-		Parser(QTextStream *stream, const QString &filename, FileType ftype);
+		explicit Parser(QString *text, QObject *parent = nullptr);
+		Parser(const QFileInfo &fileInfo, FileType ftype, QObject *parent = nullptr);
+		Parser(QTextStream *stream, const QString &filename, FileType ftype, QObject *parent = nullptr);
 		~Parser() override;
+		AstNode *parse();
+		void cancel();
+		ParserError getLatestParserError();
 
 	signals:
-		void progress(unsigned long current, unsigned long total);
-	private:
-		int lex(int atLeast = 0);
+		void progress(Parser *parser, qint64 current, qint64 total);
 
+	private:
+		Token getNextToken();
+		int lex(int atLeast = 0);
+		TokenType lookahead(int n);
+
+		bool lexerDone = false;
+		bool shouldCancel = false;
 		bool shouldDeleteStream;
+
 		FileType fileType;
 		QFile *file;
 		QString filename;
 		QQueue<Token> lexQueue;
 		QTextStream *stream;
+		qint64 totalProgress = 0;
+		qint64 totalSize;
+
 		const int queueCapacity = 50;
 		unsigned long line = 1;
 		unsigned long charPos = 0;
+
+		ParserError latestParserError;
+
+		unsigned int lexCalls1 = 1;
+		unsigned int lexCalls2 = 1;
 	};
 }
 

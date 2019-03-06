@@ -15,6 +15,10 @@ class QMenuBar;
 class QProgressDialog;
 class QTabWidget;
 
+namespace Parsing {
+	class Parser;
+}
+
 class MainWindow : public QMainWindow {
 	Q_OBJECT
 public:
@@ -23,7 +27,7 @@ public:
 private slots:
 	void openFileSelected();
 
-	void parserProgressUpdate(unsigned long current, unsigned long max);
+	void parserProgressUpdate(Parsing::Parser *parser, qint64 current, qint64 max);
 
 private:
 	void gamestateLoadBegin();
