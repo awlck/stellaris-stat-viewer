@@ -398,11 +398,17 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 		int tokensRead = 0;
 		unsigned int len = 0;
 		bool haveOpenQuote = false;
+		bool comment = false;
 		while (!stream->atEnd() && tokensRead < atLeast && lexQueue.count() < queueCapacity-1) {
 			c = stream->read(1)[0];
 			charPos++;
 			totalProgress++;
-			if (haveOpenQuote || (!c.isSpace() && c != '{' && c != '}' && c != '=' && c != '<' && c != '>')) {
+			if (comment) {
+				if (c == '\n') comment = false;
+				continue;
+			}
+			if (c == '\r') continue;
+			if (haveOpenQuote || (!c.isSpace() && c != '{' && c != '}' && c != '=' && c != '<' && c != '>' && c != '#')) {
 				if (c == '"') {
 					if (haveOpenQuote) {  // This ends a quoted string
 						haveOpenQuote = false;
@@ -481,6 +487,8 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 				}
 				else if (c == '>') {
 					specialType = TT_GT;
+				} else if (c == '#') {
+					comment = true;
 				}
 				if (specialType != TT_NONE) {
 					Token stok;
