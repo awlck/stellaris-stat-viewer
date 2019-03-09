@@ -87,10 +87,11 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 
 	AstNode* Parser::parse() {
 		lex();  // Initially fill token queue
+		// Create a root node that will encompass the entire file.
 		AstNode *root = new AstNode;
 		root->type = NT_COMPOUND;
 		qstrcpy(root->myName, "tree_root");
-		QStack<AstNode *> things;
+		QStack<AstNode *> things;  // Explicitly use a stack instead of using recursion.
 		things.push(root);
 		State state = State::CompoundRoot;
 		Token currentToken = {0, 0, TT_NONE, {{'\0'}}};
@@ -303,6 +304,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 					PARSE_ERROR(PE_INVALID_AFTER_OPEN);
 				}
 				break;
+			// now follow the various list types, such as "stuff = { 1 2 3 }"
 			case State::BegunIntList:
 				if (currentToken.type == TT_CBRACE) {
 					state = State::CompoundRoot;
@@ -361,12 +363,13 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 				} else PARSE_ERROR(PE_INVALID_IN_BOOL_LIST);
 				break;
 			}
-			if (things.empty())  // an extraneous closing brace caused our implicit root node to be closed
+			if (things.empty()) {  // an extraneous closing brace caused our implicit root node to be closed
 				PARSE_ERROR(PE_TOO_MANY_CLOSE_BRACES);
+			}
 		}
 
+		// alternatively, if all input is consumed but the parser isn't "at rest"...
 		if (things.size() > 1 || state != State::CompoundRoot) {
-			// all input is consumed, but the parser isn't "at rest"
 			PARSE_ERROR(PE_UNEXPECTED_END);
 		}
 		if (shouldCancel) PARSE_ERROR(PE_CANCELLED);
@@ -401,12 +404,18 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 		bool comment = false;
 		while (!stream->atEnd() && tokensRead < atLeast && lexQueue.count() < queueCapacity-1) {
 			c = stream->read(1)[0];
+
+			// keep track of where we are in the file so we can report our progress and the locations of errors
 			charPos++;
 			totalProgress++;
+
+			// if in comment, ignore everything until the end of the line
 			if (comment) {
 				if (c == '\n') comment = false;
 				continue;
 			}
+
+			// According to the wiki, the game uses only unix-style line endings (LF), so ignore CR characters.
 			if (c == '\r') continue;
 			if (haveOpenQuote || (!c.isSpace() && c != '{' && c != '}' && c != '=' && c != '<' && c != '>' && c != '#')) {
 				if (c == '"') {
@@ -422,6 +431,8 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 				}
 				current += c;
 				len++;
+
+				// update our assumption of what the currently-read token is, if necessary.
 				if (assumption == TT_NONE) {
 					if (c.isDigit()) assumption = TT_INT;
 					else if (c == '-') assumption = TT_INT;
@@ -442,10 +453,10 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 					else if (current.compare("no", Qt::CaseInsensitive) == 0) {
 						token.type = TT_BOOL;
 						token.tok.Bool = false;
-					}
-					else {
+					} else {  // nope, it really is a string
 						token.type = TT_STRING;
 						QByteArray next = current.toUtf8();
+						// string length is currently limited to 64 bytes
 						qstrncpy(token.tok.String, next.data(), 64);
 					}
 					break;
@@ -464,28 +475,26 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 				case TT_NONE:  // Special character
 					break;
 				default:
+					// We never assign any other value, so this should never be reached.
 					Q_UNREACHABLE();
-					abort();  // TODO: Error handling (invalid token type!)
 				}
 				if (assumption != TT_NONE) {
 					lexQueue.append(token);
 					tokensRead++;
 				}
 
+				// Check whether the most recently read character (which caused the last token to be terminated)
+				// is a special character. Note that whitespace is not itself a token.
 				TokenType specialType = TT_NONE;
 				if (c == '=') {
 					specialType = TT_EQUALS;
-				}
-				else if (c == '{') {
+				} else if (c == '{') {
 					specialType = TT_OBRACE;
-				}
-				else if (c == '}') {
+				} else if (c == '}') {
 					specialType = TT_CBRACE;
-				}
-				else if (c == '<') {
+				} else if (c == '<') {
 					specialType = TT_LT;
-				}
-				else if (c == '>') {
+				} else if (c == '>') {
 					specialType = TT_GT;
 				} else if (c == '#') {
 					comment = true;
