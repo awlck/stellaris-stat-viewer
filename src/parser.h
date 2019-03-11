@@ -93,6 +93,8 @@ namespace Parsing {
 		} val = {{'\0'}};
 	};
 
+	void printParseTree(AstNode *tree, int indent = 0);
+
 	enum ParseErr {
 		PE_INVALID_IN_COMPOUND,
 		PE_INVALID_AFTER_NAME,

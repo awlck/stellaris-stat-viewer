@@ -31,6 +31,10 @@ void MainWindow::openFileSelected() {
 	connect(&parser, &Parsing::Parser::progress, this, &MainWindow::parserProgressUpdate);
 	Parsing::AstNode *result = parser.parse();
 	Q_ASSERT_X(result != nullptr, "Parser::parse", "a parse error occurred");
+	#ifndef NDEBUG
+	Parsing::printParseTree(result);
+	#endif
+	gamestateLoadSwitch();
 	gamestateLoadDone();
 }
 
@@ -51,6 +55,8 @@ void MainWindow::gamestateLoadBegin() {
 
 void MainWindow::gamestateLoadSwitch() {
 	currentProgressDialog->setLabelText(tr("(2/3) Building Galaxy..."));
+	currentProgressDialog->setValue(0);
+	currentProgressDialog->setMaximum(0);
 }
 
 void MainWindow::gamestateLoadDone() {

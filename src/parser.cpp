@@ -9,6 +9,8 @@
 #include <QtCore/QStack>
 #include <QtCore/QTextStream>
 
+#include <stdio.h>  // TODO: Not use stdlib
+
 #define everyNth(which, n, what) do { if ((((which)++) % (n)) == 0) {(what); (which) = 1;} } while (0)
 
 namespace Parsing {
@@ -18,6 +20,8 @@ namespace Parsing {
 			case NT_INTLIST:
 			case NT_DOUBLELIST:
 			case NT_COMPOUNDLIST:
+			case NT_STRINGLIST:
+			case NT_BOOLLIST:
 				return true;
 			default:
 				return false;
@@ -27,6 +31,140 @@ namespace Parsing {
 	AstNode::~AstNode() {
 		if (typeHasChildren(type)) delete val.firstChild;
 		delete nextSibling;
+	}
+
+	// TODO: Not use stdlib
+	void printParseTree(AstNode *tree, int indent) {
+		comeagain:
+		if (!tree) return;
+		for (int i = 0; i < indent; i++) {
+			printf("| ");
+		}
+		printf("+ ");
+		switch (tree->type) {
+			case NT_COMPOUND:
+			case NT_STRING:
+			case NT_BOOL:
+			case NT_INT:
+			case NT_DOUBLE:
+			case NT_INTLIST:
+			case NT_DOUBLELIST:
+			case NT_COMPOUNDLIST:
+			case NT_STRINGLIST:
+			case NT_BOOLLIST:
+			case NT_EMPTY:
+				printf("%s", tree->myName);
+				break;
+			case NT_INDETERMINATE:
+				printf("??? (BUG: Indeterminate Node)\n");
+				return;
+			default: break;
+		}
+		switch (tree->type) {
+			case NT_COMPOUND:
+				printf(" (Compound)\n");
+				printParseTree(tree->val.firstChild, indent + 1);
+				break;
+			case NT_STRING:
+				printf(" (String) = %s\n", tree->val.Str);
+				break;
+			case NT_BOOL:
+				printf(" (Bool) = %s\n", tree->val.Bool ? "yes" : "no");
+				break;
+			case NT_INT:
+				printf(" (Int) ");
+				switch (tree->relation) {
+					case RT_EQ:
+						printf("=");
+						break;
+					case RT_GT:
+						printf(">");
+						break;
+					case RT_GE:
+						printf(">=");
+						break;
+					case RT_LT:
+						printf("<");
+						break;
+					case RT_LE:
+						printf("<=");
+						break;
+					case RT_NONE:
+						printf("(BUG: RT_NONE)");
+						break;
+				}
+				printf(" %lld\n", tree->val.Int);
+				break;
+			case NT_DOUBLE:
+				printf(" (Double) ");
+				switch (tree->relation) {
+					case RT_EQ:
+						printf("=");
+						break;
+					case RT_GT:
+						printf(">");
+						break;
+					case RT_GE:
+						printf(">=");
+						break;
+					case RT_LT:
+						printf("<");
+						break;
+					case RT_LE:
+						printf("<=");
+						break;
+					case RT_NONE:
+						printf("(BUG: RT_NONE)");
+				}
+				printf(" %f\n", tree->val.Double);
+				break;
+			case NT_INTLIST:
+				printf(" (Int List)\n");
+				printParseTree(tree->val.firstChild, indent + 1);
+				break;
+			case NT_INTLIST_MEMBER:
+				printf("%llu\n", tree->val.Int);
+				break;
+			case NT_DOUBLELIST:
+				printf(" (Double List)\n");
+				printParseTree(tree->val.firstChild, indent + 1);
+				break;
+			case NT_DOUBLELIST_MEMBER:
+				printf("%f\n", tree->val.Double);
+				break;
+			case NT_COMPOUNDLIST:
+				printf(" (Compound List)\n");
+				printParseTree(tree->val.firstChild, indent + 1);
+				break;
+			case NT_COMPUNDLIST_MEMBER:
+				printf("(Compound List Member)\n");
+				printParseTree(tree->val.firstChild, indent + 1);
+				break;
+			case NT_STRINGLIST:
+				printf(" (String List)\n");
+				printParseTree(tree->val.firstChild, indent + 1);
+				break;
+			case NT_STRINGLIST_MEMBER:
+				printf("%s\n", tree->val.Str);
+				break;
+			case NT_BOOLLIST:
+				printf(" (Bool List)\n");
+				printParseTree(tree->val.firstChild, indent + 1);
+				break;
+			case NT_BOOLLIST_MEMBER:
+				printf("%s\n", tree->val.Bool ? "yes" : "no");
+				break;
+			case NT_EMPTY:
+				printf(" (Empty)\n");
+				break;
+			case NT_INDETERMINATE:
+				Q_UNREACHABLE();
+		}
+		if (tree->nextSibling) {
+			// shoddily avoid recursion
+			tree = tree->nextSibling;
+			goto comeagain;
+		}
 	}
 
 	Parser::Parser(QString *text, QObject *parent) : QObject::QObject(parent),
