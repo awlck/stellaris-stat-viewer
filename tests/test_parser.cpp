@@ -556,7 +556,7 @@ private slots:
 		QTest::addColumn<QString>("string");
 		QTest::addColumn<Parsing::ParseErr>("error");
 
-		QTest::newRow("invalid in compound") << "stuff = { = }" << Parsing::PE_INVALID_IN_COMPOUND;
+		QTest::newRow("invalid in compound") << "stuff = { a = b = }" << Parsing::PE_INVALID_IN_COMPOUND;
 		QTest::newRow("invalid after name") << "stuff }" << Parsing::PE_INVALID_AFTER_NAME;
 		QTest::newRow("invalid after equals") << "stuff = }" << Parsing::PE_INVALID_AFTER_EQUALS;
 		QTest::newRow("invalid after relation") << "stuff < }" << Parsing::PE_INVALID_AFTER_RELATION;
