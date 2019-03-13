@@ -1,6 +1,8 @@
-//
-// Created by Adrian Welcker on 2019-03-13.
-//
+/* test_parser.cpp: Unit testing for src/parser.cpp
+ *
+ * Copyright 2019 by Adrian "ArdiMaster" Welcker, distributed
+ * under the MIT License - see file "LICENSE" for details.
+ */
 
 #include <QtTest/QtTest>
 
