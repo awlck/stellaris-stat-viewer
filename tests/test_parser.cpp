@@ -9,6 +9,8 @@
 #include "../src/parser.h"
 
 Q_DECLARE_METATYPE(Parsing::RelationType);
+Q_DECLARE_METATYPE(Parsing::NodeType);
+Q_DECLARE_METATYPE(Parsing::ParseErr)
 
 class TestParser : public QObject {
 	Q_OBJECT
@@ -548,6 +550,53 @@ private slots:
 		QCOMPARE(list->val.Str, val6);
 
 		delete tree;
+	}
+
+	void invalid_data() {
+		QTest::addColumn<QString>("string");
+		QTest::addColumn<Parsing::ParseErr>("error");
+
+		QTest::newRow("invalid in compound") << "stuff = { = }" << Parsing::PE_INVALID_IN_COMPOUND;
+		QTest::newRow("invalid after name") << "stuff }" << Parsing::PE_INVALID_AFTER_NAME;
+		QTest::newRow("invalid after equals") << "stuff = }" << Parsing::PE_INVALID_AFTER_EQUALS;
+		QTest::newRow("invalid after relation") << "stuff < }" << Parsing::PE_INVALID_AFTER_RELATION;
+		QTest::newRow("invalid after open") << "stuff = { =" << Parsing::PE_INVALID_AFTER_OPEN;
+		QTest::newRow("invalid combo after open") << "stuff = { 2 3.75 yes }" << Parsing::PE_INVALID_COMBO_AFTER_OPEN;
+		QTest::newRow("double in int list") << "stuff = { 3 4 3.75 }" << Parsing::PE_INVALID_IN_INT_LIST;
+		QTest::newRow("bool in int list") << "stuff = { 3 4 yes }" << Parsing::PE_INVALID_IN_INT_LIST;
+		QTest::newRow("string in int list") << "stuff = { 3 4 \"hello there\" }" << Parsing::PE_INVALID_IN_INT_LIST;
+		QTest::newRow("compound in int list") << "stuff = { 3 4 { uh = ok } }" << Parsing::PE_INVALID_IN_INT_LIST;
+		QTest::newRow("int in double list") << "stuff = { 3.75 4.625 1 }" << Parsing::PE_INVALID_IN_DOUBLE_LIST;
+		QTest::newRow("bool in double list") << "stuff = { 3.75 4.625 yes }" << Parsing::PE_INVALID_IN_DOUBLE_LIST;
+		QTest::newRow("string in double list") << "stuff = { 3.75 4.625 \"hello there\" }" << Parsing::PE_INVALID_IN_DOUBLE_LIST;
+		QTest::newRow("compound in double list") << "stuff = { 3.75 4.625 { uh = ok } }" << Parsing::PE_INVALID_IN_DOUBLE_LIST;
+		QTest::newRow("int in compound list") << "stuff = { { hello = there } { general = kenobi } 3 }" << Parsing::PE_INVALID_IN_COMPOUND_LIST;
+		QTest::newRow("double in compound list") << "stuff = { { hello = there } { general = kenobi } 3.75 }" << Parsing::PE_INVALID_IN_COMPOUND_LIST;
+		QTest::newRow("bool in compound list") << "stuff = { { hello = there } { general = kenobi } yes }" << Parsing::PE_INVALID_IN_COMPOUND_LIST;
+		QTest::newRow("string in compound list") << "stuff = { { hello = there } { general = kenobi } \"you are a bold one\" }" << Parsing::PE_INVALID_IN_COMPOUND_LIST;
+		QTest::newRow("int in string list") << "stuff = { \"hello\" \"there\" 1 }" << Parsing::PE_INVALID_IN_STRING_LIST;
+		QTest::newRow("double in string list") << "stuff = { \"hello\" \"there\" 1.25 }" << Parsing::PE_INVALID_IN_STRING_LIST;
+		QTest::newRow("bool in string list") << "stuff = { \"hello\" \"there\" yes }" << Parsing::PE_INVALID_IN_STRING_LIST;
+		QTest::newRow("compound in string list") << "stuff = { \"hello\" \"there\" { uh = ok } }" << Parsing::PE_INVALID_IN_STRING_LIST;
+		QTest::newRow("int in bool list") << "stuff = { yes no 1 }" << Parsing::PE_INVALID_IN_BOOL_LIST;
+		QTest::newRow("double in bool list") << "stuff = { yes no 1.25 }" << Parsing::PE_INVALID_IN_BOOL_LIST;
+		QTest::newRow("string in bool list") << "stuff = { yes no \"hello there\" }" << Parsing::PE_INVALID_IN_BOOL_LIST;
+		QTest::newRow("compound in bool list") << "stuff = { yes no { uh = ok } }" << Parsing::PE_INVALID_IN_BOOL_LIST;
+		QTest::newRow("unexpected end of input") << "stuff = {" << Parsing::PE_UNEXPECTED_END;
+		QTest::newRow("too many closing braces") << "stuff = { } }" << Parsing::PE_TOO_MANY_CLOSE_BRACES;
+	}
+	void invalid() {
+		using namespace Parsing;
+
+		QFETCH(QString, string);
+		QFETCH(ParseErr, error);
+		
+		Parser parser(&string);
+		AstNode *tree = parser.parse();
+		QCOMPARE(tree, nullptr);
+
+		ParserError latestError = parser.getLatestParserError();
+		QCOMPARE(latestError.etype, error);
 	}
 };
 
