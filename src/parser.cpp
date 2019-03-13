@@ -253,6 +253,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 					things.push(nextNode);
 				} else if (currentToken.type == TT_CBRACE) {
 					things.pop();
+					if (things.empty()) PARSE_ERROR(PE_TOO_MANY_CLOSE_BRACES);
 					if (things.top()->type == NT_COMPOUNDLIST) state = State::BegunCompoundList;
 				} else {
 					PARSE_ERROR(PE_INVALID_IN_COMPOUND);
