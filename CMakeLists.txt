@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
 
+option(SSV_BUILD_TESTS BOOL ON)
+
 find_package(Qt5Widgets CONFIG REQUIRED)
 set(CMAKE_AUTOMOC ON)
 
@@ -27,4 +29,12 @@ else()
             "-Wimplicit-fallthrough"    # explicitly enable warnings about switch fallthrough
             "-Werror=return-type"       # treat return value-related warnings as errors
     )
+endif()
+
+if(SSV_BUILD_TESTS)
+    find_package(Qt5Test CONFIG REQUIRED)
+    enable_testing()
+    add_executable(test_parser tests/test_parser.cpp src/parser.cpp src/parser.h)
+    target_link_libraries(test_parser Qt5::Test)
+    add_test(NAME parser COMMAND test_parser)
 endif()
