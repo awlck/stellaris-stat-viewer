@@ -40,7 +40,7 @@ private slots:
 		QCOMPARE(result->val.Int, value);
 
 		delete tree;
-	};
+	}
 
 	void integers_relations_data() {
 		QTest::addColumn<QString>("string");
@@ -64,7 +64,7 @@ private slots:
 		QTest::newRow("lessEqualsNegative") << "stuff <= -30\n" << Parsing::RT_LE << (qint64) -30;
 		QTest::newRow("greaterThanNegative") << "stuff > -30\n" << Parsing::RT_GT << (qint64) -30;
 		QTest::newRow("greaterEqualsNegative") << "stuff >= -30\n" << Parsing::RT_GE << (qint64) -30;
-	};
+	}
 	void integers_relations() {
 		using Parsing::Parser;
 		using Parsing::AstNode;
@@ -86,7 +86,7 @@ private slots:
 		QCOMPARE(result->val.Int, value);
 
 		delete tree;
-	};
+	}
 
 	void doubles_equals_data() {
 		QTest::addColumn<QString>("string");
@@ -117,7 +117,7 @@ private slots:
 		QCOMPARE(result->val.Double, value);
 
 		delete tree;
-	};
+	}
 
 	void doubles_relations_data() {
 		QTest::addColumn<QString>("string");
@@ -141,7 +141,7 @@ private slots:
 		QTest::newRow("lessEqualsNegative") << "stuff <= -30.5\n" << Parsing::RT_LE << -30.5;
 		QTest::newRow("greaterThanNegative") << "stuff > -30.5\n" << Parsing::RT_GT << -30.5;
 		QTest::newRow("greaterEqualsNegative") << "stuff >= -30.5\n" << Parsing::RT_GE << -30.5;
-	};
+	}
 	void doubles_relations() {
 		using Parsing::Parser;
 		using Parsing::AstNode;
@@ -163,7 +163,7 @@ private slots:
 		QCOMPARE(result->val.Double, value);
 
 		delete tree;
-	};
+	}
 
 	void bools_data() {
 		QTest::addColumn<QString>("string");
@@ -182,7 +182,7 @@ private slots:
 		QTest::newRow("no2") << "stuff = No\n" << false;
 		QTest::newRow("no3") << "stuff = nO\n" << false;
 		QTest::newRow("no4") << "stuff = NO\n" << false;
-	};
+	}
 	void bools() {
 		using namespace Parsing;
 
@@ -202,7 +202,45 @@ private slots:
 		QCOMPARE(result->val.Bool, value);
 
 		delete tree;
-	};
+	}
+
+	void strings_data() {
+		QTest::addColumn<QString>("string");
+		QTest::addColumn<QString>("value");
+
+		QTest::newRow("unquoted") << "stuff = hellothere\n" << "hellothere";
+		QTest::newRow("unquoted with underscore") << "stuff = hello_there\n" << "hello_there";
+		QTest::newRow("quoted") << "stuff = \"hellothere\"\n" << "hellothere";
+		QTest::newRow("quoted with spaces") << "stuff = \"hello there\"\n" << "hello there";
+		QTest::newRow("quoted with newline") << "stuff = \"hello\nthere\"\n" << "hello\nthere";
+		QTest::newRow("quoted with parentheses") << "stuff = \"{hello}{there}\"\n" << "{hello}{there}";
+		QTest::newRow("quoted truncated") << "stuff = \"So this is a thing. I'm not entirely sure what I am supposed "
+									   "to put here except of course that it should be longer than 64 characters.\"" <<
+									   "So this is a thing. I'm not entirely sure what I am supposed to";
+		QTest::newRow("unquoted truncated") << "stuff = so_this_is_a_thing_im_not_entirely_sure_what_i_am_supposed_to_"
+										 "put_here_except_of_course_that_it_should_be_longer_than_64_characters\n" <<
+										 "so_this_is_a_thing_im_not_entirely_sure_what_i_am_supposed_to_p";
+		QTest::newRow("quoted empty") << "stuff = \"\"\n" << "";
+	}
+	void strings() {
+		using namespace Parsing;
+
+		QFETCH(QString, string);
+		QFETCH(QString, value);
+
+		Parser parser(&string);
+		AstNode *tree = parser.parse();
+		QVERIFY(tree != nullptr);
+		QCOMPARE(qstrcmp(tree->myName, "tree_root"), 0);
+		QCOMPARE(tree->type, NT_COMPOUND);
+
+		AstNode *result = tree->val.firstChild;
+		QCOMPARE(qstrcmp(result->myName, "stuff"), 0);
+		QCOMPARE(result->type, NT_STRING);
+		QCOMPARE(result->val.Str, value);
+
+		delete tree;
+	}
 
 	void intlists_three_data() {
 		QTest::addColumn<QString>("string");
@@ -218,7 +256,7 @@ private slots:
 		QTest::newRow("negative and positive 1") << "stuff = { -197 30 -176 }\n" << (qint64) -197 << (qint64) 30 << (qint64) -176;
 		QTest::newRow("negative and positive 2") << "stuff = { 107 -30 276 }\n" << (qint64) 107 << (qint64) -30 << (qint64) 276;
 		QTest::newRow("more than three") << "stuff = { 1 2 3 4 5 6 }\n" << (qint64) 1 << (qint64) 2 << (qint64) 3;
-	};
+	}
 	void intlists_three() {
 		using namespace Parsing;
 
@@ -248,7 +286,7 @@ private slots:
 		QCOMPARE(list->val.Int, val3);
 
 		delete tree;
-	};
+	}
 
 	void intlists_single_data() {
 		QTest::addColumn<QString>("string");
@@ -259,7 +297,7 @@ private slots:
 		QTest::newRow("negative") << "stuff = { -30 }\n" << (qint64) -30;
 		QTest::newRow("large positive") << "stuff = { 2147483647 }\n" << (qint64) 2147483647;
 		QTest::newRow("large negative") << "stuff = { -2147483647 }\n" << (qint64) -2147483647;
-	};
+	}
 	void intlists_single() {
 		using namespace Parsing;
 
@@ -279,7 +317,7 @@ private slots:
 		AstNode *list = result->val.firstChild;
 		QCOMPARE(list->type, NT_INTLIST_MEMBER);
 		QCOMPARE(list->val.Int, value);
-	};
+	}
 
 	void doublelists_three_data() {
 		QTest::addColumn<QString>("string");
@@ -295,7 +333,7 @@ private slots:
 		QTest::newRow("negative and positive 1") << "stuff = { -197.5 30.5 -176.5 }\n" << -197.5 << 30.5 << -176.5;
 		QTest::newRow("negative and positive 2") << "stuff = { 107.5 -30.5 276.5 }\n" << 107.5 << -30.5 << 276.5;
 		QTest::newRow("more than three") << "stuff = { 1.5 2.5 3.5 4.5 5.5 6.5 }\n" << 1.5 << 2.5 << 3.5;
-	};
+	}
 	void doublelists_three() {
 		using namespace Parsing;
 
@@ -325,7 +363,7 @@ private slots:
 		QCOMPARE(list->val.Double, val3);
 
 		delete tree;
-	};
+	}
 
 	void doublelists_single_data() {
 		QTest::addColumn<QString>("string");
@@ -336,7 +374,7 @@ private slots:
 		QTest::newRow("negative") << "stuff = { -334.48773 }\n" << -334.48773;
 		QTest::newRow("large positive") << "stuff = { 203494.97741 }\n" << 203494.97741;
 		QTest::newRow("large negative") << "stuff = { -203494.97741 }\n" << -203494.97741;
-	};
+	}
 	void doublelists_single() {
 		using namespace Parsing;
 
@@ -358,7 +396,7 @@ private slots:
 		QCOMPARE(list->val.Double, value);
 
 		delete tree;
-	};
+	}
 
 	void boollists_three_data() {
 		QTest::addColumn<QString>("string");
@@ -369,7 +407,7 @@ private slots:
 		QTest::newRow("all yes") << "stuff = { yes yes yes }\n" << true << true << true;
 		QTest::newRow("all no") << "stuff = { no no no }\n" << false << false << false;
 		QTest::newRow("more than three") << "stuff = { yes no yes yes yes no no }\n" << true << false << true;
-	};
+	}
 	void boollists_three() {
 		using namespace Parsing;
 
@@ -399,7 +437,7 @@ private slots:
 		QCOMPARE(list->val.Bool, val3);
 
 		delete tree;
-	};
+	}
 
 	void boollists_single_data() {
 		QTest::addColumn<QString>("string");
@@ -407,7 +445,7 @@ private slots:
 
 		QTest::newRow("yes") << "stuff = { yes }\n" << true;
 		QTest::newRow("no") << "stuff = { no }\n" << false;
-	};
+	}
 	void boollists_single() {
 		using namespace Parsing;
 
@@ -430,8 +468,87 @@ private slots:
 
 		delete tree;
 	}
+
+	void stringlists_single_data() {
+		QTest::addColumn<QString>("string");
+		QTest::addColumn<QString>("value");
+
+		QTest::newRow("string empty") << "stuff = { \"\" }" << "";
+	}
+	void stringlists_single() {
+		using namespace Parsing;
+
+		QFETCH(QString, string);
+		QFETCH(QString, value);
+
+		Parser parser(&string);
+		AstNode *tree = parser.parse();
+		QVERIFY(tree != nullptr);
+		QCOMPARE(qstrcmp(tree->myName, "tree_root"), 0);
+		QCOMPARE(tree->type, NT_COMPOUND);
+
+		AstNode *result = tree->val.firstChild;
+		QCOMPARE(qstrcmp(result->myName, "stuff"), 0);
+		QCOMPARE(result->type, NT_STRINGLIST);
+
+		AstNode *list = result->val.firstChild;
+		QCOMPARE(list->type, NT_STRINGLIST_MEMBER);
+		QCOMPARE(list->val.Str, value);
+
+		delete tree;
+	}
+
+	void stringlists_specific() {
+		// An example from an actual save file
+		using namespace Parsing;
+
+		QString string("required_dlcs={\n\t\"Apocalypse\"\n\t\"Horizon Signal\"\n\t\"Humanoids Species Pack\"\n"
+				 "\t\"Megacorp\"\n\t\"Synthetic Dawn Story Pack\"\n\t\"Utopia\"\n}");
+		QString val1("Apocalypse");
+		QString val2("Horizon Signal");
+		QString val3("Humanoids Species Pack");
+		QString val4("Megacorp");
+		QString val5("Synthetic Dawn Story Pack");
+		QString val6("Utopia");
+
+		Parser parser(&string);
+		AstNode *tree = parser.parse();
+		QVERIFY(tree != nullptr);
+		QCOMPARE(qstrcmp(tree->myName, "tree_root"), 0);
+		QCOMPARE(tree->type, NT_COMPOUND);
+
+		AstNode *result = tree->val.firstChild;
+		QCOMPARE(qstrcmp(result->myName, "required_dlcs"), 0);
+		QCOMPARE(result->type, NT_STRINGLIST);
+
+		AstNode *list = result->val.firstChild;
+		QCOMPARE(list->type, NT_STRINGLIST_MEMBER);
+		QCOMPARE(list->val.Str, val1);
+
+		list = list->nextSibling;
+		QCOMPARE(list->type, NT_STRINGLIST_MEMBER);
+		QCOMPARE(list->val.Str, val2);
+
+		list = list->nextSibling;
+		QCOMPARE(list->type, NT_STRINGLIST_MEMBER);
+		QCOMPARE(list->val.Str, val3);
+
+		list = list->nextSibling;
+		QCOMPARE(list->type, NT_STRINGLIST_MEMBER);
+		QCOMPARE(list->val.Str, val4);
+
+		list = list->nextSibling;
+		QCOMPARE(list->type, NT_STRINGLIST_MEMBER);
+		QCOMPARE(list->val.Str, val5);
+
+		list = list->nextSibling;
+		QCOMPARE(list->type, NT_STRINGLIST_MEMBER);
+		QCOMPARE(list->val.Str, val6);
+
+		delete tree;
+	}
 };
 
-QTEST_MAIN(TestParser);
+QTEST_GUILESS_MAIN(TestParser);
 
 #include "test_parser.moc"
