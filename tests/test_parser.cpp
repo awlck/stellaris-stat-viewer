@@ -574,10 +574,10 @@ private slots:
 		QTest::newRow("double in compound list") << "stuff = { { hello = there } { general = kenobi } 3.75 }" << Parsing::PE_INVALID_IN_COMPOUND_LIST;
 		QTest::newRow("bool in compound list") << "stuff = { { hello = there } { general = kenobi } yes }" << Parsing::PE_INVALID_IN_COMPOUND_LIST;
 		QTest::newRow("string in compound list") << "stuff = { { hello = there } { general = kenobi } \"you are a bold one\" }" << Parsing::PE_INVALID_IN_COMPOUND_LIST;
-		QTest::newRow("int in string list") << "stuff = { \"hello\" \"there\" 1 }" << Parsing::PE_INVALID_IN_STRING_LIST;
-		QTest::newRow("double in string list") << "stuff = { \"hello\" \"there\" 1.25 }" << Parsing::PE_INVALID_IN_STRING_LIST;
-		QTest::newRow("bool in string list") << "stuff = { \"hello\" \"there\" yes }" << Parsing::PE_INVALID_IN_STRING_LIST;
-		QTest::newRow("compound in string list") << "stuff = { \"hello\" \"there\" { uh = ok } }" << Parsing::PE_INVALID_IN_STRING_LIST;
+		QTest::newRow("int in string list") << R"(stuff = { "hello" "there" 1 })" << Parsing::PE_INVALID_IN_STRING_LIST;
+		QTest::newRow("double in string list") << R"(stuff = { "hello" "there" 1.25 })" << Parsing::PE_INVALID_IN_STRING_LIST;
+		QTest::newRow("bool in string list") << R"(stuff = { "hello" "there" yes })" << Parsing::PE_INVALID_IN_STRING_LIST;
+		QTest::newRow("compound in string list") << R"(stuff = { "hello" "there" { uh = ok } })" << Parsing::PE_INVALID_IN_STRING_LIST;
 		QTest::newRow("int in bool list") << "stuff = { yes no 1 }" << Parsing::PE_INVALID_IN_BOOL_LIST;
 		QTest::newRow("double in bool list") << "stuff = { yes no 1.25 }" << Parsing::PE_INVALID_IN_BOOL_LIST;
 		QTest::newRow("string in bool list") << "stuff = { yes no \"hello there\" }" << Parsing::PE_INVALID_IN_BOOL_LIST;
