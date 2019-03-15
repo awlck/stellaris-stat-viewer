@@ -7,10 +7,10 @@ image:
 clone_depth: 5
 
 init:
-  - sh: apt install qt5-default
   - cmd: call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
 
 install:
+  - sh: sudo apt install qt5-default
   - mkdir cmake-build-av
   - cd cmake-build-av
 
