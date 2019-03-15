@@ -10,7 +10,7 @@
 
 Q_DECLARE_METATYPE(Parsing::RelationType);
 Q_DECLARE_METATYPE(Parsing::NodeType);
-Q_DECLARE_METATYPE(Parsing::ParseErr)
+Q_DECLARE_METATYPE(Parsing::ParseErr);
 
 class TestParser : public QObject {
 	Q_OBJECT
@@ -241,7 +241,7 @@ private slots:
 		AstNode *result = tree->val.firstChild;
 		QCOMPARE(qstrcmp(result->myName, "stuff"), 0);
 		QCOMPARE(result->type, NT_STRING);
-		QCOMPARE(result->val.Str, value);
+		QCOMPARE(QString::fromUtf8(result->val.Str), value);
 
 		delete tree;
 	}
@@ -497,7 +497,7 @@ private slots:
 
 		AstNode *list = result->val.firstChild;
 		QCOMPARE(list->type, NT_STRINGLIST_MEMBER);
-		QCOMPARE(list->val.Str, value);
+		QCOMPARE(QString::fromUtf8(list->val.Str), value);
 
 		delete tree;
 	}
@@ -527,27 +527,27 @@ private slots:
 
 		AstNode *list = result->val.firstChild;
 		QCOMPARE(list->type, NT_STRINGLIST_MEMBER);
-		QCOMPARE(list->val.Str, val1);
+		QCOMPARE(QString::fromUtf8(list->val.Str), val1);
 
 		list = list->nextSibling;
 		QCOMPARE(list->type, NT_STRINGLIST_MEMBER);
-		QCOMPARE(list->val.Str, val2);
+		QCOMPARE(QString::fromUtf8(list->val.Str), val2);
 
 		list = list->nextSibling;
 		QCOMPARE(list->type, NT_STRINGLIST_MEMBER);
-		QCOMPARE(list->val.Str, val3);
+		QCOMPARE(QString::fromUtf8(list->val.Str), val3);
 
 		list = list->nextSibling;
 		QCOMPARE(list->type, NT_STRINGLIST_MEMBER);
-		QCOMPARE(list->val.Str, val4);
+		QCOMPARE(QString::fromUtf8(list->val.Str), val4);
 
 		list = list->nextSibling;
 		QCOMPARE(list->type, NT_STRINGLIST_MEMBER);
-		QCOMPARE(list->val.Str, val5);
+		QCOMPARE(QString::fromUtf8(list->val.Str), val5);
 
 		list = list->nextSibling;
 		QCOMPARE(list->type, NT_STRINGLIST_MEMBER);
-		QCOMPARE(list->val.Str, val6);
+		QCOMPARE(QString::fromUtf8(list->val.Str), val6);
 
 		delete tree;
 	}
