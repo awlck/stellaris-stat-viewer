@@ -20,13 +20,18 @@ build_script:
   - sh: cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
   - sh: make
 
+before_test:
+  - cmd: copy C:\Qt\5.12\msvc2017_64\bin\Qt5Core.dll .
+  - cmd: copy C:\Qt\5.12\msvc2017_64\bin\Qt5Test.dll .
+
 test_script:
-  - ps: >-
-    if ($isWindows) {
-        cp C:\Qt\5.12.1\msvc2017_64\bin\Qt5Test.dll
-        cp C:\Qt\5.12.1\msvc2017_64\bin\Qt5Core.dll
-        .\test_parser.exe -o .\test_result_parser.xml -xunitxml
-    }
+#  - ps: >-
+#    if ($isWindows) {
+#        cp C:\Qt\5.12.1\msvc2017_64\bin\Qt5Test.dll
+#        cp C:\Qt\5.12.1\msvc2017_64\bin\Qt5Core.dll
+#        .\test_parser.exe -o .\test_result_parser.xml -xunitxml
+#    }
+  - cmd: test_parser.exe -o test_result_parser.xml -xunitxml
   - sh: ./test_parser -o test_result_parser.xml -xunitxml
 #after_test:
 #  - ps: >-
