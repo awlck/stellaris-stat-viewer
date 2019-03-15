@@ -79,6 +79,7 @@ namespace Parsing {
 	};
 
 	struct AstNode {
+		void merge(AstNode *other);
 		~AstNode();
 		char myName[64] = {'\0'};
 		NodeType type = NT_INDETERMINATE;

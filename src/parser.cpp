@@ -28,6 +28,21 @@ namespace Parsing {
 		}
 	}
 
+	void AstNode::merge(Parsing::AstNode *other) {
+		if (type != other->type || !typeHasChildren(type)) return;
+		if (other->val.firstChild != nullptr) {
+			if (this->val.firstChild != nullptr) {
+				this->val.lastChild->nextSibling = other->val.firstChild;
+			} else {
+				this->val.firstChild = other->val.firstChild;
+			}
+			this->val.lastChild = other->val.lastChild;
+			other->val.firstChild = nullptr;
+			other->val.lastChild = nullptr;
+		}
+		delete other;
+	}
+
 	AstNode::~AstNode() {
 		if (typeHasChildren(type)) delete val.firstChild;
 		delete nextSibling;
