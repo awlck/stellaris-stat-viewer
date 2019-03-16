@@ -18,15 +18,35 @@ namespace Galaxy {
 		return empires.value(id, nullptr);
 	}
 
-	State *State::createFromAst(Parsing::AstNode *tree, QObject *parent) {
-		State *state = new State(parent);
+	State *StateFactory::createFromAst(Parsing::AstNode *tree, QObject *parent) {
+		// figure out how many objects we need to create so we can display a proper progress bar
+		int done = 0;
+		int toDo = 0;
 		AstNode *ast_countries = tree->findChildWithName("country");
+		{
+			AstNode *countryCount = ast_countries->nextSibling->nextSibling->nextSibling->nextSibling;
+			if (!qstrcmp(countryCount->myName, "last_created_country")) {
+				countryCount = tree->findChildWithName("last_created_country");
+				if (!countryCount) return nullptr;
+			}
+			toDo += countryCount->val.Int + 1;
+		}
+		emit progress(this, done, toDo);
+		if (shouldCancel) return nullptr;
+
+		State *state = new State(parent);
 		CHECK_COMPOUND(ast_countries);
 		ITERATE_CHILDREN(ast_countries, aCountry) {
 			Empire *created = Empire::createFromAst(aCountry);
 			CHECK_PTR(created);
 			state->empires.insert(created->getIndex(), created);
+			emit progress(this, ++done, toDo);
+			if (shouldCancel) CHECK_PTR(nullptr);
 		}
 		return state;
+	}
+
+	void StateFactory::cancel() {
+		shouldCancel = true;
 	}
 }

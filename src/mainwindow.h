@@ -4,6 +4,8 @@
  * under the MIT License - see file "LICENSE" for details.
  */
 
+#pragma once
+
 #ifndef STELLARIS_STAT_VIEWER_MAINWINDOW_H
 #define STELLARIS_STAT_VIEWER_MAINWINDOW_H
 
@@ -14,11 +16,11 @@ class QMenu;
 class QMenuBar;
 class QProgressDialog;
 class QTabWidget;
-namespace Galaxy { class State; }
-
-namespace Parsing {
-	class Parser;
+namespace Galaxy {
+	class State;
+	class StateFactory;
 }
+namespace Parsing { class Parser; }
 
 class MainWindow : public QMainWindow {
 	Q_OBJECT
@@ -29,6 +31,7 @@ private slots:
 	void openFileSelected();
 
 	void parserProgressUpdate(Parsing::Parser *parser, qint64 current, qint64 max);
+	void galaxyProgressUpdate(Galaxy::StateFactory *factory, int current, int max);
 
 private:
 	void gamestateLoadBegin();

@@ -34,7 +34,9 @@ void MainWindow::openFileSelected() {
 	Q_ASSERT_X(result != nullptr, "Parser::parse", "a parse error occurred");
 
 	gamestateLoadSwitch();
-	state = Galaxy::State::createFromAst(result, this);
+	Galaxy::StateFactory stateFactory;
+	connect(&stateFactory, &Galaxy::StateFactory::progress, this, &MainWindow::galaxyProgressUpdate);
+	state = stateFactory.createFromAst(result, this);
 	delete result;
 	gamestateLoadDone();
 }
@@ -42,6 +44,15 @@ void MainWindow::openFileSelected() {
 void MainWindow::parserProgressUpdate(Parsing::Parser *parser, qint64 current, qint64 max) {
 	if (currentProgressDialog->wasCanceled()) {
 		parser->cancel();
+		return;
+	}
+	currentProgressDialog->setMaximum(max);
+	currentProgressDialog->setValue(current);
+}
+
+void MainWindow::galaxyProgressUpdate(Galaxy::StateFactory *factory, int current, int max) {
+	if (currentProgressDialog->wasCanceled()) {
+		factory->cancel();
 		return;
 	}
 	currentProgressDialog->setMaximum(max);

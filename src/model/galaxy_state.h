@@ -25,9 +25,21 @@ namespace Galaxy {
 	public:
 		State(QObject *parent = nullptr);
 		Empire *getEmpireWithId(qint64 id);
-		static State *createFromAst(Parsing::AstNode *tree, QObject *parent = nullptr);
 	private:
 		QMap<qint64, Empire *> empires;
+
+		friend class StateFactory;
+	};
+
+	class StateFactory : public QObject {
+		Q_OBJECT
+	public:
+		State *createFromAst(Parsing::AstNode *tree, QObject *parent = nullptr);
+		void cancel();
+	signals:
+		void progress(StateFactory *factory, int current, int max);
+	private:
+		bool shouldCancel = false;
 	};
 }
 
