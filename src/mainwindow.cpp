@@ -12,7 +12,8 @@
 #include <QtWidgets/QProgressDialog>
 #include <QtWidgets/QTabWidget>
 
-#include "parser.h"
+#include "model/galaxy_state.h"
+#include "parser/parser.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	tabs = new QTabWidget;
@@ -31,10 +32,10 @@ void MainWindow::openFileSelected() {
 	connect(&parser, &Parsing::Parser::progress, this, &MainWindow::parserProgressUpdate);
 	Parsing::AstNode *result = parser.parse();
 	Q_ASSERT_X(result != nullptr, "Parser::parse", "a parse error occurred");
-	#ifndef NDEBUG
-	Parsing::printParseTree(result);
-	#endif
+
 	gamestateLoadSwitch();
+	state = Galaxy::State::createFromAst(result, this);
+	delete result;
 	gamestateLoadDone();
 }
 
@@ -54,7 +55,7 @@ void MainWindow::gamestateLoadBegin() {
 }
 
 void MainWindow::gamestateLoadSwitch() {
-	currentProgressDialog->setLabelText(tr("(2/3) Building Galaxy..."));
+	currentProgressDialog->setLabelText(tr("(2/2) Building Galaxy..."));
 	currentProgressDialog->setValue(0);
 	currentProgressDialog->setMaximum(0);
 }

@@ -79,8 +79,25 @@ namespace Parsing {
 	};
 
 	struct AstNode {
-		void merge(AstNode *other);
 		~AstNode();
+		/** Merge 'other' into this tree
+		 *
+		 * All children of 'other' will become children of this.
+		 * 'other' will be deleted.
+		 *
+		 * If this and other are not of the same type, nothing will happen.
+		 * Also works if 'this' and/or 'other' does not have any children.
+		 *
+		 * @param other The tree to merge into this tree.
+		 */
+		void merge(AstNode *other);
+		/** Finds the first child of this node with the given name.
+		 *
+		 * @param name The name of the child to search for.
+		 * @return The child searched for, or nullptr if no child of that name exists.
+		 */
+		AstNode *findChildWithName(const char *name);
+
 		char myName[64] = {'\0'};
 		NodeType type = NT_INDETERMINATE;
 		AstNode *nextSibling = nullptr;

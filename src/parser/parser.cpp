@@ -28,6 +28,11 @@ namespace Parsing {
 		}
 	}
 
+	AstNode::~AstNode() {
+		if (typeHasChildren(type)) delete val.firstChild;
+		delete nextSibling;
+	}
+
 	void AstNode::merge(Parsing::AstNode *other) {
 		if (type != other->type || !typeHasChildren(type)) return;
 		if (other->val.firstChild != nullptr) {
@@ -43,9 +48,15 @@ namespace Parsing {
 		delete other;
 	}
 
-	AstNode::~AstNode() {
-		if (typeHasChildren(type)) delete val.firstChild;
-		delete nextSibling;
+	AstNode* AstNode::findChildWithName(const char *name) {
+		if (type != NT_COMPOUND) return nullptr;
+		if (this->val.firstChild == nullptr) return nullptr;
+		AstNode *child = this->val.firstChild;
+		do {
+			if (qstrcmp(child->myName, name) == 0) return child;
+			child = child->nextSibling;
+		} while (child);
+		return nullptr;
 	}
 
 	// TODO: Not use stdlib

@@ -14,6 +14,7 @@ class QMenu;
 class QMenuBar;
 class QProgressDialog;
 class QTabWidget;
+namespace Galaxy { class State; }
 
 namespace Parsing {
 	class Parser;
@@ -39,6 +40,8 @@ private:
 	QMenu *fileMenu;
 	QProgressDialog *currentProgressDialog;
 	QTabWidget *tabs;
+
+	Galaxy::State *state;
 };
 
 #endif //STELLARIS_STAT_VIEWER_MAINWINDOW_H

@@ -10,11 +10,20 @@ option(SSV_BUILD_TESTS BOOL ON)
 find_package(Qt5Widgets CONFIG REQUIRED)
 set(CMAKE_AUTOMOC ON)
 
+add_library(ssv_parser src/parser/parser.cpp src/parser/parser.h)
+target_link_libraries(ssv_parser Qt5::Core)
+
+add_library(ssv_model
+        src/model/galaxy_state.cpp src/model/galaxy_state.h
+        src/model/empire.cpp src/model/empire.h
+    )
+target_link_libraries(ssv_model Qt5::Core)
+
 add_executable(stellaris_stat_viewer WIN32 MACOSX_BUNDLE
         src/main.cpp
         src/mainwindow.cpp src/mainwindow.h
-        src/parser.cpp src/parser.h)
-target_link_libraries(stellaris_stat_viewer Qt5::Widgets)
+    )
+target_link_libraries(stellaris_stat_viewer Qt5::Widgets ssv_parser ssv_model)
 
 if(MSVC)
     target_compile_options(stellaris_stat_viewer PRIVATE
@@ -34,7 +43,7 @@ endif()
 if(SSV_BUILD_TESTS)
     find_package(Qt5Test CONFIG REQUIRED)
     enable_testing()
-    add_executable(test_parser tests/test_parser.cpp src/parser.cpp src/parser.h)
-    target_link_libraries(test_parser Qt5::Test)
+    add_executable(test_parser tests/test_parser.cpp)
+    target_link_libraries(test_parser ssv_parser Qt5::Test)
     add_test(NAME parser COMMAND test_parser)
 endif()

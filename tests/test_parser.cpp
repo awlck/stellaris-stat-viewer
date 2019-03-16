@@ -6,7 +6,7 @@
 
 #include <QtTest/QtTest>
 
-#include "../src/parser.h"
+#include "../src/parser/parser.h"
 
 Q_DECLARE_METATYPE(Parsing::RelationType);
 Q_DECLARE_METATYPE(Parsing::NodeType);
