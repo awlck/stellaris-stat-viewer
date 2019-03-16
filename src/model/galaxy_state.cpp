@@ -1,6 +1,8 @@
-//
-// Created by Adrian Welcker on 2019-03-15.
-//
+/* model/galaxy_state.cpp: Extracting data from a savegame file.
+ *
+ * Copyright 2019 by Adrian "ArdiMaster" Welcker, distributed
+ * under the MIT License - see file "LICENSE" for details.
+ */
 
 #include "galaxy_state.h"
 
@@ -11,6 +13,10 @@ using Parsing::AstNode;
 
 namespace Galaxy {
 	State::State(QObject *parent) : QObject(parent) {}
+
+	Empire* State::getEmpireWithId(qint64 id) {
+		return empires.value(id, nullptr);
+	}
 
 	State *State::createFromAst(Parsing::AstNode *tree, QObject *parent) {
 		State *state = new State(parent);

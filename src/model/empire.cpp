@@ -1,6 +1,8 @@
-//
-// Created by Adrian Welcker on 2019-03-16.
-//
+/* model/empire.cpp: Extracting empire information from an AST.
+ *
+ * Copyright 2019 by Adrian "ArdiMaster" Welcker, distributed
+ * under the MIT License - see file "LICENSE" for details.
+ */
 
 #include "empire.h"
 

@@ -1,6 +1,10 @@
-//
-// Created by Adrian Welcker on 2019-03-16.
-//
+/* model/model_private_macros.h: Utility macros used for constructing objects from ASTs.
+ *
+ * Copyright 2019 by Adrian "ArdiMaster" Welcker, distributed
+ * under the MIT License - see file "LICENSE" for details.
+ */
+
+#pragma once
 
 #ifndef STELLARIS_STAT_VIEWER_MODEL_PRIVATE_MACROS_H
 #define STELLARIS_STAT_VIEWER_MODEL_PRIVATE_MACROS_H

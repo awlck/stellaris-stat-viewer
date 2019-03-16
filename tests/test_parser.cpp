@@ -1,4 +1,4 @@
-/* test_parser.cpp: Unit testing for src/parser.cpp
+/* tests/test_parser.cpp: Unit testing for src/parser.cpp
  *
  * Copyright 2019 by Adrian "ArdiMaster" Welcker, distributed
  * under the MIT License - see file "LICENSE" for details.

@@ -1,6 +1,10 @@
-//
-// Created by Adrian Welcker on 2019-03-16.
-//
+/* model/empire.h: Class representation of a galactic empire.
+ *
+ * Copyright 2019 by Adrian "ArdiMaster" Welcker, distributed
+ * under the MIT License - see file "LICENSE" for details.
+ */
+
+#pragma once
 
 #ifndef STELLARIS_STAT_VIEWER_EMPIRE_H
 #define STELLARIS_STAT_VIEWER_EMPIRE_H
