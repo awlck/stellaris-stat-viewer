@@ -41,7 +41,7 @@ namespace Galaxy {
 			CHECK_PTR(created);
 			state->empires.insert(created->getIndex(), created);
 			emit progress(this, ++done, toDo);
-			if (shouldCancel) CHECK_PTR(nullptr);
+			if (shouldCancel) { delete state; return nullptr; }
 		}
 		return state;
 	}
