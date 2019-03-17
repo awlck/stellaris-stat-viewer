@@ -13,16 +13,18 @@
 #include "../parser/parser.h"
 
 namespace Galaxy {
+	class State;
+
 	class Empire : public QObject {
 		Q_OBJECT
 	public:
-		Empire(QObject *parent = nullptr);
+		Empire(State *parent);
 		qint64 getIndex();
 		const QString &getName();
 		double getMilitaryPower();
 		double getEconomyPower();
 		double getTechPower();
-		static Empire *createFromAst(Parsing::AstNode *tree, QObject *parent = nullptr);
+		static Empire *createFromAst(Parsing::AstNode *tree, State *parent);
 	private:
 		qint64 index;
 		QString name;

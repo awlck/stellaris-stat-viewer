@@ -7,11 +7,12 @@
 #include "empire.h"
 
 #include "model_private_macros.h"
+#include "galaxy_state.h"
 
 using namespace Parsing;
 
 namespace Galaxy {
-	Empire::Empire(QObject *parent) : QObject(parent) {}
+	Empire::Empire(State *parent) : QObject(parent) {}
 
 	qint64 Empire::getIndex() {
 		return index;
@@ -33,7 +34,7 @@ namespace Galaxy {
 		return this->techPower;
 	}
 
-	Empire *Empire::createFromAst(Parsing::AstNode *tree, QObject *parent) {
+	Empire *Empire::createFromAst(Parsing::AstNode *tree, State *parent) {
 		Empire *state = new Empire(parent);
 		state->index = static_cast<qint64>(QString(tree->myName).toLongLong());
 		AstNode *nameNode = tree->findChildWithName("name");

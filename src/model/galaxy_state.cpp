@@ -41,7 +41,7 @@ namespace Galaxy {
 		State *state = new State(parent);
 		CHECK_COMPOUND(ast_countries);
 		ITERATE_CHILDREN(ast_countries, aCountry) {
-			Empire *created = Empire::createFromAst(aCountry);
+			Empire *created = Empire::createFromAst(aCountry, state);
 			CHECK_PTR(created);
 			state->empires.insert(created->getIndex(), created);
 			emit progress(this, ++done, toDo);
