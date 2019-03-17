@@ -31,6 +31,7 @@ target_link_libraries(ssv_parser Qt5::Core)
 add_library(ssv_model
         src/model/galaxy_state.cpp src/model/galaxy_state.h
         src/model/empire.cpp src/model/empire.h
+		src/model/fleet.cpp src/model/fleet.h
     )
 target_link_libraries(ssv_model Qt5::Core)
 

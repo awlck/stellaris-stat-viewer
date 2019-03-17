@@ -57,7 +57,7 @@ namespace Parsing {
 		delete other;
 	}
 
-	AstNode* AstNode::findChildWithName(const char *name) {
+	AstNode* AstNode::findChildWithName(const char *name) const {
 		if (type != NT_COMPOUND) return nullptr;
 		if (this->val.firstChild == nullptr) return nullptr;
 		AstNode *child = this->val.firstChild;
@@ -66,6 +66,18 @@ namespace Parsing {
 			child = child->nextSibling;
 		} while (child);
 		return nullptr;
+	}
+
+	qint64 AstNode::countChildren() const {
+		if (!typeHasChildren(type)) return -1;
+		if (this->val.firstChild == nullptr) return 0;
+		qint64 childCount = 0;
+		AstNode *child = this->val.firstChild;
+		do {
+			childCount++;
+			child = child->nextSibling;
+		} while (child);
+		return childCount;
 	}
 
 	// TODO: Not use stdlib

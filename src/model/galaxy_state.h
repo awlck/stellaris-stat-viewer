@@ -16,6 +16,7 @@
 
 namespace Galaxy {
 	class Empire;
+	class Fleet;
 
 	class State : public QObject {
 		Q_OBJECT
@@ -28,6 +29,7 @@ namespace Galaxy {
 		const QMap<qint64, Empire *> &getEmpires() const;
 	private:
 		QMap<qint64, Empire *> empires;
+		QMap<qint64, Fleet *> fleets;
 
 		friend class StateFactory;
 	};

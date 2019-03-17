@@ -96,7 +96,8 @@ namespace Parsing {
 		 * @param name The name of the child to search for.
 		 * @return The child searched for, or nullptr if no child of that name exists.
 		 */
-		AstNode *findChildWithName(const char *name);
+		AstNode *findChildWithName(const char *name) const;
+		qint64 countChildren() const;
 
 		char myName[64] = {'\0'};
 		NodeType type = NT_INDETERMINATE;

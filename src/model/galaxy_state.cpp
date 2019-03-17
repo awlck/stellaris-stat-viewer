@@ -7,6 +7,7 @@
 #include "galaxy_state.h"
 
 #include "empire.h"
+#include "fleet.h"
 #include "model_private_macros.h"
 
 using Parsing::AstNode;
@@ -27,7 +28,9 @@ namespace Galaxy {
 		int done = 0;
 		int toDo = 0;
 		AstNode *ast_countries = tree->findChildWithName("country");
+		AstNode *ast_fleets = tree->findChildWithName("fleet");
 		toDo += ast_countries->countChildren();
+		toDo += ast_fleets->countChildren();
 
 		emit progress(this, done, toDo);
 		if (shouldCancel) return nullptr;
@@ -39,6 +42,16 @@ namespace Galaxy {
 			if (created) {
 				// sometimes, the save file contains nonsensical lines such as "16777248=none"
 				state->empires.insert(created->getIndex(), created);
+			}
+			emit progress(this, ++done, toDo);
+			if (shouldCancel) { delete state; return nullptr; }
+		}
+
+		CHECK_COMPOUND(ast_fleets);
+		ITERATE_CHILDREN(ast_fleets, aFleet) {
+			Fleet *created = Fleet::createFromAst(aFleet, state);
+			if (created) {
+				state->fleets.insert(created->getIndex(), created);
 			}
 			emit progress(this, ++done, toDo);
 			if (shouldCancel) { delete state; return nullptr; }

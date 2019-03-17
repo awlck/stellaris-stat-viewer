@@ -46,6 +46,8 @@ void MainWindow::openFileSelected() {
 	Galaxy::StateFactory stateFactory;
 	connect(&stateFactory, &Galaxy::StateFactory::progress, this, &MainWindow::galaxyProgressUpdate);
 	state = stateFactory.createFromAst(result, this);
+	Q_ASSERT_X(state != nullptr, "Galaxy::StateFactory", "an internal error occurred while attempting "
+		"to extract information from the parse tree.");
 	delete result;
 	emit modelChanged(state);
 	gamestateLoadDone();
