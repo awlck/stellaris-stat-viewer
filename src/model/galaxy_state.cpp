@@ -18,6 +18,10 @@ namespace Galaxy {
 		return empires.value(id, nullptr);
 	}
 
+	const QMap<qint64, Empire *>& State::getEmpires() const {
+		return empires;
+	}
+
 	State *StateFactory::createFromAst(Parsing::AstNode *tree, QObject *parent) {
 		// figure out how many objects we need to create so we can display a proper progress bar
 		int done = 0;

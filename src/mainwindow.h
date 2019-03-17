@@ -10,12 +10,15 @@
 #define STELLARIS_STAT_VIEWER_MAINWINDOW_H
 
 #include <QtWidgets/QMainWindow>
-enum class LoadStage;
+
 class QAction;
 class QMenu;
 class QMenuBar;
 class QProgressDialog;
 class QTabWidget;
+
+enum class LoadStage;
+class PowerRatingView;
 namespace Galaxy {
 	class State;
 	class StateFactory;
@@ -26,6 +29,9 @@ class MainWindow : public QMainWindow {
 	Q_OBJECT
 public:
 	MainWindow(QWidget *parent = nullptr);
+
+signals:
+	void modelChanged(const Galaxy::State *newModel);
 
 private slots:
 	void openFileSelected();
@@ -38,13 +44,14 @@ private:
 	void gamestateLoadSwitch();
 	void gamestateLoadDone();
 
+	PowerRatingView *powerRatingView;
 	QAction *openFileAction;
 	QMenuBar *theMenuBar;
 	QMenu *fileMenu;
 	QProgressDialog *currentProgressDialog;
 	QTabWidget *tabs;
 
-	Galaxy::State *state;
+	Galaxy::State *state = nullptr;
 };
 
 #endif //STELLARIS_STAT_VIEWER_MAINWINDOW_H

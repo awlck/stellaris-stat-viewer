@@ -14,19 +14,28 @@
 
 #include "model/galaxy_state.h"
 #include "parser/parser.h"
+#include "powerrating_view.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
+	setWindowTitle(tr("Stellaris Stat Viewer"));
 	tabs = new QTabWidget;
 	setCentralWidget(tabs);
+
 	theMenuBar = menuBar();
 	fileMenu = theMenuBar->addMenu(tr("File"));
 	openFileAction = fileMenu->addAction(tr("Open Save File"));
 	connect(openFileAction, &QAction::triggered, this, &MainWindow::openFileSelected);
+
+	powerRatingView = new PowerRatingView(this);
+	connect(this, &MainWindow::modelChanged, powerRatingView, &PowerRatingView::modelChanged);
+	tabs->addTab(powerRatingView, "Relative Power");
 }
 
 void MainWindow::openFileSelected() {
-	QString which = QFileDialog::getOpenFileName(this, tr("Select gamestate file"), QString(), tr("Stellaris Game State Files (gamestate)"));
+	QString which = QFileDialog::getOpenFileName(this, tr("Select gamestate file"), QString(),
+			tr("Stellaris Game State Files (gamestate)"));
 	if (which == "") return;  // Cancel was clicked
+	delete state;
 	gamestateLoadBegin();
 	Parsing::Parser parser(QFileInfo(which), Parsing::FileType::SaveFile, this);
 	connect(&parser, &Parsing::Parser::progress, this, &MainWindow::parserProgressUpdate);
@@ -38,6 +47,7 @@ void MainWindow::openFileSelected() {
 	connect(&stateFactory, &Galaxy::StateFactory::progress, this, &MainWindow::galaxyProgressUpdate);
 	state = stateFactory.createFromAst(result, this);
 	delete result;
+	emit modelChanged(state);
 	gamestateLoadDone();
 }
 
