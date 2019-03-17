@@ -25,6 +25,7 @@ namespace Galaxy {
 		double getMilitaryPower() const;
 		double getEconomyPower() const;
 		double getTechPower() const;
+		quint32 getOwnedSystemsCount() const;
 		static Empire *createFromAst(Parsing::AstNode *tree, State *parent);
 	private:
 		qint64 index;
@@ -32,6 +33,7 @@ namespace Galaxy {
 		double militaryPower;
 		double economyPower;
 		double techPower;
+		quint32 ownedSystems;
 	};
 }
 

@@ -35,6 +35,10 @@ namespace Galaxy {
 		return this->techPower;
 	}
 
+	quint32 Empire::getOwnedSystemsCount() const {
+		return ownedSystems;
+	}
+
 	Empire *Empire::createFromAst(AstNode *tree, State *parent) {
 		Empire *state = new Empire(parent);
 		state->index = static_cast<qint64>(QString(tree->myName).toLongLong());
@@ -56,6 +60,9 @@ namespace Galaxy {
 			CHECK_PTR(powerNode);
 		}
 		state->techPower = powerNode->val.Double;
+
+		AstNode *planetsNode = tree->findChildWithName("controlled_planets");
+		state->ownedSystems = planetsNode ? static_cast<quint32>(planetsNode->countChildren()) : 0;
 		return state;
 	}
 }

@@ -11,9 +11,9 @@
 #include "numerictableitem.h"
 
 PowerRatingView::PowerRatingView(QWidget *parent) : QTableWidget(parent) {
-	setColumnCount(4);
+	setColumnCount(5);
 	QStringList headers;
-	headers << tr("Name")<< tr("Military") << tr("Economic") << tr("Technology");
+	headers << tr("Name")<< tr("Military") << tr("Economy") << tr("Technology") << tr("Systems owned");
 	setHorizontalHeaderLabels(headers);
 }
 
@@ -30,7 +30,9 @@ void PowerRatingView::modelChanged(const Galaxy::State *newState) {
 		NumericTableItem *itemEconomy = new NumericTableItem(tr("%1").arg(it.value()->getEconomyPower()));
 		setItem(i, 2, itemEconomy);
 		NumericTableItem *itemTechnology = new NumericTableItem(tr("%1").arg(it.value()->getTechPower()));
-		setItem(i++, 3, itemTechnology);
+		setItem(i, 3, itemTechnology);
+		NumericTableItem *itemSystems = new NumericTableItem(tr("%1").arg(it.value()->getOwnedSystemsCount()));
+		setItem(i++, 4, itemSystems);
 	}
 	setSortingEnabled(true);
 }
