@@ -30,7 +30,16 @@ namespace Parsing {
 
 	AstNode::~AstNode() {
 		if (typeHasChildren(type)) delete val.firstChild;
-		delete nextSibling;
+		if (nextSibling) {
+			AstNode *sib, *tmp;
+			sib = nextSibling;
+			do {
+				tmp = sib->nextSibling;
+				sib->nextSibling = nullptr;
+				delete sib;
+				sib = tmp;
+			} while (sib);
+		}
 	}
 
 	void AstNode::merge(Parsing::AstNode *other) {
