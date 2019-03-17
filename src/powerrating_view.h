@@ -1,4 +1,4 @@
-/* powerrating_view.h: Display the three empire power ratings in a table.
+/* powerrating_view.h: Display an overview in a table.
  *
  * Copyright 2019 by Adrian "ArdiMaster" Welcker, distributed
  * under the MIT License - see file "LICENSE" for details.

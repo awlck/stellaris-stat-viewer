@@ -1,3 +1,9 @@
+/* military_view.cpp: Put empire military statistics into a table.
+ *
+ * Copyright 2019 by Adrian "ArdiMaster" Welcker, distributed
+ * under the MIT License - see file "LICENSE" for details.
+ */
+
 #include "military_view.h"
 
 #include "model/galaxy_state.h"

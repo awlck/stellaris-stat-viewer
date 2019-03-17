@@ -1,3 +1,9 @@
+/* military_view.h: Display empire military statistics as a table.
+ *
+ * Copyright 2019 by Adrian "ArdiMaster" Welcker, distributed
+ * under the MIT License - see file "LICENSE" for details.
+ */
+
 #pragma once
 
 #ifndef STELLARIS_STAT_VIEWER_MILITARY_VIEW_H
