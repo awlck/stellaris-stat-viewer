@@ -8,8 +8,9 @@
 
 #include "model_private_macros.h"
 #include "galaxy_state.h"
+#include "../parser/parser.h"
 
-using namespace Parsing;
+using Parsing::AstNode;
 
 namespace Galaxy {
 	Empire::Empire(State *parent) : QObject(parent) {}
@@ -34,7 +35,7 @@ namespace Galaxy {
 		return this->techPower;
 	}
 
-	Empire *Empire::createFromAst(Parsing::AstNode *tree, State *parent) {
+	Empire *Empire::createFromAst(AstNode *tree, State *parent) {
 		Empire *state = new Empire(parent);
 		state->index = static_cast<qint64>(QString(tree->myName).toLongLong());
 		AstNode *nameNode = tree->findChildWithName("name");

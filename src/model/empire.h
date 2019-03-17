@@ -10,7 +10,8 @@
 #define STELLARIS_STAT_VIEWER_EMPIRE_H
 
 #include <QtCore/QObject>
-#include "../parser/parser.h"
+
+namespace Parsing { struct AstNode; }
 
 namespace Galaxy {
 	class State;
