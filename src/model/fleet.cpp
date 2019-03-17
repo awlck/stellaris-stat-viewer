@@ -23,7 +23,7 @@ namespace Galaxy {
 		return name;
 	}
 
-	const Empire *Fleet::getOwner() const {
+	Empire *Fleet::getOwner() const {
 		return owner;
 	}
 

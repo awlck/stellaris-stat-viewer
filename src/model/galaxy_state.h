@@ -27,6 +27,7 @@ namespace Galaxy {
 		State(QObject *parent = nullptr);
 		Empire *getEmpireWithId(qint64 id);
 		const QMap<qint64, Empire *> &getEmpires() const;
+		const QMap<qint64, Fleet *> &getFleets() const;
 	private:
 		QMap<qint64, Empire *> empires;
 		QMap<qint64, Fleet *> fleets;

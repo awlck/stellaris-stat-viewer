@@ -13,6 +13,7 @@
 
 class NumericTableItem : public QTableWidgetItem {
 public:
+	using QTableWidgetItem::QTableWidgetItem;
 	bool operator<(const QTableWidgetItem &other) const override;
 };
 

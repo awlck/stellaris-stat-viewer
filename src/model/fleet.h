@@ -23,7 +23,7 @@ namespace Galaxy {
 		Fleet(State *parent);
 		qint64 getIndex() const;
 		const QString &getName() const;
-		const Empire *getOwner() const;
+		Empire *getOwner() const;
 		bool getIsStation() const;
 		double getMilitaryPower() const;
 		static Fleet *createFromAst(Parsing::AstNode *tree, State *parent);

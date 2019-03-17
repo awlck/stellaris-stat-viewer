@@ -12,6 +12,7 @@
 #include <QtWidgets/QProgressDialog>
 #include <QtWidgets/QTabWidget>
 
+#include "military_view.h"
 #include "model/galaxy_state.h"
 #include "parser/parser.h"
 #include "powerrating_view.h"
@@ -29,6 +30,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	powerRatingView = new PowerRatingView(this);
 	connect(this, &MainWindow::modelChanged, powerRatingView, &PowerRatingView::modelChanged);
 	tabs->addTab(powerRatingView, "Relative Power");
+
+	militaryView = new MilitaryView(this);
+	connect(this, &MainWindow::modelChanged, militaryView, &MilitaryView::modelChanged);
+	tabs->addTab(militaryView, "Military");
 }
 
 void MainWindow::openFileSelected() {
@@ -48,6 +53,8 @@ void MainWindow::openFileSelected() {
 	state = stateFactory.createFromAst(result, this);
 	Q_ASSERT_X(state != nullptr, "Galaxy::StateFactory", "an internal error occurred while attempting "
 		"to extract information from the parse tree.");
+
+	gamestateLoadFinishing();
 	delete result;
 	emit modelChanged(state);
 	gamestateLoadDone();
@@ -72,15 +79,19 @@ void MainWindow::galaxyProgressUpdate(Galaxy::StateFactory *factory, int current
 }
 
 void MainWindow::gamestateLoadBegin() {
-	currentProgressDialog = new QProgressDialog(tr("(1/2) Loading gamestate file..."), tr("Cancel"), 0, 0, this);
+	currentProgressDialog = new QProgressDialog(tr("(1/3) Loading gamestate file..."), tr("Cancel"), 0, 0, this);
 	currentProgressDialog->setWindowModality(Qt::WindowModal);
 	currentProgressDialog->setMinimumDuration(500);
 }
 
 void MainWindow::gamestateLoadSwitch() {
-	currentProgressDialog->setLabelText(tr("(2/2) Building Galaxy..."));
+	currentProgressDialog->setLabelText(tr("(2/3) Building Galaxy..."));
 	currentProgressDialog->setValue(0);
 	currentProgressDialog->setMaximum(0);
+}
+
+void MainWindow::gamestateLoadFinishing() {
+	currentProgressDialog->setLabelText(tr("(3/3) Finishing work..."));
 }
 
 void MainWindow::gamestateLoadDone() {

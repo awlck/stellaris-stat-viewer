@@ -38,6 +38,7 @@ target_link_libraries(ssv_model Qt5::Core)
 add_executable(stellaris_stat_viewer WIN32 MACOSX_BUNDLE
         src/main.cpp
         src/mainwindow.cpp src/mainwindow.h
+		src/military_view.cpp src/military_view.h
         src/numerictableitem.cpp src/numerictableitem.h
         src/powerrating_view.cpp src/powerrating_view.h
     )

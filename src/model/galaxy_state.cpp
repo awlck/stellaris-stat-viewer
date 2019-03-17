@@ -23,6 +23,10 @@ namespace Galaxy {
 		return empires;
 	}
 
+	const QMap<qint64, Fleet *>& State::getFleets() const {
+		return fleets;
+	}
+
 	State *StateFactory::createFromAst(Parsing::AstNode *tree, QObject *parent) {
 		// figure out how many objects we need to create so we can display a proper progress bar
 		int done = 0;

@@ -18,6 +18,7 @@ class QProgressDialog;
 class QTabWidget;
 
 enum class LoadStage;
+class MilitaryView;
 class PowerRatingView;
 namespace Galaxy {
 	class State;
@@ -42,9 +43,9 @@ private slots:
 private:
 	void gamestateLoadBegin();
 	void gamestateLoadSwitch();
+	void gamestateLoadFinishing();
 	void gamestateLoadDone();
 
-	PowerRatingView *powerRatingView;
 	QAction *openFileAction;
 	QMenuBar *theMenuBar;
 	QMenu *fileMenu;
@@ -52,6 +53,8 @@ private:
 	QTabWidget *tabs;
 
 	Galaxy::State *state = nullptr;
+	MilitaryView *militaryView;
+	PowerRatingView *powerRatingView;
 };
 
 #endif //STELLARIS_STAT_VIEWER_MAINWINDOW_H
