@@ -20,11 +20,11 @@ namespace Galaxy {
 		Q_OBJECT
 	public:
 		Empire(State *parent);
-		qint64 getIndex();
-		const QString &getName();
-		double getMilitaryPower();
-		double getEconomyPower();
-		double getTechPower();
+		qint64 getIndex() const;
+		const QString &getName() const;
+		double getMilitaryPower() const;
+		double getEconomyPower() const;
+		double getTechPower() const;
 		static Empire *createFromAst(Parsing::AstNode *tree, State *parent);
 	private:
 		qint64 index;

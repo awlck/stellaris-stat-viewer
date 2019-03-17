@@ -15,23 +15,23 @@ using Parsing::AstNode;
 namespace Galaxy {
 	Empire::Empire(State *parent) : QObject(parent) {}
 
-	qint64 Empire::getIndex() {
+	qint64 Empire::getIndex() const {
 		return index;
 	}
 
-	const QString& Empire::getName() {
+	const QString& Empire::getName() const {
 		return this->name;
 	}
 
-	double Empire::getMilitaryPower() {
+	double Empire::getMilitaryPower() const {
 		return this->militaryPower;
 	}
 
-	double Empire::getEconomyPower() {
+	double Empire::getEconomyPower() const {
 		return this->economyPower;
 	}
 
-	double Empire::getTechPower() {
+	double Empire::getTechPower() const {
 		return this->techPower;
 	}
 
