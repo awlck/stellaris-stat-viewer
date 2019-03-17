@@ -15,12 +15,12 @@ MilitaryView::MilitaryView(QWidget *parent) : QTableWidget(parent) {
 void MilitaryView::modelChanged(const Galaxy::State *newState) {
 	setSortingEnabled(false);
 	const QMap<qint64, Galaxy::Fleet*> &fleets = newState->getFleets();
-	setRowCount(newState->getEmpires().size());
 	QMap<Galaxy::Empire *, double> empireTotalMilitary;
 	for (auto fit = fleets.cbegin(); fit != fleets.cend(); fit++) {
 		Galaxy::Empire *owner = fit.value()->getOwner();
 		empireTotalMilitary[owner] = empireTotalMilitary.value(owner, 0) + fit.value()->getMilitaryPower();
 	}
+	setRowCount(empireTotalMilitary.size());
 	int i = 0;
 	for (auto it = empireTotalMilitary.cbegin(); it != empireTotalMilitary.cend(); it++) {
 		QTableWidgetItem *itemName = new QTableWidgetItem(it.key()->getName());

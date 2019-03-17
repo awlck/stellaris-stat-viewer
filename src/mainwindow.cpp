@@ -29,7 +29,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
 	powerRatingView = new PowerRatingView(this);
 	connect(this, &MainWindow::modelChanged, powerRatingView, &PowerRatingView::modelChanged);
-	tabs->addTab(powerRatingView, "Relative Power");
+	tabs->addTab(powerRatingView, "Overview");
 
 	militaryView = new MilitaryView(this);
 	connect(this, &MainWindow::modelChanged, militaryView, &MilitaryView::modelChanged);
