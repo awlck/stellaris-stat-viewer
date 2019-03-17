@@ -36,8 +36,10 @@ namespace Galaxy {
 		CHECK_COMPOUND(ast_countries);
 		ITERATE_CHILDREN(ast_countries, aCountry) {
 			Empire *created = Empire::createFromAst(aCountry, state);
-			CHECK_PTR(created);
-			state->empires.insert(created->getIndex(), created);
+			if (created) {
+				// sometimes, the save file contains nonsensical lines such as "16777248=none"
+				state->empires.insert(created->getIndex(), created);
+			}
 			emit progress(this, ++done, toDo);
 			if (shouldCancel) { delete state; return nullptr; }
 		}
