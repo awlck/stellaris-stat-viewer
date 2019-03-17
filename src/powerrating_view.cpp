@@ -20,15 +20,16 @@ void PowerRatingView::modelChanged(const Galaxy::State *newState) {
 	setSortingEnabled(false);
 	setRowCount(newState->getEmpires().size());
 	const QMap<qint64, Galaxy::Empire*> &empires = newState->getEmpires();
+	int i = 0;
 	for (auto it = empires.cbegin(); it != empires.cend(); it++) {
 		QTableWidgetItem *itemName = new QTableWidgetItem(it.value()->getName());
-		setItem(it.key(), 0, itemName);
+		setItem(i, 0, itemName);
 		QTableWidgetItem *itemMilitary = new QTableWidgetItem(tr("%1").arg(it.value()->getMilitaryPower()));
-		setItem(it.key(), 1, itemMilitary);
+		setItem(i, 1, itemMilitary);
 		QTableWidgetItem *itemEconomy = new QTableWidgetItem(tr("%1").arg(it.value()->getEconomyPower()));
-		setItem(it.key(), 2, itemEconomy);
+		setItem(i, 2, itemEconomy);
 		QTableWidgetItem *itemTechnology = new QTableWidgetItem(tr("%1").arg(it.value()->getTechPower()));
-		setItem(it.key(), 3, itemTechnology);
+		setItem(i++, 3, itemTechnology);
 	}
 	setSortingEnabled(true);
 }

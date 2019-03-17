@@ -27,14 +27,8 @@ namespace Galaxy {
 		int done = 0;
 		int toDo = 0;
 		AstNode *ast_countries = tree->findChildWithName("country");
-		{
-			AstNode *countryCount = ast_countries->nextSibling->nextSibling->nextSibling->nextSibling;
-			if (!qstrcmp(countryCount->myName, "last_created_country")) {
-				countryCount = tree->findChildWithName("last_created_country");
-				if (!countryCount) return nullptr;
-			}
-			toDo += countryCount->val.Int + 1;
-		}
+		toDo += ast_countries->countChildren();
+
 		emit progress(this, done, toDo);
 		if (shouldCancel) return nullptr;
 
