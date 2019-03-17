@@ -431,7 +431,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 						member->type = NT_STRINGLIST_MEMBER;
 						qstrcpy(member->val.Str, currentToken.tok.String);
 						ADD_AS_CHILD(member);
-					}
+					} else PARSE_ERROR(PE_INVALID_COMBO_AFTER_OPEN);
 				}
 					break;
 				case TT_INT: {

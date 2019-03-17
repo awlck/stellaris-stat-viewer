@@ -562,6 +562,7 @@ private slots:
 		QTest::newRow("invalid after relation") << "stuff < }" << Parsing::PE_INVALID_AFTER_RELATION;
 		QTest::newRow("invalid after open") << "stuff = { =" << Parsing::PE_INVALID_AFTER_OPEN;
 		QTest::newRow("invalid combo after open") << "stuff = { 2 3.75 yes }" << Parsing::PE_INVALID_COMBO_AFTER_OPEN;
+		QTest::newRow("invalid combo after open string") << "stuff = { \"hello\" 2 }" << Parsing::PE_INVALID_COMBO_AFTER_OPEN;
 		QTest::newRow("double in int list") << "stuff = { 3 4 3.75 }" << Parsing::PE_INVALID_IN_INT_LIST;
 		QTest::newRow("bool in int list") << "stuff = { 3 4 yes }" << Parsing::PE_INVALID_IN_INT_LIST;
 		QTest::newRow("string in int list") << "stuff = { 3 4 \"hello there\" }" << Parsing::PE_INVALID_IN_INT_LIST;
