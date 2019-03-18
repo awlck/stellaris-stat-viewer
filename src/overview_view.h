@@ -1,4 +1,4 @@
-/* powerrating_view.h: Display an overview in a table.
+/* overview_view.h: Display an overview in a table.
  *
  * Copyright 2019 by Adrian "ArdiMaster" Welcker, distributed
  * under the MIT License - see file "LICENSE" for details.
@@ -13,10 +13,10 @@
 
 namespace Galaxy { class State; }
 
-class PowerRatingView : public QTableWidget {
+class OverviewView : public QTableWidget {
 	Q_OBJECT
 public:
-	PowerRatingView(QWidget *parent = nullptr);
+	OverviewView(QWidget *parent = nullptr);
 
 public slots:
 	void modelChanged(const Galaxy::State *newState);

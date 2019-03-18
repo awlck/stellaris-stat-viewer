@@ -1,4 +1,4 @@
-/* military_view.h: Display empire military statistics as a table.
+/* fleets_view.h: Display empire fleet statistics as a table.
  *
  * Copyright 2019 by Adrian "ArdiMaster" Welcker, distributed
  * under the MIT License - see file "LICENSE" for details.
@@ -13,10 +13,10 @@
 
 namespace Galaxy { class State; }
 
-class MilitaryView : public QTableWidget {
+class FleetsView : public QTableWidget {
 	Q_OBJECT
 public:
-	MilitaryView(QWidget *parent = nullptr);
+	FleetsView(QWidget *parent = nullptr);
 
 public slots:
 	void modelChanged(const Galaxy::State *newState);

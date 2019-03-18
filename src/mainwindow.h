@@ -18,8 +18,8 @@ class QProgressDialog;
 class QTabWidget;
 
 enum class LoadStage;
-class MilitaryView;
-class PowerRatingView;
+class FleetsView;
+class OverviewView;
 namespace Galaxy {
 	class State;
 	class StateFactory;
@@ -53,8 +53,8 @@ private:
 	QTabWidget *tabs;
 
 	Galaxy::State *state = nullptr;
-	MilitaryView *militaryView;
-	PowerRatingView *powerRatingView;
+	FleetsView *militaryView;
+	OverviewView *powerRatingView;
 };
 
 #endif //STELLARIS_STAT_VIEWER_MAINWINDOW_H

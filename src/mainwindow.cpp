@@ -12,10 +12,10 @@
 #include <QtWidgets/QProgressDialog>
 #include <QtWidgets/QTabWidget>
 
-#include "military_view.h"
+#include "fleets_view.h"
 #include "model/galaxy_state.h"
 #include "parser/parser.h"
-#include "powerrating_view.h"
+#include "overview_view.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	setWindowTitle(tr("Stellaris Stat Viewer"));
@@ -27,13 +27,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	openFileAction = fileMenu->addAction(tr("Open Save File"));
 	connect(openFileAction, &QAction::triggered, this, &MainWindow::openFileSelected);
 
-	powerRatingView = new PowerRatingView(this);
-	connect(this, &MainWindow::modelChanged, powerRatingView, &PowerRatingView::modelChanged);
+	powerRatingView = new OverviewView(this);
+	connect(this, &MainWindow::modelChanged, powerRatingView, &OverviewView::modelChanged);
 	tabs->addTab(powerRatingView, "Overview");
 
-	militaryView = new MilitaryView(this);
-	connect(this, &MainWindow::modelChanged, militaryView, &MilitaryView::modelChanged);
-	tabs->addTab(militaryView, "Military");
+	militaryView = new FleetsView(this);
+	connect(this, &MainWindow::modelChanged, militaryView, &FleetsView::modelChanged);
+	tabs->addTab(militaryView, "Fleets");
 }
 
 void MainWindow::openFileSelected() {

@@ -1,23 +1,23 @@
-/* powerrating_view.cpp: Put empire power ratings into a table.
+/* overview_view.cpp: Put empire power ratings into a table.
  *
  * Copyright 2019 by Adrian "ArdiMaster" Welcker, distributed
  * under the MIT License - see file "LICENSE" for details.
  */
 
-#include "powerrating_view.h"
+#include "overview_view.h"
 
 #include "model/galaxy_state.h"
 #include "model/empire.h"
 #include "numerictableitem.h"
 
-PowerRatingView::PowerRatingView(QWidget *parent) : QTableWidget(parent) {
+OverviewView::OverviewView(QWidget *parent) : QTableWidget(parent) {
 	setColumnCount(5);
 	QStringList headers;
 	headers << tr("Name")<< tr("Military") << tr("Economy") << tr("Technology") << tr("Systems owned");
 	setHorizontalHeaderLabels(headers);
 }
 
-void PowerRatingView::modelChanged(const Galaxy::State *newState) {
+void OverviewView::modelChanged(const Galaxy::State *newState) {
 	setSortingEnabled(false);
 	setRowCount(newState->getEmpires().size());
 	const QMap<qint64, Galaxy::Empire*> &empires = newState->getEmpires();
