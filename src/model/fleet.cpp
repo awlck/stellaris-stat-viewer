@@ -1,4 +1,4 @@
-/* model/fleet.h: Class representation of an interstellar fleet.
+/* model/fleet.cpp: Extracting fleet information from an AST.
  *
  * Copyright 2019 by Adrian "ArdiMaster" Welcker, distributed
  * under the MIT License - see file "LICENSE" for details.

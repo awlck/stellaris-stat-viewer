@@ -9,6 +9,7 @@
 #include "empire.h"
 #include "fleet.h"
 #include "model_private_macros.h"
+#include "ship_design.h"
 
 using Parsing::AstNode;
 
@@ -27,14 +28,20 @@ namespace Galaxy {
 		return fleets;
 	}
 
+	const QMap<qint64, ShipDesign *>& State::getShipDesigns() const {
+		return shipDesigns;
+	}
+
 	State *StateFactory::createFromAst(Parsing::AstNode *tree, QObject *parent) {
 		// figure out how many objects we need to create so we can display a proper progress bar
 		int done = 0;
 		int toDo = 0;
 		AstNode *ast_countries = tree->findChildWithName("country");
 		AstNode *ast_fleets = tree->findChildWithName("fleet");
+		AstNode *ast_shipDesigns = tree->findChildWithName("ship_design");
 		toDo += ast_countries->countChildren();
 		toDo += ast_fleets->countChildren();
+		toDo += ast_shipDesigns->countChildren();
 
 		emit progress(this, done, toDo);
 		if (shouldCancel) return nullptr;
@@ -56,6 +63,16 @@ namespace Galaxy {
 			Fleet *created = Fleet::createFromAst(aFleet, state);
 			if (created) {
 				state->fleets.insert(created->getIndex(), created);
+			}
+			emit progress(this, ++done, toDo);
+			if (shouldCancel) { delete state; return nullptr; }
+		}
+
+		CHECK_COMPOUND(ast_shipDesigns);
+		ITERATE_CHILDREN(ast_shipDesigns, aDesign) {
+			ShipDesign *created = ShipDesign::createFromAst(aDesign, state);
+			if (created) {
+				state->shipDesigns.insert(created->getIndex(), created);
 			}
 			emit progress(this, ++done, toDo);
 			if (shouldCancel) { delete state; return nullptr; }
