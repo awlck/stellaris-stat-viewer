@@ -26,6 +26,9 @@ namespace Galaxy {
 		DefensePlatMedium,
 		DefensePlatLarge,
 		IonCannon,
+		FallenSmallStation,
+		FallenLargeStation,   // speculation
+		FallenMassiveStation, // speculation
 		MiningStation,
 		ResearchStation,
 		ObservationStation,
@@ -36,6 +39,9 @@ namespace Galaxy {
 		Titan,
 		Colossus,
 		TransportShip,
+		FallenSmallShip,
+		FallenLargeShip,
+		FallenMassiveShip,
 		ConstructionShip,
 		ScienceShip,
 		ColonyShip,

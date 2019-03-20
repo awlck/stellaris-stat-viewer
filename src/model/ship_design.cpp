@@ -23,6 +23,9 @@ namespace Galaxy {
 			{ "military_station_medium", ShipSize::DefensePlatMedium },
 			{ "military_station_large", ShipSize::DefensePlatLarge },
 			{ "ion_cannon", ShipSize::IonCannon },
+			{ "military_station_small_fallen_empire", ShipSize::FallenSmallStation },
+			{ "military_station_large_fallen_empire", ShipSize::FallenLargeStation },      // speculation
+			{ "military_station_massive_fallen_empire", ShipSize::FallenMassiveStation },  // speculation
 			{ "mining_station", ShipSize::MiningStation },
 			{ "research_station", ShipSize::ResearchStation },
 			{ "observation_station", ShipSize::ObservationStation },
@@ -33,6 +36,9 @@ namespace Galaxy {
 			{ "titan", ShipSize::Titan },
 			{ "colossus", ShipSize::Colossus },
 			{ "transport", ShipSize::TransportShip },
+			{ "small_ship_fallen_empire", ShipSize::FallenSmallShip },
+			{ "large_ship_fallen_empire", ShipSize::FallenLargeShip },
+			{ "massive_ship_fallen_empire", ShipSize::FallenMassiveShip },
 			{ "constructor", ShipSize::ConstructionShip },
 			{ "science", ShipSize::ScienceShip },
 			{ "colonizer", ShipSize::ColonyShip },
