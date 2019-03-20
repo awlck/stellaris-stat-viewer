@@ -1,3 +1,9 @@
+/* model/ship.cpp: Extracting ship information from an AST.
+ *
+ * Copyright 2019 by Adrian "ArdiMaster" Welcker, distributed
+ * under the MIT License - see file "LICENSE" for details.
+ */
+
 #include "ship.h"
 
 #include "fleet.h"
