@@ -43,8 +43,7 @@ void FleetsView::modelChanged(const Galaxy::State *newState) {
 	QMap<Galaxy::Empire *, FleetData> empireTotals;
 	for (auto fit = fleets.cbegin(); fit != fleets.cend(); fit++) {
 		Galaxy::Empire *owner = fit.value()->getOwner();
-		// empireTotals[owner] = empireTotals.value(owner, { 0, 0, 0, 0, 0, 0, 0 }).power + fit.value()->getMilitaryPower();
-		FleetData data = empireTotals.value(owner, { 0 });
+		FleetData data = empireTotals.value(owner, { 0, 0, 0, 0, 0, 0, 0, 0 });
 		data.power += fit.value()->getMilitaryPower();
 		empireTotals[owner] = data;
 	}
