@@ -62,19 +62,23 @@ namespace Galaxy {
 		state->index = static_cast<qint64>(QString(tree->myName).toLongLong());
 
 		AstNode *nameNode = tree->findChildWithName("name");
-		CHECK_PTR(nameNode);
-		state->name = QString(nameNode->val.Str);
+		AstNode *sizeNode;
+		if (nameNode) {
+			state->name = nameNode != nullptr ? QString(nameNode->val.Str) : tr("<anonymous design>");
 
-		AstNode *sizeNode = nameNode->nextSibling;
-		if (qstrcmp(sizeNode->myName, "ship_size") != 0) {
+			sizeNode = nameNode->nextSibling;
+			if (qstrcmp(sizeNode->myName, "ship_size") != 0) {
+				sizeNode = tree->findChildWithName("ship_size");
+				CHECK_PTR(sizeNode);
+			}
+		} else {
 			sizeNode = tree->findChildWithName("ship_size");
 			CHECK_PTR(sizeNode);
 		}
 		state->size = shipSizes.value(sizeNode->val.Str, ShipSize::INVALID);
 
 		AstNode *autoGenNode = tree->findChildWithName("auto_gen_design");
-		CHECK_PTR(autoGenNode);
-		state->isAutogen = autoGenNode->val.Bool;
+		state->isAutogen = autoGenNode != nullptr ? autoGenNode->val.Bool : false;
 
 		return state;
 	}

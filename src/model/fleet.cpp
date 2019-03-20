@@ -36,6 +36,8 @@ namespace Galaxy {
 	}
 
 	Fleet *Fleet::createFromAst(Parsing::AstNode *tree, State *parent) {
+		if (tree->type == Parsing::NT_STRING && qstrcmp(tree->val.Str, "none") == 0) return nullptr;
+
 		Fleet *state = new Fleet(parent);
 		state->index = static_cast<qint64>(QString(tree->myName).toLongLong());
 
@@ -55,15 +57,11 @@ namespace Galaxy {
 		AstNode *stationNode = ownerNode->nextSibling;
 		if (qstrcmp(stationNode->myName, "station") != 0) {
 			stationNode = tree->findChildWithName("station");
-			CHECK_PTR(stationNode);
 		}
-		state->isStation = stationNode->val.Bool;
+		state->isStation = stationNode != nullptr ? stationNode->val.Bool : false;
 
-		AstNode *powerNode = stationNode->nextSibling->nextSibling->nextSibling->nextSibling->nextSibling;
-		if (qstrcmp(powerNode->myName, "military_power") != 0) {
-			powerNode = tree->findChildWithName("military_power");
-			CHECK_PTR(powerNode);
-		}
+		AstNode *powerNode = tree->findChildWithName("military_power");
+		CHECK_PTR(powerNode);
 		state->militaryPower = powerNode->val.Double;
 		
 		return state;
