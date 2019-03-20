@@ -9,6 +9,7 @@
 #include "empire.h"
 #include "fleet.h"
 #include "model_private_macros.h"
+#include "ship.h"
 #include "ship_design.h"
 
 using Parsing::AstNode;
@@ -28,6 +29,10 @@ namespace Galaxy {
 		return fleets;
 	}
 
+	const QMap<qint64, Ship *>& State::getShips() const {
+		return ships;
+	}
+
 	const QMap<qint64, ShipDesign *>& State::getShipDesigns() const {
 		return shipDesigns;
 	}
@@ -39,9 +44,11 @@ namespace Galaxy {
 		AstNode *ast_countries = tree->findChildWithName("country");
 		AstNode *ast_fleets = tree->findChildWithName("fleet");
 		AstNode *ast_shipDesigns = tree->findChildWithName("ship_design");
+		AstNode *ast_ships = tree->findChildWithName("ships");
 		toDo += ast_countries->countChildren();
 		toDo += ast_fleets->countChildren();
 		toDo += ast_shipDesigns->countChildren();
+		toDo += ast_ships->countChildren();
 
 		emit progress(this, done, toDo);
 		if (shouldCancel) return nullptr;
@@ -73,6 +80,16 @@ namespace Galaxy {
 			ShipDesign *created = ShipDesign::createFromAst(aDesign, state);
 			if (created) {
 				state->shipDesigns.insert(created->getIndex(), created);
+			}
+			emit progress(this, ++done, toDo);
+			if (shouldCancel) { delete state; return nullptr; }
+		}
+
+		CHECK_COMPOUND(ast_ships);
+		ITERATE_CHILDREN(ast_ships, aShip) {
+			Ship *created = Ship::createFromAst(aShip, state);
+			if (created) {
+				state->ships.insert(created->getIndex(), created);
 			}
 			emit progress(this, ++done, toDo);
 			if (shouldCancel) { delete state; return nullptr; }
