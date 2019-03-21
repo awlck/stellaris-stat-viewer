@@ -87,21 +87,21 @@ void FleetsView::modelChanged(const Galaxy::State *newState) {
 	for (auto it = empireTotals.cbegin(); it != empireTotals.cend(); it++) {
 		QTableWidgetItem *itemName = new QTableWidgetItem(it.key()->getName());
 		setItem(i, 0, itemName);
-		NumericTableItem *itemMilitary = new NumericTableItem(tr("%1").arg(it.value().power));
+		NumericTableItem *itemMilitary = new NumericTableItem((qint64) it.value().power);
 		setItem(i, 1, itemMilitary);
-		NumericTableItem *itemCorvettes = new NumericTableItem(tr("%1").arg(it.value().corvettes));
+		NumericTableItem *itemCorvettes = new NumericTableItem((qint64) it.value().corvettes);
 		setItem(i, 2, itemCorvettes);
-		NumericTableItem *itemDestroyers = new NumericTableItem(tr("%1").arg(it.value().destroyers));
+		NumericTableItem *itemDestroyers = new NumericTableItem((qint64) it.value().destroyers);
 		setItem(i, 3, itemDestroyers);
-		NumericTableItem *itemCruisers = new NumericTableItem(tr("%1").arg(it.value().cruisers));
+		NumericTableItem *itemCruisers = new NumericTableItem((qint64) it.value().cruisers);
 		setItem(i, 4, itemCruisers);
-		NumericTableItem *itemBattleships = new NumericTableItem(tr("%1").arg(it.value().battleships));
+		NumericTableItem *itemBattleships = new NumericTableItem((qint64) it.value().battleships);
 		setItem(i, 5, itemBattleships);
-		NumericTableItem *itemTitans = new NumericTableItem(tr("%1").arg(it.value().titans));
+		NumericTableItem *itemTitans = new NumericTableItem((qint64) it.value().titans);
 		setItem(i, 6, itemTitans);
-		NumericTableItem *itemColossi = new NumericTableItem(tr("%1").arg(it.value().colossi));
+		NumericTableItem *itemColossi = new NumericTableItem((qint64) it.value().colossi);
 		setItem(i, 7, itemColossi);
-		NumericTableItem *itemFeShips = new NumericTableItem(tr("%1").arg(it.value().fallen));
+		NumericTableItem *itemFeShips = new NumericTableItem((qint64) it.value().fallen);
 		setItem(i++, 8, itemFeShips);
 	}
 	setSortingEnabled(true);

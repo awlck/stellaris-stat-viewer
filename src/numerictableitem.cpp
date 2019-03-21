@@ -6,6 +6,9 @@
 
 #include "numerictableitem.h"
 
+NumericTableItem::NumericTableItem(qint64 val) : QTableWidgetItem(QString("%1").arg(val)) {};
+NumericTableItem::NumericTableItem(double val) : QTableWidgetItem(QString("%1").arg(val)) {};
+
 bool NumericTableItem::operator<(const QTableWidgetItem &other) const {
 	if (text() == "") return true;
 	bool ok1, ok2;
