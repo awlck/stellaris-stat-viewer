@@ -18,6 +18,7 @@ class QProgressDialog;
 class QTabWidget;
 
 enum class LoadStage;
+class EconomyView;
 class FleetsView;
 class OverviewView;
 namespace Galaxy {
@@ -53,6 +54,7 @@ private:
 	QTabWidget *tabs;
 
 	Galaxy::State *state = nullptr;
+	EconomyView *economyView;
 	FleetsView *militaryView;
 	OverviewView *powerRatingView;
 };

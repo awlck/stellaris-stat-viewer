@@ -39,6 +39,10 @@ namespace Galaxy {
 		return ownedSystems;
 	}
 
+	const QMap<QString, double> &Empire::getIncomes() const {
+		return incomes;
+	}
+
 	Empire *Empire::createFromAst(AstNode *tree, State *parent) {
 		Empire *state = new Empire(parent);
 		state->index = static_cast<qint64>(QString(tree->myName).toLongLong());
@@ -63,6 +67,23 @@ namespace Galaxy {
 
 		AstNode *planetsNode = tree->findChildWithName("controlled_planets");
 		state->ownedSystems = planetsNode ? static_cast<quint32>(planetsNode->countChildren()) : 0;
+
+		AstNode *budgetNode = tree->findChildWithName("budget");
+		if (budgetNode && budgetNode->type == Parsing::NT_COMPOUND) {
+			AstNode *lastMonthNode = budgetNode->findChildWithName("last_month");
+			if (lastMonthNode && lastMonthNode->type == Parsing::NT_COMPOUND) {
+				AstNode *balanceNode = lastMonthNode->findChildWithName("balance");
+				if (balanceNode && balanceNode->type == Parsing::NT_COMPOUND) {
+					ITERATE_CHILDREN(balanceNode, anItem) {
+						if (anItem->type == Parsing::NT_COMPOUND) {
+							ITERATE_CHILDREN(anItem, aResource) {
+								state->incomes[QString(aResource->myName)] += aResource->val.Double;
+							}
+						}
+					}
+				}
+			}
+		}
 		return state;
 	}
 }

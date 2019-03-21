@@ -12,6 +12,7 @@
 #include <QtWidgets/QProgressDialog>
 #include <QtWidgets/QTabWidget>
 
+#include "economy_view.h"
 #include "fleets_view.h"
 #include "model/galaxy_state.h"
 #include "parser/parser.h"
@@ -34,6 +35,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	militaryView = new FleetsView(this);
 	connect(this, &MainWindow::modelChanged, militaryView, &FleetsView::modelChanged);
 	tabs->addTab(militaryView, "Fleets");
+
+	economyView = new EconomyView(this);
+	connect(this, &MainWindow::modelChanged, economyView, &EconomyView::modelChanged);
+	tabs->addTab(economyView, "Economy");
 }
 
 void MainWindow::openFileSelected() {

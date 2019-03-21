@@ -10,6 +10,7 @@
 #define STELLARIS_STAT_VIEWER_EMPIRE_H
 
 #include <QtCore/QObject>
+#include <QtCore/QMap>
 
 namespace Parsing { struct AstNode; }
 
@@ -26,6 +27,7 @@ namespace Galaxy {
 		double getEconomyPower() const;
 		double getTechPower() const;
 		quint32 getOwnedSystemsCount() const;
+		const QMap<QString, double> &getIncomes() const;
 		static Empire *createFromAst(Parsing::AstNode *tree, State *parent);
 	private:
 		qint64 index;
@@ -34,6 +36,7 @@ namespace Galaxy {
 		double economyPower;
 		double techPower;
 		quint32 ownedSystems;
+		QMap<QString, double> incomes;
 	};
 }
 
