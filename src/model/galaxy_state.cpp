@@ -17,6 +17,10 @@ using Parsing::AstNode;
 namespace Galaxy {
 	State::State(QObject *parent) : QObject(parent) {}
 
+	const QString &State::getDate() const {
+		return date;
+	}
+
 	Empire* State::getEmpireWithId(qint64 id) {
 		return empires.value(id, nullptr);
 	}
@@ -40,7 +44,7 @@ namespace Galaxy {
 	State *StateFactory::createFromAst(Parsing::AstNode *tree, QObject *parent) {
 		// figure out how many objects we need to create so we can display a proper progress bar
 		int done = 0;
-		int toDo = 0;
+		int toDo = 1;
 		AstNode *ast_countries = tree->findChildWithName("country");
 		AstNode *ast_fleets = tree->findChildWithName("fleet");
 		AstNode *ast_shipDesigns = tree->findChildWithName("ship_design");
@@ -54,6 +58,11 @@ namespace Galaxy {
 		if (shouldCancel) return nullptr;
 
 		State *state = new State(parent);
+		AstNode *ast_date = tree->findChildWithName("date");
+		CHECK_PTR(ast_date);
+		state->date = QString(ast_date->val.Str);
+		emit progress(this, ++done, toDo);
+
 		CHECK_COMPOUND(ast_countries);
 		ITERATE_CHILDREN(ast_countries, aCountry) {
 			Empire *created = Empire::createFromAst(aCountry, state);

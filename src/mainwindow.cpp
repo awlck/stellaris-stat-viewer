@@ -8,8 +8,10 @@
 
 #include <QtCore/QDebug>
 #include <QtWidgets/QFileDialog>
+#include <QtWidgets/QLabel>
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QProgressDialog>
+#include <QtWidgets/QStatusBar>
 #include <QtWidgets/QTabWidget>
 
 #include "economy_view.h"
@@ -39,6 +41,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	economyView = new EconomyView(this);
 	connect(this, &MainWindow::modelChanged, economyView, &EconomyView::modelChanged);
 	tabs->addTab(economyView, "Economy");
+
+	statusLabel = new QLabel(tr("No file loaded."));
+	statusBar()->addPermanentWidget(statusLabel);
 }
 
 void MainWindow::openFileSelected() {
@@ -62,6 +67,8 @@ void MainWindow::openFileSelected() {
 	gamestateLoadFinishing();
 	delete result;
 	emit modelChanged(state);
+	statusLabel->setText(state->getDate());
+	statusBar()->showMessage(tr("Loaded ") + which, 5000);
 	gamestateLoadDone();
 }
 

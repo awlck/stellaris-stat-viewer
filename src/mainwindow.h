@@ -12,6 +12,7 @@
 #include <QtWidgets/QMainWindow>
 
 class QAction;
+class QLabel;
 class QMenu;
 class QMenuBar;
 class QProgressDialog;
@@ -48,10 +49,12 @@ private:
 	void gamestateLoadDone();
 
 	QAction *openFileAction;
+	QLabel *statusLabel;
 	QMenuBar *theMenuBar;
 	QMenu *fileMenu;
 	QProgressDialog *currentProgressDialog;
 	QTabWidget *tabs;
+	
 
 	Galaxy::State *state = nullptr;
 	EconomyView *economyView;

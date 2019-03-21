@@ -27,12 +27,14 @@ namespace Galaxy {
 		 * the QObject system will take care of deleting the children. */
 	public:
 		State(QObject *parent = nullptr);
+		const QString &getDate() const;
 		Empire *getEmpireWithId(qint64 id);
 		const QMap<qint64, Empire *> &getEmpires() const;
 		const QMap<qint64, Fleet *> &getFleets() const;
 		const QMap<qint64, Ship *> &getShips() const;
 		const QMap<qint64, ShipDesign *> &getShipDesigns() const;
 	private:
+		QString date;
 		QMap<qint64, Empire *> empires;
 		QMap<qint64, Fleet *> fleets;
 		QMap<qint64, Ship *> ships;
