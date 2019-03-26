@@ -282,7 +282,13 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 		Token currentToken = {0, 0, TT_NONE, {{'\0'}}};
 
 		while ((!lexerDone || !lexQueue.empty()) && !shouldCancel) {
-			currentToken = getNextToken();
+			try {
+				currentToken = getNextToken();
+			} catch (const ParserError &e) {
+				latestParserError = e;
+				delete root;
+				return nullptr;
+			}
 			switch (state) {
 			case State::CompoundRoot:
 				if (currentToken.type == TT_STRING) {
@@ -415,44 +421,54 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 				break;
 			case State::HaveNameOpen:  // "stuff = {"
 				switch (currentToken.type) {
-				case TT_STRING: {  // compound or string list
-					if (lookahead(1) == TT_EQUALS) {
-						things.top()->type = NT_COMPOUND;
-						AstNode *nextNode = new AstNode;
-						nextNode->type = NT_INDETERMINATE;
-						state = State::HaveName;
-						qstrcpy(nextNode->myName, currentToken.tok.String);
-						ADD_AS_CHILD(nextNode);
-						things.push(nextNode);
-					} else if (lookahead(1) == TT_STRING || lookahead(1) == TT_CBRACE) {
-						state = State::BegunStringList;
-						things.top()->type = NT_STRINGLIST;
-						AstNode *member = new AstNode;
-						member->type = NT_STRINGLIST_MEMBER;
-						qstrcpy(member->val.Str, currentToken.tok.String);
-						ADD_AS_CHILD(member);
-					} else PARSE_ERROR(PE_INVALID_COMBO_AFTER_OPEN);
-				}
+				case TT_STRING:
+					try {  // compound or string list
+						if (lookahead(1) == TT_EQUALS) {
+							things.top()->type = NT_COMPOUND;
+							AstNode *nextNode = new AstNode;
+							nextNode->type = NT_INDETERMINATE;
+							state = State::HaveName;
+							qstrcpy(nextNode->myName, currentToken.tok.String);
+							ADD_AS_CHILD(nextNode);
+							things.push(nextNode);
+						} else if (lookahead(1) == TT_STRING || lookahead(1) == TT_CBRACE) {
+							state = State::BegunStringList;
+							things.top()->type = NT_STRINGLIST;
+							AstNode *member = new AstNode;
+							member->type = NT_STRINGLIST_MEMBER;
+							qstrcpy(member->val.Str, currentToken.tok.String);
+							ADD_AS_CHILD(member);
+						} else PARSE_ERROR(PE_INVALID_COMBO_AFTER_OPEN);
+					} catch (const ParserError &e) {
+						latestParserError = e;
+						delete root;
+						return nullptr;
+					}
 					break;
-				case TT_INT: {
-					if (lookahead(1) == TT_INT || lookahead(1) == TT_CBRACE) {
-						state = State::BegunIntList;
-						things.top()->type = NT_INTLIST;
-						AstNode *member = new AstNode;
-						member->type = NT_INTLIST_MEMBER;
-						member->val.Int = currentToken.tok.Int;
-						ADD_AS_CHILD(member);
-					} else if (lookahead(1) == TT_EQUALS) {
-						things.top()->type = NT_COMPOUND;
-						AstNode *nextNode = new AstNode;
-						nextNode->type = NT_INDETERMINATE;
-						state = State::HaveName;
-						QString tmp = QString::number(currentToken.tok.Int);
-						qstrcpy(nextNode->myName, tmp.toUtf8().data());
-						ADD_AS_CHILD(nextNode);
-						things.push(nextNode);
-					} else PARSE_ERROR(PE_INVALID_COMBO_AFTER_OPEN);
-				}
+				case TT_INT: 
+					try {
+						if (lookahead(1) == TT_INT || lookahead(1) == TT_CBRACE) {
+							state = State::BegunIntList;
+							things.top()->type = NT_INTLIST;
+							AstNode *member = new AstNode;
+							member->type = NT_INTLIST_MEMBER;
+							member->val.Int = currentToken.tok.Int;
+							ADD_AS_CHILD(member);
+						} else if (lookahead(1) == TT_EQUALS) {
+							things.top()->type = NT_COMPOUND;
+							AstNode *nextNode = new AstNode;
+							nextNode->type = NT_INDETERMINATE;
+							state = State::HaveName;
+							QString tmp = QString::number(currentToken.tok.Int);
+							qstrcpy(nextNode->myName, tmp.toUtf8().data());
+							ADD_AS_CHILD(nextNode);
+							things.push(nextNode);
+						} else PARSE_ERROR(PE_INVALID_COMBO_AFTER_OPEN);
+					} catch (const ParserError &e) {
+						latestParserError = e;
+						delete root;
+						return nullptr;
+					}
 					break;
 				case TT_DOUBLE: {
 					state = State::BegunDoubleList;
@@ -650,13 +666,21 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 					token.type = TT_INT;
 					bool int_ok;
 					token.tok.Int = static_cast<qint64>(current.toLongLong(&int_ok));
-					Q_ASSERT_X(int_ok, "Parser::lex", "int token invalid");  // TODO: Error handling (int token invalid)
+					if (!int_ok) {
+						token.type = TT_NONE;
+						qstrncpy(token.tok.String, current.toUtf8().data(), 64);
+						throw ParserError{ LE_INVALID_INT, token };
+					}
 					break;
 				case TT_DOUBLE:
 					token.type = TT_DOUBLE;
 					bool double_ok;
 					token.tok.Double = current.toDouble(&double_ok);
-					Q_ASSERT_X(double_ok, "Parser::lex", "double token invalid");  // TODO: Error handling (double token invalid)
+					if (!double_ok) {
+						token.type = TT_NONE;
+						qstrncpy(token.tok.String, current.toUtf8().data(), 64);
+						throw ParserError{ LE_INVALID_DOUBLE, token };
+					}
 					break;
 				case TT_NONE:  // Special character
 					break;
@@ -705,8 +729,11 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 
 		if (stream->atEnd()) {
 			lexerDone = true;
-			// TODO: Error handling (EOF while token incomplete)
-			Q_ASSERT_X(assumption == TT_NONE, "Parser::lex", "unexpected EOF");
+			if (assumption != TT_NONE) {
+				Token currentToken{ line, charPos - len, TT_NONE, {0} };
+				qstrncpy(currentToken.tok.String, current.toUtf8().data(), 64);
+				throw ParserError{ PE_UNEXPECTED_END, currentToken };
+			}
 		}
 		everyNth(lexCalls2, 1000, totalProgress = totalSize != 0 ? stream->pos() : 0);
 		return tokensRead;
