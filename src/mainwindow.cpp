@@ -10,6 +10,7 @@
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMenuBar>
+#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QProgressDialog>
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QTabWidget>
@@ -55,14 +56,25 @@ void MainWindow::openFileSelected() {
 	Parsing::Parser parser(QFileInfo(which), Parsing::FileType::SaveFile, this);
 	connect(&parser, &Parsing::Parser::progress, this, &MainWindow::parserProgressUpdate);
 	Parsing::AstNode *result = parser.parse();
-	Q_ASSERT_X(result != nullptr, "Parser::parse", "a parse error occurred");
+	if (!result) {
+		gamestateLoadDone();
+		Parsing::ParserError error = parser.getLatestParserError();
+		QMessageBox::critical(this, tr("Parse Error"), tr("A parse error occurred:\n") + which +
+			":" + QString::number(error.erroredToken.line) + ":" + QString::number(error.erroredToken.firstChar) +
+			".");
+		return;
+	}
 
 	gamestateLoadSwitch();
 	Galaxy::StateFactory stateFactory;
 	connect(&stateFactory, &Galaxy::StateFactory::progress, this, &MainWindow::galaxyProgressUpdate);
 	state = stateFactory.createFromAst(result, this);
-	Q_ASSERT_X(state != nullptr, "Galaxy::StateFactory", "an internal error occurred while attempting "
-		"to extract information from the parse tree.");
+	if (!state) {
+		gamestateLoadDone();
+		QMessageBox::critical(this, tr("Galaxy Creation Error"), tr("An error occurred while trying to extract "
+			"inforation from ") + which + tr(". Perhaps something isn't right with the input file."));
+		return;
+	}
 
 	gamestateLoadFinishing();
 	delete result;
