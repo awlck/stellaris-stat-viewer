@@ -321,6 +321,8 @@ private slots:
 		AstNode *list = result->val.firstChild;
 		QCOMPARE(list->type, NT_INTLIST_MEMBER);
 		QCOMPARE(list->val.Int, value);
+
+		delete tree;
 	}
 
 	void doublelists_three_data() {
