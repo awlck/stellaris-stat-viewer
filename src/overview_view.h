@@ -17,6 +17,7 @@ class OverviewView : public QTableWidget {
 	Q_OBJECT
 public:
 	OverviewView(QWidget *parent = nullptr);
+	QSize sizeHint() const override;
 
 public slots:
 	void modelChanged(const Galaxy::State *newState);

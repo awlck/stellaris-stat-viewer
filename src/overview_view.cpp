@@ -17,6 +17,10 @@ OverviewView::OverviewView(QWidget *parent) : QTableWidget(parent) {
 	setHorizontalHeaderLabels(headers);
 }
 
+QSize OverviewView::sizeHint() const {
+	return { 850, 650 };
+}
+
 void OverviewView::modelChanged(const Galaxy::State *newState) {
 	setSortingEnabled(false);
 	setRowCount(newState->getEmpires().size());
