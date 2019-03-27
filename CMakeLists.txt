@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 3.0.2)
 
-project(stellaris_stat_viewer VERSION 0.0.1 LANGUAGES CXX)
+project(stellaris_stat_viewer VERSION 0.1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
 
 option(SSV_BUILD_TESTS BOOL ON)
+set(SSV_BUILD_VERSION "${PROJECT_VERSION}-git-custom" CACHE STRING "For release and CI builds of SSV, the version this is.")
 
 find_package(Qt5Widgets CONFIG REQUIRED)
 set(CMAKE_AUTOMOC ON)
@@ -45,6 +46,7 @@ add_executable(stellaris_stat_viewer WIN32 MACOSX_BUNDLE
         src/numerictableitem.cpp src/numerictableitem.h
         src/overview_view.cpp src/overview_view.h
     )
+target_compile_definitions(stellaris_stat_viewer PRIVATE SSV_VERSION="${SSV_BUILD_VERSION}")
 target_link_libraries(stellaris_stat_viewer Qt5::Widgets ssv_parser ssv_model)
 
 if(SSV_BUILD_TESTS)

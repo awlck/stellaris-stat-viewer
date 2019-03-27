@@ -18,7 +18,7 @@
 #include "mainwindow.h"
 
 #ifndef SSV_VERSION
-#define SSV_VERSION "unknown"
+#define SSV_VERSION "<unknown>"
 #endif
 
 #include <QtCore/QDebug>
@@ -80,8 +80,8 @@ void MainWindow::aboutQtSelected() {
 void MainWindow::aboutSsvSelected() {
 	QMessageBox::about(this, tr("About Stellars Stat Viewer"), tr("Stellaris Stat Viewer: EU4-inspired "
 		"statistics and rankings for Stellaris.\n\nVersion: " SSV_VERSION "\n(c) 2019 Adrian "
-		"\"ArdiMaster\" Welcker, Licensed under the Apache License version 2.0\nContribute at "
-		"https://github.com/ArdiMaster/stellaris-stat-viewer"));
+		"\"ArdiMaster\" Welcker, Licensed under the Apache License version 2.0\n\nCheck out the source "
+		"code and contribute at\nhttps://github.com/ArdiMaster/stellaris-stat-viewer"));
 }
 
 void MainWindow::checkForUpdatesSelected() {

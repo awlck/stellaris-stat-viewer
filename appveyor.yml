@@ -1,4 +1,4 @@
-version: 0.0.1-ci{build}
+version: master-ci{build}
 
 image:
 - Visual Studio 2017
@@ -16,9 +16,9 @@ install:
   - cd cmake-build-av
 
 build_script:
-  - cmd: cmake -DCMAKE_PREFIX_PATH=C:/Qt/5.12/msvc2017_64 -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+  - cmd: cmake -DCMAKE_PREFIX_PATH=C:/Qt/5.12/msvc2017_64 -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DSSV_BUILD_VERSION="%APPVEYOR_BUILD_VERSION%" ..
   - cmd: nmake
-  - sh: cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+  - sh: cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DSSV_BUILD_VERSION="$APPVEYOR_BUILD_VERSION" ..
   - sh: make
 
 before_test:
