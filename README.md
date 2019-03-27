@@ -14,10 +14,9 @@ I came up with this instead. Stellaris Stat Viewer reads in a Stellaris savegame
 statistics and rankings.
 
 ## Features
-There isn't a whole lot here yet. At least nothing that's visible. You can read in a savegame file (you
-will have to unpack it manually for now - just extract it with 7-Zip and feed me the resulting "gamestate"
-file), and take a look at the "Power Ratings" (the numbers behind the "Equivalent", "Superior", etc. ratings
-shown on the Contacts screen). There will hopefully be a lot more available in the future.
+The user interface looks a lot like a Spreadsheet, because that's what it is. Stellaris Stat Viewer reads in
+a save file and displays each empire's power ratings, ships per class, and monthly incomes. For a more
+complete listing, see the [user manual](https://github.com/ArdiMaster/stellaris-stat-viewer/wiki/SSV-User-Manual).
 
 If you have ideas for some stat/ranking you'd like to see, open an Issue and I'll see what I can do.
 
@@ -27,28 +26,10 @@ wherever Qt5 and CMake are available (that includes Windows, Mac, and Linux). He
 instructions on how to do it (I'll elaborate on this once SSV gets closer to being something actually
 useful):
 
-**Dependencies**: SSV uses Qt5 (tested with 5.9.5, 5.11.3, 5.12.1), and CMake (version 3.0 or newer).
+**Dependencies**: SSV uses Qt5 (tested with 5.9.5, 5.11.3, 5.12.2), and CMake (version 3.0 or newer).
 
 #### Windows
-* Install Visual Studio (recommended) or MinGW (not tested), if you haven't already.
-* Install Qt from [here](https://www.qt.io/download-qt-installer), if you haven't already. Make sure to
-select the MinGW or MSVC version of Qt depending on the environment you will be using.
-* Install CMake from [here](https://cmake.org/download/), if you haven't already.
-* Open the command prompt. (For Visual Studio, search for "Native Tools Command Prompt". For MinGW, you
-probably know better than me.)
-* Navigate to where you put the source code (either via `git clone` or via downloading a ZIP archive).
-* Make a new folder for your build, and enter it
-* run cmake, and point it to your Qt install.
-* run the build sstem of your choice to get the executable you want!
-
-For Visual Studio, the commands to run will look something like this:
-```
-cd C:\path\to\downloaded\sources
-mkdir build
-cd build
-cmake -G "NMake Makefiles" -DCMAKE_PREFIX_PATH=C:/path/to/Qt/5.12.1/msvc2017_64 ..
-nmake
-```
+See the [relevant wiki page](https://github.com/ArdiMaster/stellaris-stat-viewer/wiki/Building-SSV-from-Source).
 
 #### macOS
 * Install Qt from [here](https://www.qt.io/download-qt-installer), if you haven't already.
@@ -80,9 +61,3 @@ cd build
 cmake ..
 make
 ```
-
-### Don't Panic!
-If the above didn't make sense to you, don't worry. This project isn't really in a state where it will be
-useful for the normal end user. Check back later, or click the "Watch" button at the top of the page and
-choose to be notified about releases (if you have a GitHub account). Those will (hopefully) have
-ready-to-use binaries available to download.
