@@ -17,7 +17,12 @@
 
 #include "mainwindow.h"
 
+#ifndef SSV_VERSION
+#define SSV_VERSION "unknown"
+#endif
+
 #include <QtCore/QDebug>
+#include <QtGui/QDesktopServices>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMenuBar>
@@ -42,6 +47,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	openFileAction = fileMenu->addAction(tr("Open Save File"));
 	connect(openFileAction, &QAction::triggered, this, &MainWindow::openFileSelected);
 
+	helpMenu = theMenuBar->addMenu(tr("Help"));
+	helpMenu->setToolTipsVisible(true);
+	checkForUpdatesAction = helpMenu->addAction(tr("Check for updates..."));
+	checkForUpdatesAction->setToolTip(tr("Open your default browser to check GitHub for new releases."));
+	connect(checkForUpdatesAction, &QAction::triggered, this, &MainWindow::checkForUpdatesSelected);
+	aboutQtAction = helpMenu->addAction(tr("About Qt"));
+	connect(aboutQtAction, &QAction::triggered, this, &MainWindow::aboutQtSelected);
+	aboutSsvAction = helpMenu->addAction(tr("About Stellaris Stat Viewer"));
+	connect(aboutSsvAction, &QAction::triggered, this, &MainWindow::aboutSsvSelected);
+
 	powerRatingView = new OverviewView(this);
 	connect(this, &MainWindow::modelChanged, powerRatingView, &OverviewView::modelChanged);
 	tabs->addTab(powerRatingView, "Overview");
@@ -56,6 +71,25 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
 	statusLabel = new QLabel(tr("No file loaded."));
 	statusBar()->addPermanentWidget(statusLabel);
+}
+
+void MainWindow::aboutQtSelected() {
+	QMessageBox::aboutQt(this);
+}
+
+void MainWindow::aboutSsvSelected() {
+	QMessageBox::about(this, tr("About Stellars Stat Viewer"), tr("Stellaris Stat Viewer: EU4-inspired "
+		"statistics and rankings for Stellaris.\n\nVersion: " SSV_VERSION "\n(c) 2019 Adrian "
+		"\"ArdiMaster\" Welcker, Licensed under the Apache License version 2.0\nContribute at "
+		"https://github.com/ArdiMaster/stellaris-stat-viewer"));
+}
+
+void MainWindow::checkForUpdatesSelected() {
+	bool ok = QDesktopServices::openUrl(tr("https://github.com/ArdiMaster/stellaris-stat-viewer/releases"));
+	if (!ok) {
+		QMessageBox::warning(this, tr("Update Check Failed"), tr("An error occurred, and I was unable to open "
+			"the releases page in any browser."));
+	}
 }
 
 void MainWindow::openFileSelected() {

@@ -48,6 +48,9 @@ signals:
 	void modelChanged(const Galaxy::State *newModel);
 
 private slots:
+	void aboutQtSelected();
+	void aboutSsvSelected();
+	void checkForUpdatesSelected();
 	void openFileSelected();
 
 	void parserProgressUpdate(Parsing::Parser *parser, qint64 current, qint64 max);
@@ -59,10 +62,14 @@ private:
 	void gamestateLoadFinishing();
 	void gamestateLoadDone();
 
+	QAction *aboutQtAction;
+	QAction *aboutSsvAction;
+	QAction *checkForUpdatesAction;
 	QAction *openFileAction;
 	QLabel *statusLabel;
 	QMenuBar *theMenuBar;
 	QMenu *fileMenu;
+	QMenu *helpMenu;
 	QProgressDialog *currentProgressDialog;
 	QTabWidget *tabs;
 	
