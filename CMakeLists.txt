@@ -4,6 +4,7 @@ project(stellaris_stat_viewer VERSION 0.1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
+set(MACOSX_BUNDLE_BUNDLE_NAME "Stellaris Stat Viewer")
 
 option(SSV_BUILD_TESTS BOOL ON)
 set(SSV_BUILD_VERSION "${PROJECT_VERSION}-git-custom" CACHE STRING "For release and CI builds of SSV, the version this is.")
