@@ -200,13 +200,3 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-
-QT-INFORM7 SUBMODULES:
-
-Qt-Inform7 contains a number of submodules with separate copyright notices
-and license terms. Your use of the source code for these submodules is
-subject to the terms and conditions of the following licenses.
-
-This product bundles Inform version 6.34N, copyright Graham Nelson, which is
-available under the Artistic License 2.0, or the original Inform license.
-For details, see external/inform6/licence.txt
