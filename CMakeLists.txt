@@ -9,8 +9,12 @@ set(MACOSX_BUNDLE_BUNDLE_NAME "Stellaris Stat Viewer")
 option(SSV_BUILD_TESTS BOOL ON)
 set(SSV_BUILD_VERSION "${PROJECT_VERSION}-git-custom" CACHE STRING "For release and CI builds of SSV, the version this is.")
 
-find_package(Qt5Widgets CONFIG REQUIRED)
+find_package(Qt5 COMPONENTS Widgets LinguistTools CONFIG REQUIRED)
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+
+qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} translations/SSV_de.ts)
+configure_file(translations/translations.qrc ${CMAKE_BINARY_DIR} COPYONLY)
 
 if(MSVC)
     add_compile_options(
@@ -30,22 +34,24 @@ endif()
 add_library(ssv_parser src/parser/parser.cpp src/parser/parser.h)
 target_link_libraries(ssv_parser Qt5::Core)
 
-add_library(ssv_model
+add_library(ssv_model src/model/model_private_macros.h
         src/model/galaxy_state.cpp src/model/galaxy_state.h
         src/model/empire.cpp src/model/empire.h
-		src/model/fleet.cpp src/model/fleet.h
-		src/model/ship.cpp src/model/ship.h
+        src/model/fleet.cpp src/model/fleet.h
+        src/model/ship.cpp src/model/ship.h
         src/model/ship_design.cpp src/model/ship_design.h
     )
 target_link_libraries(ssv_model Qt5::Core)
 
 add_executable(stellaris_stat_viewer WIN32 MACOSX_BUNDLE
         src/main.cpp
-		src/economy_view.cpp src/economy_view.h
+        src/economy_view.cpp src/economy_view.h
         src/fleets_view.cpp src/fleets_view.h
         src/mainwindow.cpp src/mainwindow.h
         src/numerictableitem.cpp src/numerictableitem.h
         src/overview_view.cpp src/overview_view.h
+        ${QM_FILES}
+        ${CMAKE_BINARY_DIR}/translations.qrc
     )
 target_compile_definitions(stellaris_stat_viewer PRIVATE SSV_VERSION="${SSV_BUILD_VERSION}")
 target_link_libraries(stellaris_stat_viewer Qt5::Widgets ssv_parser ssv_model)

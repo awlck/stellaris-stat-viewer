@@ -17,6 +17,7 @@
 
 #include "mainwindow.h"
 
+#include <QtCore/QTranslator>
 #include <QtWidgets/QApplication>
 
 #ifdef Q_OS_WIN
@@ -25,6 +26,10 @@ int WinMain(int argc, char *argv[]) {
 int main(int argc, char *argv[]) {
 #endif
 	QApplication app(argc, argv);
+	QTranslator translator;
+	if (translator.load(QLocale(), QString("SSV"), QString("_"), QString(":/translations")))
+		app.installTranslator(&translator);
+	// translator.load(R"(C:\Users\ArdiM\CMakeBuilds\712317bc-3bdb-513c-957f-516ae702add8\build\x64-Release\SSV_de)");
 	MainWindow window;
 	window.show();
 	return app.exec();
