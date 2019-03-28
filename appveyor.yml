@@ -1,4 +1,4 @@
-version: master-ci{build}
+version: ci{build}
 
 image:
 - Visual Studio 2017
@@ -11,7 +11,7 @@ init:
 
 install:
   - sh: sudo apt-get update
-  - sh: sudo apt-get -y install qt5-default
+  - sh: sudo apt-get -y install qt5-default qttools5-dev-tools
   - mkdir cmake-build-av
   - cd cmake-build-av
 
