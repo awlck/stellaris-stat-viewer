@@ -53,6 +53,7 @@ private slots:
 	void aboutSsvSelected();
 	void checkForUpdatesSelected();
 	void openFileSelected();
+	void settingsSelected();
 
 	void parserProgressUpdate(Parsing::Parser *parser, qint64 current, qint64 max);
 	void galaxyProgressUpdate(Galaxy::StateFactory *factory, int current, int max);
@@ -67,10 +68,12 @@ private:
 	QAction *aboutSsvAction;
 	QAction *checkForUpdatesAction;
 	QAction *openFileAction;
+	QAction *settingsAction;
 	QLabel *statusLabel;
 	QMenuBar *theMenuBar;
 	QMenu *fileMenu;
 	QMenu *helpMenu;
+	QMenu *toolsMenu;
 	QProgressDialog *currentProgressDialog;
 	QTabWidget *tabs;
 	

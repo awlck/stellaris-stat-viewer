@@ -43,6 +43,7 @@ add_executable(stellaris_stat_viewer WIN32 MACOSX_BUNDLE
         src/main.cpp
         src/mainwindow.cpp src/mainwindow.h
         src/numerictableitem.cpp src/numerictableitem.h
+		src/settingsdialog.cpp src/settingsdialog.h
         src/views/economy_view.cpp src/views/economy_view.h
         src/views/fleets_view.cpp src/views/fleets_view.h
         src/views/overview_view.cpp src/views/overview_view.h

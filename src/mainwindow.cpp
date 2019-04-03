@@ -31,10 +31,11 @@
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QTabWidget>
 
-#include "views/economy_view.h"
-#include "views/fleets_view.h"
 #include "model/galaxy_state.h"
 #include "parser/parser.h"
+#include "settingsdialog.h"
+#include "views/economy_view.h"
+#include "views/fleets_view.h"
 #include "views/overview_view.h"
 #include "views/techs_view.h"
 
@@ -57,6 +58,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(aboutQtAction, &QAction::triggered, this, &MainWindow::aboutQtSelected);
 	aboutSsvAction = helpMenu->addAction(tr("About Stellaris Stat Viewer"));
 	connect(aboutSsvAction, &QAction::triggered, this, &MainWindow::aboutSsvSelected);
+
+	toolsMenu = theMenuBar->addMenu(tr("Tools"));
+	settingsAction = toolsMenu->addAction(tr("Settings"));
+	connect(settingsAction, &QAction::triggered, this, &MainWindow::settingsSelected);
 
 	powerRatingView = new OverviewView(this);
 	connect(this, &MainWindow::modelChanged, powerRatingView, &OverviewView::modelChanged);
@@ -132,6 +137,11 @@ void MainWindow::openFileSelected() {
 	statusLabel->setText(state->getDate());
 	statusBar()->showMessage(tr("Loaded ") + which, 5000);
 	gamestateLoadDone();
+}
+
+void MainWindow::settingsSelected() {
+	SettingsDialog dialog(this);
+	dialog.exec();
 }
 
 void MainWindow::parserProgressUpdate(Parsing::Parser *parser, qint64 current, qint64 max) {
