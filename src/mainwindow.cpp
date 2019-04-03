@@ -36,6 +36,7 @@
 #include "model/galaxy_state.h"
 #include "parser/parser.h"
 #include "overview_view.h"
+#include "techs_view.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	setWindowTitle(tr("Stellaris Stat Viewer"));
@@ -68,6 +69,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	economyView = new EconomyView(this);
 	connect(this, &MainWindow::modelChanged, economyView, &EconomyView::modelChanged);
 	tabs->addTab(economyView, "Economy");
+
+	techView = new TechView(this);
+	connect(this, &MainWindow::modelChanged, techView, &TechView::modelChanged);
+	tabs->addTab(techView, "Technologies");
 
 	statusLabel = new QLabel(tr("No file loaded."));
 	statusBar()->addPermanentWidget(statusLabel);

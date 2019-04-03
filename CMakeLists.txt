@@ -46,6 +46,7 @@ add_executable(stellaris_stat_viewer WIN32 MACOSX_BUNDLE
         src/mainwindow.cpp src/mainwindow.h
         src/numerictableitem.cpp src/numerictableitem.h
         src/overview_view.cpp src/overview_view.h
+		src/techs_view.cpp src/techs_view.h
     )
 target_compile_definitions(stellaris_stat_viewer PRIVATE SSV_VERSION="${SSV_BUILD_VERSION}")
 target_link_libraries(stellaris_stat_viewer Qt5::Widgets ssv_parser ssv_model)

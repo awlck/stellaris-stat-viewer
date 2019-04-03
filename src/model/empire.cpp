@@ -54,12 +54,28 @@ namespace Galaxy {
 		return incomes;
 	}
 
+	const QStringList &Empire::getTechnologies() const {
+		return technologies;
+	}
+
 	Empire *Empire::createFromAst(AstNode *tree, State *parent) {
 		Empire *state = new Empire(parent);
 		state->index = static_cast<qint64>(QString(tree->myName).toLongLong());
 		AstNode *nameNode = tree->findChildWithName("name");
 		CHECK_PTR(nameNode);
 		state->name = nameNode->val.Str;
+
+		AstNode *techNode = nameNode->nextSibling->nextSibling->nextSibling;
+		if (qstrcmp(techNode->myName, "tech_status") != 0) {
+			techNode = tree->findChildWithName("tech_status");
+			CHECK_COMPOUND(techNode);
+		}
+		ITERATE_CHILDREN(techNode, aTech) {
+			if (qstrcmp(aTech->myName, "technology") == 0 && aTech->type == Parsing::NT_STRING) {
+				state->technologies.append(QString(aTech->val.Str));
+			}
+		}
+
 		AstNode *powerNode = tree->findChildWithName("military_power");
 		CHECK_PTR(powerNode);
 		state->militaryPower = powerNode->val.Double;
