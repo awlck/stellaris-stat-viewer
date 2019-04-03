@@ -31,7 +31,7 @@ EconomyView::EconomyView(QWidget *parent) : QTableWidget(parent) {
 
 void EconomyView::modelChanged(const Galaxy::State *newState) {
 	setSortingEnabled(false);
-	const QMap<qint64, Galaxy::Empire *> empires = newState->getEmpires();
+	const QMap<qint64, Galaxy::Empire *> &empires = newState->getEmpires();
 	setRowCount(empires.size());
 	int i = 0;
 	for (auto it = empires.cbegin(); it != empires.cend(); it++) {
