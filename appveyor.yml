@@ -1,4 +1,4 @@
-version: master-ci{build}
+version: ci{build}
 
 image:
 - Visual Studio 2017
