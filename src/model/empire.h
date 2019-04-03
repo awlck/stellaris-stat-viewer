@@ -22,6 +22,7 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QMap>
+#include <QtCore/QStringList>
 
 namespace Parsing { struct AstNode; }
 
@@ -39,6 +40,7 @@ namespace Galaxy {
 		double getTechPower() const;
 		quint32 getOwnedSystemsCount() const;
 		const QMap<QString, double> &getIncomes() const;
+		const QStringList &getTechnologies() const;
 		static Empire *createFromAst(Parsing::AstNode *tree, State *parent);
 	private:
 		qint64 index;
@@ -48,6 +50,7 @@ namespace Galaxy {
 		double techPower;
 		quint32 ownedSystems;
 		QMap<QString, double> incomes;
+		QStringList technologies;
 	};
 }
 
