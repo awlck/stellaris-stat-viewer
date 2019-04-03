@@ -54,6 +54,7 @@ private slots:
 	void checkForUpdatesSelected();
 	void openFileSelected();
 	void settingsSelected();
+	void techTreeSelected();
 
 	void parserProgressUpdate(Parsing::Parser *parser, qint64 current, qint64 max);
 	void galaxyProgressUpdate(Galaxy::StateFactory *factory, int current, int max);
@@ -69,6 +70,7 @@ private:
 	QAction *checkForUpdatesAction;
 	QAction *openFileAction;
 	QAction *settingsAction;
+	QAction *techTreeAction;
 	QLabel *statusLabel;
 	QMenuBar *theMenuBar;
 	QMenu *fileMenu;

@@ -1,3 +1,21 @@
+/* settingsdialog.cpp: Setting up a settings dialog.
+ *
+ * Copyright 2019 Adrian "ArdiMaster" Welcker
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
 #include "settingsdialog.h"
 
 #include <QtCore/QSettings>
@@ -16,7 +34,7 @@ SettingsDialog::SettingsDialog(QWidget *parent) : QDialog(parent) {
 	okButton = buttonBox->addButton(QDialogButtonBox::Ok);
 	cancelButton = buttonBox->addButton(QDialogButtonBox::Cancel);
 	connect(okButton, &QPushButton::pressed, this, &SettingsDialog::okClicked);
-	connect(cancelButton, &QPushButton::pressed, this, &QDialog::rejected);
+	connect(cancelButton, &QPushButton::pressed, this, &QDialog::reject);
 
 	gameFolderEdit = new QLineEdit;
 	gameFolderSelect = new QPushButton(tr("Select"));

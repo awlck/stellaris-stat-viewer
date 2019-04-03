@@ -22,6 +22,7 @@
 #endif
 
 #include <QtCore/QDebug>
+#include <QtCore/QSettings>
 #include <QtGui/QDesktopServices>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QLabel>
@@ -50,7 +51,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(openFileAction, &QAction::triggered, this, &MainWindow::openFileSelected);
 
 	toolsMenu = theMenuBar->addMenu(tr("Tools"));
+	techTreeAction = toolsMenu->addAction(tr("Draw Tech Tree..."));
 	settingsAction = toolsMenu->addAction(tr("Settings"));
+	connect(techTreeAction, &QAction::triggered, this, &MainWindow::techTreeSelected);
 	connect(settingsAction, &QAction::triggered, this, &MainWindow::settingsSelected);
 
 	helpMenu = theMenuBar->addMenu(tr("Help"));
@@ -142,6 +145,22 @@ void MainWindow::openFileSelected() {
 void MainWindow::settingsSelected() {
 	SettingsDialog dialog(this);
 	dialog.exec();
+}
+
+void MainWindow::techTreeSelected() {
+	QSettings settings;
+	if (settings.value("game/folder", QString()).toString() == "") {
+		QMessageBox messageBox;
+		messageBox.setText("Game folder not set");
+		messageBox.setInformativeText("Wouls you like to open settings and set the game folder now?");
+		messageBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+		messageBox.setDefaultButton(QMessageBox::Yes);
+		messageBox.setIcon(QMessageBox::Question);
+		int selected = messageBox.exec();
+		if (selected == QMessageBox::Yes) this->settingsSelected();
+		return;
+	}
+	// TODO
 }
 
 void MainWindow::parserProgressUpdate(Parsing::Parser *parser, qint64 current, qint64 max) {
