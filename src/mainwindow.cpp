@@ -49,6 +49,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	openFileAction = fileMenu->addAction(tr("Open Save File"));
 	connect(openFileAction, &QAction::triggered, this, &MainWindow::openFileSelected);
 
+	toolsMenu = theMenuBar->addMenu(tr("Tools"));
+	settingsAction = toolsMenu->addAction(tr("Settings"));
+	connect(settingsAction, &QAction::triggered, this, &MainWindow::settingsSelected);
+
 	helpMenu = theMenuBar->addMenu(tr("Help"));
 	helpMenu->setToolTipsVisible(true);
 	checkForUpdatesAction = helpMenu->addAction(tr("Check for updates..."));
@@ -58,10 +62,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(aboutQtAction, &QAction::triggered, this, &MainWindow::aboutQtSelected);
 	aboutSsvAction = helpMenu->addAction(tr("About Stellaris Stat Viewer"));
 	connect(aboutSsvAction, &QAction::triggered, this, &MainWindow::aboutSsvSelected);
-
-	toolsMenu = theMenuBar->addMenu(tr("Tools"));
-	settingsAction = toolsMenu->addAction(tr("Settings"));
-	connect(settingsAction, &QAction::triggered, this, &MainWindow::settingsSelected);
 
 	powerRatingView = new OverviewView(this);
 	connect(this, &MainWindow::modelChanged, powerRatingView, &OverviewView::modelChanged);
