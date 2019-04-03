@@ -41,12 +41,12 @@ target_link_libraries(ssv_model Qt5::Core)
 
 add_executable(stellaris_stat_viewer WIN32 MACOSX_BUNDLE
         src/main.cpp
-		src/economy_view.cpp src/economy_view.h
-        src/fleets_view.cpp src/fleets_view.h
         src/mainwindow.cpp src/mainwindow.h
         src/numerictableitem.cpp src/numerictableitem.h
-        src/overview_view.cpp src/overview_view.h
-		src/techs_view.cpp src/techs_view.h
+        src/views/economy_view.cpp src/views/economy_view.h
+        src/views/fleets_view.cpp src/views/fleets_view.h
+        src/views/overview_view.cpp src/views/overview_view.h
+        src/views/techs_view.cpp src/views/techs_view.h
     )
 target_compile_definitions(stellaris_stat_viewer PRIVATE SSV_VERSION="${SSV_BUILD_VERSION}")
 target_link_libraries(stellaris_stat_viewer Qt5::Widgets ssv_parser ssv_model)

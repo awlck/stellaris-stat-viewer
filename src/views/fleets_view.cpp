@@ -17,12 +17,12 @@
 
 #include "fleets_view.h"
 
-#include "model/empire.h"
-#include "model/fleet.h"
-#include "model/galaxy_state.h"
-#include "model/ship.h"
-#include "model/ship_design.h"
-#include "numerictableitem.h"
+#include "../model/empire.h"
+#include "../model/fleet.h"
+#include "../model/galaxy_state.h"
+#include "../model/ship.h"
+#include "../model/ship_design.h"
+#include "../numerictableitem.h"
 
 FleetsView::FleetsView(QWidget *parent) : QTableWidget(parent) {
 	setColumnCount(9);

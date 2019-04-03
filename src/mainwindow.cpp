@@ -31,12 +31,12 @@
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QTabWidget>
 
-#include "economy_view.h"
-#include "fleets_view.h"
+#include "views/economy_view.h"
+#include "views/fleets_view.h"
 #include "model/galaxy_state.h"
 #include "parser/parser.h"
-#include "overview_view.h"
-#include "techs_view.h"
+#include "views/overview_view.h"
+#include "views/techs_view.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	setWindowTitle(tr("Stellaris Stat Viewer"));

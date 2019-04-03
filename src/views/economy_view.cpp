@@ -17,9 +17,9 @@
 
 #include "economy_view.h"
 
-#include "model/empire.h"
-#include "model/galaxy_state.h"
-#include "numerictableitem.h"
+#include "../model/empire.h"
+#include "../model/galaxy_state.h"
+#include "../numerictableitem.h"
 
 EconomyView::EconomyView(QWidget *parent) : QTableWidget(parent) {
 	setColumnCount(8);

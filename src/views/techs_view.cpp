@@ -21,8 +21,8 @@
 #include <QtWidgets/QListWidget>
 #include <QtWidgets/QLabel>
 
-#include "model/galaxy_state.h"
-#include "model/empire.h"
+#include "../model/galaxy_state.h"
+#include "../model/empire.h"
 
 TechView::TechView(QWidget* parent) : QWidget(parent) {
 	layout = new QGridLayout;
