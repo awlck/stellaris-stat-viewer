@@ -20,11 +20,14 @@
 #include <QtWidgets/QApplication>
 
 #ifdef Q_OS_WIN
-int WinMain(int argc, char *argv[]) {
+int __stdcall WinMain(int argc, char *argv[]) {
 #else
 int main(int argc, char *argv[]) {
 #endif
 	QApplication app(argc, argv);
+	QCoreApplication::setApplicationName("Stellaris Stat Viewer");
+	QCoreApplication::setOrganizationName("ArdiMaster");
+	QCoreApplication::setOrganizationDomain("diepixelecke.de");
 	MainWindow window;
 	window.show();
 	return app.exec();

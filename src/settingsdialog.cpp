@@ -29,12 +29,12 @@ SettingsDialog::SettingsDialog(QWidget *parent) : QDialog(parent) {
 	mainLayout->addWidget(gameFolderSelect, 0, 4, 1, 1);
 	mainLayout->addWidget(buttonBox, 1, 2, 1, 2);
 
-	QSettings settings("ArdiMaster", "Stellaris Stat Viewer");
+	QSettings settings;
 	gameFolderEdit->setText(settings.value("game/folder", QString()).toString());
 }
 
 void SettingsDialog::okClicked() {
-	QSettings settings("ArdiMaster", "Stellaris Stat Viewer");
+	QSettings settings;
 	settings.setValue("game/folder", gameFolderEdit->text());
 	accept();
 }
