@@ -34,11 +34,11 @@ namespace Galaxy {
 		return techs.value(name, nullptr);
 	}
 
-	void Model::addTechnologies(const AstNode *techs) {
-		if (!techs || !techs->type == Parsing::NT_COMPOUND) return;
-		ITERATE_CHILDREN(techs, aTech) {
+	void Model::addTechnologies(const AstNode *tree) {
+		if (!tree || !(tree->type == Parsing::NT_COMPOUND)) return;
+		ITERATE_CHILDREN(tree, aTech) {
 			Technology *newTech = Technology::createFromAst(aTech, this);
-			if (newTech) this->techs[newTech->getName()] = newTech;
+			if (newTech) techs[newTech->getName()] = newTech;
 		}
 	}
 }

@@ -37,7 +37,7 @@ namespace Galaxy {
 		Model(QObject *parent = nullptr);
 		const QMap<QString, Technology *> &getTechnologies() const;
 		const Technology *getTechnology(const QString &name) const;
-		void addTechnologies(const Parsing::AstNode *techs);
+		void addTechnologies(const Parsing::AstNode *tree);
 	private:
 		QMap<QString, Technology *> techs;
 	};
