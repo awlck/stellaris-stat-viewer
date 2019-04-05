@@ -31,11 +31,13 @@ add_library(ssv_parser src/parser/parser.cpp src/parser/parser.h)
 target_link_libraries(ssv_parser Qt5::Core)
 
 add_library(ssv_model
+		src/model/galaxy_model.cpp src/model/galaxy_model.h
         src/model/galaxy_state.cpp src/model/galaxy_state.h
         src/model/empire.cpp src/model/empire.h
 		src/model/fleet.cpp src/model/fleet.h
 		src/model/ship.cpp src/model/ship.h
         src/model/ship_design.cpp src/model/ship_design.h
+		src/model/technology.cpp src/model/technology.h
     )
 target_link_libraries(ssv_model Qt5::Core)
 

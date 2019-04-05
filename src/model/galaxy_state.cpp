@@ -22,6 +22,7 @@
 #include "model_private_macros.h"
 #include "ship.h"
 #include "ship_design.h"
+#include "../parser/parser.h"
 
 using Parsing::AstNode;
 

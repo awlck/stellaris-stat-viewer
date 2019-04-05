@@ -23,7 +23,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QMap>
 
-#include "../parser/parser.h"
+namespace Parsing { struct AstNode; }
 
 namespace Galaxy {
 	class Empire;
