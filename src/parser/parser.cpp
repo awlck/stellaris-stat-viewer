@@ -624,7 +624,10 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 
 			// if in comment, ignore everything until the end of the line
 			if (comment) {
-				if (c == '\n') comment = false;
+				if (c == '\n') {
+					comment = false;
+					line++;
+				}
 				continue;
 			}
 
