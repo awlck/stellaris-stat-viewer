@@ -11,7 +11,7 @@ init:
 
 install:
   - sh: sudo apt-get update
-  - sh: sudo apt-get -y install qt5-default
+  - sh: sudo apt-get -y install qt5-default libqt5svg5-dev
   - mkdir cmake-build-av
   - cd cmake-build-av
 
