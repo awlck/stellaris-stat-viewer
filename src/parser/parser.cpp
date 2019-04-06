@@ -296,6 +296,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 			try {
 				currentToken = getNextToken();
 			} catch (const ParserError &e) {
+				if (lexerDone) break;  // in case the first token the lexer encounters is EOF
 				latestParserError = e;
 				delete root;
 				return nullptr;
@@ -602,6 +603,9 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 		if (lexQueue.isEmpty()) {
 			lex();
 			everyNth(lexCalls1, 100, emit progress(this, totalProgress, totalSize));
+		}
+		if (lexQueue.isEmpty()) {
+			throw ParserError{ PE_UNEXPECTED_END, {line, charPos, TT_NONE, {{0}}} };
 		}
 		return lexQueue.dequeue();
 	}
