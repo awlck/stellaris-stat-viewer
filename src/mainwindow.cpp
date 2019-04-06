@@ -35,6 +35,7 @@
 #include "model/galaxy_state.h"
 #include "parser/parser.h"
 #include "settingsdialog.h"
+#include "techtreedialog.h"
 #include "views/economy_view.h"
 #include "views/fleets_view.h"
 #include "views/overview_view.h"
@@ -152,15 +153,29 @@ void MainWindow::techTreeSelected() {
 	if (settings.value("game/folder", QString()).toString() == "") {
 		QMessageBox messageBox;
 		messageBox.setText("Game folder not set");
-		messageBox.setInformativeText("Wouls you like to open settings and set the game folder now?");
+		messageBox.setInformativeText("Would you like to open settings and set the game folder now?");
 		messageBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
 		messageBox.setDefaultButton(QMessageBox::Yes);
-		messageBox.setIcon(QMessageBox::Question);
+		messageBox.setIcon(QMessageBox::Warning);
 		int selected = messageBox.exec();
 		if (selected == QMessageBox::Yes) this->settingsSelected();
 		return;
 	}
-	// TODO
+	if (settings.value("tools/dot", QString()).toString() == "") {
+		QMessageBox messageBox;
+		messageBox.setText("Dot utility not found");
+		messageBox.setInformativeText("The tech tree functionality relies on the <code>dot</code> utility "
+			"from the GraphViz suite, but I was unable to locate it on your system. Would you like to open "
+			"settings and look for it manually right now?");
+		messageBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+		messageBox.setDefaultButton(QMessageBox::Yes);
+		messageBox.setIcon(QMessageBox::Warning);
+		int selected = messageBox.exec();
+		if (selected == QMessageBox::Yes) this->settingsSelected();
+		return;
+	}
+	TechTreeDialog ttd(this);
+	ttd.exec();
 }
 
 void MainWindow::parserProgressUpdate(Parsing::Parser *parser, qint64 current, qint64 max) {
