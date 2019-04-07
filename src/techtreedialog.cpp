@@ -1,4 +1,4 @@
-/* settingsdialog.h: Drawing a tech tree.
+/* techtreedialog.cpp: Drawing a tech tree.
  *
  * Copyright 2019 Adrian "ArdiMaster" Welcker
  *
@@ -91,11 +91,14 @@ TechTreeDialog::TechTreeDialog(QWidget *parent) : QDialog(parent) {
 	treeCompleteRadio->setEnabled(false);
 	treeCompleteRadio->setToolTip(tr("Not yet available."));
 	treeReducedRadio->setToolTip(tr("Only render the prerequisite relation."));
+	treeReducedRadio->setChecked(true);
 	treeTypeBoxLayout->addWidget(treeReducedRadio);
 	treeTypeBoxLayout->addWidget(treeCompleteRadio);
 	mainLayout->addWidget(treeTypeBox, 0, 0);
 
 	statusLabel = new QLabel(tr("Ready."));
+	statusLabel->setMinimumWidth(statusLabel->fontMetrics().width(tr("Reading 00_strategic_resources_tech.txt")));
+	statusLabel->setAlignment(Qt::AlignCenter);
 	mainLayout->addWidget(statusLabel, 1, 0, Qt::AlignCenter);
 
 	buttons = new QDialogButtonBox;

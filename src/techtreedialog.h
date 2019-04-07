@@ -1,4 +1,4 @@
-/* settingsdialog.h: Tech Tree Drawing Dialog.
+/* techtreedialog.h: Tech Tree Drawing Dialog.
  *
  * Copyright 2019 Adrian "ArdiMaster" Welcker
  *
