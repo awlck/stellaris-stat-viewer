@@ -434,28 +434,30 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 			case State::HaveNameOpen:  // "stuff = {"
 				switch (currentToken.type) {
 				case TT_STRING:
+					TokenType nextType;
 					try {  // compound or string list
-						if (lookahead(1) == TT_EQUALS) {
-							things.top()->type = NT_COMPOUND;
-							AstNode *nextNode = new AstNode;
-							nextNode->type = NT_INDETERMINATE;
-							state = State::HaveName;
-							qstrcpy(nextNode->myName, currentToken.tok.String);
-							ADD_AS_CHILD(nextNode);
-							things.push(nextNode);
-						} else if (lookahead(1) == TT_STRING || lookahead(1) == TT_CBRACE) {
-							state = State::BegunStringList;
-							things.top()->type = NT_STRINGLIST;
-							AstNode *member = new AstNode;
-							member->type = NT_STRINGLIST_MEMBER;
-							qstrcpy(member->val.Str, currentToken.tok.String);
-							ADD_AS_CHILD(member);
-						} else PARSE_ERROR(PE_INVALID_COMBO_AFTER_OPEN);
+						nextType = lookahead(1);
 					} catch (const ParserError &e) {
 						latestParserError = e;
 						delete root;
 						return nullptr;
 					}
+					if (nextType == TT_EQUALS || nextType == TT_GT || nextType == TT_LT) {
+						things.top()->type = NT_COMPOUND;
+						AstNode *nextNode = new AstNode;
+						nextNode->type = NT_INDETERMINATE;
+						state = State::HaveName;
+						qstrcpy(nextNode->myName, currentToken.tok.String);
+						ADD_AS_CHILD(nextNode);
+						things.push(nextNode);
+					} else if (lookahead(1) == TT_STRING || lookahead(1) == TT_CBRACE) {
+						state = State::BegunStringList;
+						things.top()->type = NT_STRINGLIST;
+						AstNode *member = new AstNode;
+						member->type = NT_STRINGLIST_MEMBER;
+						qstrcpy(member->val.Str, currentToken.tok.String);
+						ADD_AS_CHILD(member);
+					} else PARSE_ERROR(PE_INVALID_COMBO_AFTER_OPEN);
 					break;
 				case TT_INT: 
 					try {
