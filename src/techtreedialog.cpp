@@ -19,12 +19,14 @@
 
 #include <QtCore/QDirIterator>
 #include <QtCore/QFileInfo>
+#include <QtCore/QProcess>
 #include <QtCore/QSettings>
 #include <QtCore/QTemporaryDir>
-#include <QtSvg/QSvgWidget>
+#include <QtGui/QDesktopServices>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QBoxLayout>
 #include <QtWidgets/QDialogButtonBox>
+#include <QtWidgets/QFileDialog>
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QGroupBox>
 #include <QtWidgets/QLabel>
@@ -36,8 +38,46 @@
 #include "model/technology.h"
 #include "parser/parser.h"
 
+using Galaxy::Technology;
 using Parsing::AstNode;
 using Parsing::Parser;
+
+static void writeTechTreeNodes(QFile *out, const QMap<QString, Technology *> &techs) {
+	for (auto it = techs.cbegin(); it != techs.cend(); it++) {
+		Technology *tech = it.value();
+		out->write(it.key().toUtf8().data());
+		switch(tech->getArea()) {
+			case Galaxy::TechArea::Physics:
+				out->write("[color=blue");
+				break;
+			case Galaxy::TechArea::Society:
+				out->write("[color=forestgreen");
+				break;
+			case Galaxy::TechArea::Engineering:
+				out->write("[color=orange");
+				break;
+		}
+		if (tech->getIsRare()) {
+			out->write(",style=filled,fillcolor=darkorchid");
+		} else if (tech->getIsStartingTech()) {
+			out->write(",style=filled,fillcolor=green");
+		}
+		out->write("];\n");
+	}
+}
+
+static void writeTechTreePrerequisites(QFile *out, const QMap<QString, Technology *> &techs) {
+	for (auto it = techs.cbegin(); it != techs.cend(); it++) {
+		const QStringList &reqs = it.value()->getRequirements();
+		const QString &tech = it.key();
+		for (const auto &aReq: reqs) {
+			out->write(aReq.toUtf8().data());
+			out->write("->");
+			out->write(tech.toUtf8().data());
+			out->write(";\n");
+		}
+	}
+}
 
 TechTreeDialog::TechTreeDialog(QWidget *parent) : QDialog(parent) {
 	mainLayout = new QGridLayout;
@@ -65,6 +105,8 @@ TechTreeDialog::TechTreeDialog(QWidget *parent) : QDialog(parent) {
 	connect(closeButton, &QPushButton::pressed, this, &QDialog::accept);
 	mainLayout->addWidget(buttons, 2, 0);
 }
+
+#define UPDATE_STATUS(text) do { statusLabel->setText((text)); update(); QApplication::processEvents(); } while (0)
 
 void TechTreeDialog::goClicked() {
 	QTemporaryDir dir;
@@ -102,11 +144,55 @@ void TechTreeDialog::goClicked() {
 	Galaxy::Model model;
 	while (it.hasNext()) {
 		QFileInfo f(it.next());
-		statusLabel->setText(tr("Reading %1.").arg(f.fileName()));
-		QApplication::processEvents();
+		UPDATE_STATUS(tr("Reading %1").arg(f.fileName()));
 		Parser parser(f, Parsing::FileType::GameFile, this);
 		AstNode *tree = parser.parse();
 		if (tree) model.addTechnologies(tree);
 		delete tree;
 	}
+	UPDATE_STATUS(tr("Writing nodes"));
+	const QMap<QString, Technology *> &techs = model.getTechnologies();
+	QFile outfile(dir.filePath("techs.dot"));
+	if (!outfile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+		QMessageBox message(this);
+		message.setText(tr("Unable to write tech tree"));
+		message.setInformativeText(tr("I can think of several potential reasons for this, "
+			"but perhaps the most likely one is that your system has run out of disk space."));
+		message.setIcon(QMessageBox::Critical);
+		message.setStandardButtons(QMessageBox::Ok);
+		message.exec();
+		return;
+	}
+	outfile.write("strict digraph techs {\nnode[shape=box];ranksep=1.5;concentrate=true;rankdir=LR;\n");
+	writeTechTreeNodes(&outfile, techs);
+	UPDATE_STATUS(tr("Writing connections"));
+	writeTechTreePrerequisites(&outfile, techs);
+	outfile.write("}\n");
+	outfile.close();
+	UPDATE_STATUS(tr("Running dot"));
+	QProcess dot(this);
+	dot.setWorkingDirectory(dir.path());
+	QStringList args;
+	args << "techs.dot" << "-Tsvg" << "-otechs.svg";
+	dot.start(settings.value("tools/dot").toString(), args);
+	dot.waitForFinished();
+	if (dot.exitStatus() == QProcess::CrashExit || dot.exitCode() != 0) {
+		QMessageBox message(this);
+		message.setText(tr("Error drawing graph"));
+		message.setInformativeText(tr("Some error occurred, and the <code>dot</code> utility did not finish successfully."));
+		message.setIcon(QMessageBox::Critical);
+		message.setStandardButtons(QMessageBox::Ok);
+		message.exec();
+		return;
+	} else {
+		QString saveTo = QFileDialog::getSaveFileName(this, tr("Select target location"), QString(),
+				tr("Scalable Vector Graphics (*.svg)"));
+		if (saveTo == "") {
+			UPDATE_STATUS(tr("Cancelled"));
+			return;
+		}
+		QFile::copy(dir.filePath("techs.svg"), saveTo);
+		QDesktopServices::openUrl(QUrl::fromLocalFile(saveTo));
+	}
+	UPDATE_STATUS(tr("Ready."));
 }
