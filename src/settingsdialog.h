@@ -1,4 +1,4 @@
-/* main.cpp: Entry point for stellaris_stat_viewer.
+/* settingsdialog.h: Settings Dialog.
  *
  * Copyright 2019 Adrian "ArdiMaster" Welcker
  *
@@ -15,20 +15,28 @@
  * limitations under the License.
  */
 
-#include "mainwindow.h"
+#pragma once
 
-#include <QtWidgets/QApplication>
+#include <QtWidgets/QDialog>
+class QDialogButtonBox;
+class QGridLayout;
+class QLabel;
+class QLineEdit;
+class QPushButton;
 
-#ifdef Q_OS_WIN
-int __stdcall WinMain(int argc, char *argv[]) {
-#else
-int main(int argc, char *argv[]) {
-#endif
-	QApplication app(argc, argv);
-	QCoreApplication::setApplicationName("Stellaris Stat Viewer");
-	QCoreApplication::setOrganizationName("ArdiMaster");
-	QCoreApplication::setOrganizationDomain("diepixelecke.de");
-	MainWindow window;
-	window.show();
-	return app.exec();
-}
+class SettingsDialog : public QDialog {
+	Q_OBJECT
+public:
+	SettingsDialog(QWidget *parent = nullptr);
+public slots:
+	void okClicked();
+	void selectDotClicked();
+	void selectGameClicked();
+private:
+	QDialogButtonBox *buttonBox;
+	QGridLayout *mainLayout;
+	QLabel *dotProgramLabel, *gameFolderLabel;
+	QLineEdit *dotProgramEdit, *gameFolderEdit;
+	QPushButton *okButton, *cancelButton;
+	QPushButton *dotProgramSelect, *gameFolderSelect;
+};

@@ -22,6 +22,7 @@
 #endif
 
 #include <QtCore/QDebug>
+#include <QtCore/QSettings>
 #include <QtGui/QDesktopServices>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QLabel>
@@ -31,10 +32,12 @@
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QTabWidget>
 
-#include "views/economy_view.h"
-#include "views/fleets_view.h"
 #include "model/galaxy_state.h"
 #include "parser/parser.h"
+#include "settingsdialog.h"
+#include "techtreedialog.h"
+#include "views/economy_view.h"
+#include "views/fleets_view.h"
 #include "views/overview_view.h"
 #include "views/techs_view.h"
 
@@ -47,6 +50,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	fileMenu = theMenuBar->addMenu(tr("File"));
 	openFileAction = fileMenu->addAction(tr("Open Save File"));
 	connect(openFileAction, &QAction::triggered, this, &MainWindow::openFileSelected);
+
+	toolsMenu = theMenuBar->addMenu(tr("Tools"));
+	techTreeAction = toolsMenu->addAction(tr("Draw Tech Tree..."));
+	settingsAction = toolsMenu->addAction(tr("Settings"));
+	connect(techTreeAction, &QAction::triggered, this, &MainWindow::techTreeSelected);
+	connect(settingsAction, &QAction::triggered, this, &MainWindow::settingsSelected);
 
 	helpMenu = theMenuBar->addMenu(tr("Help"));
 	helpMenu->setToolTipsVisible(true);
@@ -132,6 +141,41 @@ void MainWindow::openFileSelected() {
 	statusLabel->setText(state->getDate());
 	statusBar()->showMessage(tr("Loaded ") + which, 5000);
 	gamestateLoadDone();
+}
+
+void MainWindow::settingsSelected() {
+	SettingsDialog dialog(this);
+	dialog.exec();
+}
+
+void MainWindow::techTreeSelected() {
+	QSettings settings;
+	if (settings.value("game/folder", QString()).toString() == "") {
+		QMessageBox messageBox;
+		messageBox.setText("Game folder not set");
+		messageBox.setInformativeText("Would you like to open settings and set the game folder now?");
+		messageBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+		messageBox.setDefaultButton(QMessageBox::Yes);
+		messageBox.setIcon(QMessageBox::Warning);
+		int selected = messageBox.exec();
+		if (selected == QMessageBox::Yes) this->settingsSelected();
+		return;
+	}
+	if (settings.value("tools/dot", QString()).toString() == "") {
+		QMessageBox messageBox;
+		messageBox.setText("Dot utility not found");
+		messageBox.setInformativeText("The tech tree functionality relies on the <code>dot</code> utility "
+			"from the GraphViz suite, but I was unable to locate it on your system. Would you like to open "
+			"settings and look for it manually right now?");
+		messageBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+		messageBox.setDefaultButton(QMessageBox::Yes);
+		messageBox.setIcon(QMessageBox::Warning);
+		int selected = messageBox.exec();
+		if (selected == QMessageBox::Yes) this->settingsSelected();
+		return;
+	}
+	TechTreeDialog ttd(this);
+	ttd.exec();
 }
 
 void MainWindow::parserProgressUpdate(Parsing::Parser *parser, qint64 current, qint64 max) {

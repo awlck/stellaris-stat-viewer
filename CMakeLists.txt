@@ -9,7 +9,7 @@ set(MACOSX_BUNDLE_BUNDLE_NAME "Stellaris Stat Viewer")
 option(SSV_BUILD_TESTS BOOL ON)
 set(SSV_BUILD_VERSION "${PROJECT_VERSION}-git-custom" CACHE STRING "For release and CI builds of SSV, the version this is.")
 
-find_package(Qt5Widgets CONFIG REQUIRED)
+find_package(Qt5 COMPONENTS Core Widgets CONFIG REQUIRED)
 set(CMAKE_AUTOMOC ON)
 
 if(MSVC)
@@ -31,11 +31,13 @@ add_library(ssv_parser src/parser/parser.cpp src/parser/parser.h)
 target_link_libraries(ssv_parser Qt5::Core)
 
 add_library(ssv_model
+		src/model/galaxy_model.cpp src/model/galaxy_model.h
         src/model/galaxy_state.cpp src/model/galaxy_state.h
         src/model/empire.cpp src/model/empire.h
 		src/model/fleet.cpp src/model/fleet.h
 		src/model/ship.cpp src/model/ship.h
         src/model/ship_design.cpp src/model/ship_design.h
+		src/model/technology.cpp src/model/technology.h
     )
 target_link_libraries(ssv_model Qt5::Core)
 
@@ -43,6 +45,8 @@ add_executable(stellaris_stat_viewer WIN32 MACOSX_BUNDLE
         src/main.cpp
         src/mainwindow.cpp src/mainwindow.h
         src/numerictableitem.cpp src/numerictableitem.h
+		src/settingsdialog.cpp src/settingsdialog.h
+		src/techtreedialog.cpp src/techtreedialog.h
         src/views/economy_view.cpp src/views/economy_view.h
         src/views/fleets_view.cpp src/views/fleets_view.h
         src/views/overview_view.cpp src/views/overview_view.h
