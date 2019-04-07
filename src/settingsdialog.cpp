@@ -40,24 +40,45 @@ SettingsDialog::SettingsDialog(QWidget *parent) : QDialog(parent) {
 	gameFolderSelect = new QPushButton(tr("Select"));
 	gameFolderLabel = new QLabel(tr("Game Folder:"));
 	gameFolderLabel->setBuddy(gameFolderEdit);
-	connect(gameFolderSelect, &QPushButton::pressed, this, &SettingsDialog::selectClicked);
+	connect(gameFolderSelect, &QPushButton::pressed, this, &SettingsDialog::selectGameClicked);
+
+	dotProgramEdit = new QLineEdit;
+	dotProgramSelect = new QPushButton(tr("Select"));
+	dotProgramLabel = new QLabel(tr("Dot:"));
+	dotProgramLabel->setBuddy(dotProgramEdit);
+	connect(dotProgramSelect, &QPushButton::pressed, this, &SettingsDialog::selectDotClicked);
 
 	mainLayout->addWidget(gameFolderLabel, 0, 0, 1, 1);
 	mainLayout->addWidget(gameFolderEdit, 0, 1, 1, 3);
 	mainLayout->addWidget(gameFolderSelect, 0, 4, 1, 1);
-	mainLayout->addWidget(buttonBox, 1, 2, 1, 2);
+	mainLayout->addWidget(dotProgramLabel, 1, 0, 1, 1);
+	mainLayout->addWidget(dotProgramEdit, 1, 1, 1, 3);
+	mainLayout->addWidget(dotProgramSelect, 1, 4, 1, 1);
+	mainLayout->addWidget(buttonBox, 2, 2, 1, 2);
 
 	QSettings settings;
 	gameFolderEdit->setText(settings.value("game/folder", QString()).toString());
+	dotProgramEdit->setText(settings.value("tools/dot", QString()).toString());
 }
 
 void SettingsDialog::okClicked() {
 	QSettings settings;
 	settings.setValue("game/folder", gameFolderEdit->text());
+	settings.setValue("tools/dot", dotProgramEdit->text());
 	accept();
 }
 
-void SettingsDialog::selectClicked() {
+void SettingsDialog::selectDotClicked() {
+	#ifdef Q_OS_WIN
+	const QString &folder = QFileDialog::getOpenFileName(this, tr("Select Dot executable"), QString(),
+			tr("Execuables (*.exe)"));
+	#else
+	const QString &folder = QFileDialog::getOpenFileName(this, tr("Select Dot executable"));
+	#endif
+	if (folder != "") gameFolderEdit->setText(folder);
+}
+
+void SettingsDialog::selectGameClicked() {
 	const QString &folder = QFileDialog::getExistingDirectory(this, tr("Select Stellaris game folder"));
 	if (folder != "") gameFolderEdit->setText(folder);
 }

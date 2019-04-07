@@ -30,12 +30,13 @@ public:
 	SettingsDialog(QWidget *parent = nullptr);
 public slots:
 	void okClicked();
-	void selectClicked();
+	void selectDotClicked();
+	void selectGameClicked();
 private:
 	QDialogButtonBox *buttonBox;
 	QGridLayout *mainLayout;
-	QLabel *gameFolderLabel;
-	QLineEdit *gameFolderEdit;
+	QLabel *dotProgramLabel, *gameFolderLabel;
+	QLineEdit *dotProgramEdit, *gameFolderEdit;
 	QPushButton *okButton, *cancelButton;
-	QPushButton *gameFolderSelect;
+	QPushButton *dotProgramSelect, *gameFolderSelect;
 };
