@@ -75,7 +75,7 @@ void SettingsDialog::selectDotClicked() {
 	#else
 	const QString &folder = QFileDialog::getOpenFileName(this, tr("Select Dot executable"));
 	#endif
-	if (folder != "") gameFolderEdit->setText(folder);
+	if (folder != "") dotProgramEdit->setText(folder);
 }
 
 void SettingsDialog::selectGameClicked() {
