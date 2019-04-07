@@ -9,7 +9,7 @@ set(MACOSX_BUNDLE_BUNDLE_NAME "Stellaris Stat Viewer")
 option(SSV_BUILD_TESTS BOOL ON)
 set(SSV_BUILD_VERSION "${PROJECT_VERSION}-git-custom" CACHE STRING "For release and CI builds of SSV, the version this is.")
 
-find_package(Qt5 COMPONENTS Core Widgets Svg CONFIG REQUIRED)
+find_package(Qt5 COMPONENTS Core Widgets CONFIG REQUIRED)
 set(CMAKE_AUTOMOC ON)
 
 if(MSVC)
@@ -53,7 +53,7 @@ add_executable(stellaris_stat_viewer WIN32 MACOSX_BUNDLE
         src/views/techs_view.cpp src/views/techs_view.h
     )
 target_compile_definitions(stellaris_stat_viewer PRIVATE SSV_VERSION="${SSV_BUILD_VERSION}")
-target_link_libraries(stellaris_stat_viewer Qt5::Widgets Qt5::Svg ssv_parser ssv_model)
+target_link_libraries(stellaris_stat_viewer Qt5::Widgets ssv_parser ssv_model)
 
 if(SSV_BUILD_TESTS)
     find_package(Qt5Test CONFIG REQUIRED)
