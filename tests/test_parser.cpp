@@ -565,6 +565,76 @@ private slots:
 		delete tree;
 	}
 
+	void compound_int_relations_data() {
+		QTest::addColumn<QString>("string");
+		QTest::addColumn<Parsing::RelationType>("relation");
+
+		QTest::newRow("= in compound") <<  "valid = { years_passed = 10 }" <<  Parsing::RT_EQ;
+		QTest::newRow("< in compound") <<  "valid = { years_passed < 10 }" <<  Parsing::RT_LT;
+		QTest::newRow("> in compound") <<  "valid = { years_passed > 10 }" <<  Parsing::RT_GT;
+		QTest::newRow("<= in compound") << "valid = { years_passed <= 10 }" << Parsing::RT_LE;
+		QTest::newRow(">= in compound") << "valid = { years_passed >= 10 }" << Parsing::RT_GE;
+	}
+
+	void compound_int_relations() {
+		using namespace Parsing;
+		QFETCH(QString, string);
+		QFETCH(RelationType, relation);
+
+		Parser parser(&string);
+		AstNode *tree = parser.parse();
+		QVERIFY(tree != nullptr);
+		QCOMPARE(qstrcmp(tree->myName, "tree_root"), 0);
+		QCOMPARE(tree->type, NT_COMPOUND);
+
+		AstNode *result = tree->val.firstChild;
+		QCOMPARE(qstrcmp(result->myName, "valid"), 0);
+		QCOMPARE(result->type, NT_COMPOUND);
+
+		AstNode *entry = result->val.firstChild;
+		QCOMPARE(qstrcmp(entry->myName, "years_passed"), 0);
+		QCOMPARE(entry->type, NT_INT);
+		QCOMPARE(entry->relation, relation);
+		QCOMPARE(entry->val.Int, 10);
+
+		delete tree;
+	}
+
+	void compound_double_relations_data() {
+		QTest::addColumn<QString>("string");
+		QTest::addColumn<Parsing::RelationType>("relation");
+
+		QTest::newRow("= in compound") <<  "valid = { has_energy = 10.5 }" <<  Parsing::RT_EQ;
+		QTest::newRow("< in compound") <<  "valid = { has_energy < 10.5 }" <<  Parsing::RT_LT;
+		QTest::newRow("> in compound") <<  "valid = { has_energy > 10.5 }" <<  Parsing::RT_GT;
+		QTest::newRow("<= in compound") << "valid = { has_energy <= 10.5 }" << Parsing::RT_LE;
+		QTest::newRow(">= in compound") << "valid = { has_energy >= 10.5 }" << Parsing::RT_GE;
+	}
+
+	void compound_double_relations() {
+		using namespace Parsing;
+		QFETCH(QString, string);
+		QFETCH(RelationType, relation);
+
+		Parser parser(&string);
+		AstNode *tree = parser.parse();
+		QVERIFY(tree != nullptr);
+		QCOMPARE(qstrcmp(tree->myName, "tree_root"), 0);
+		QCOMPARE(tree->type, NT_COMPOUND);
+
+		AstNode * result = tree->val.firstChild;
+		QCOMPARE(qstrcmp(result->myName, "valid"), 0);
+		QCOMPARE(result->type, NT_COMPOUND);
+
+		AstNode * entry = result->val.firstChild;
+		QCOMPARE(qstrcmp(entry->myName, "has_energy"), 0);
+		QCOMPARE(entry->type, NT_DOUBLE);
+		QCOMPARE(entry->relation, relation);
+		QCOMPARE(entry->val.Double, 10.5);
+
+		delete tree;
+	}
+
 	void invalid_data() {
 		QTest::addColumn<QString>("string");
 		QTest::addColumn<Parsing::ParseErr>("error");
