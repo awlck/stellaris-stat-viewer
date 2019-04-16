@@ -43,6 +43,7 @@ target_link_libraries(ssv_model Qt5::Core)
 
 add_executable(stellaris_stat_viewer WIN32 MACOSX_BUNDLE
         src/main.cpp
+		src/gametranslator.cpp src/gametranslator.h
         src/mainwindow.cpp src/mainwindow.h
         src/numerictableitem.cpp src/numerictableitem.h
 		src/settingsdialog.cpp src/settingsdialog.h
