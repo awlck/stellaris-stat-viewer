@@ -34,10 +34,18 @@ QString GameTranslator::getTranslationOf(const QString &key) const {
 	return translations.value(key, key);
 }
 
-void GameTranslator::setLanguage(const QString &newLanguage) {
+int GameTranslator::setLanguage(const QString &newLanguage) {
 	translations.clear();
 	language = newLanguage;
 	if (newLanguage != "") readTranslationFilesForLanguage();
+	return translations.count();
+}
+
+int GameTranslator::setGameFolder(const QString &newFolder) {
+	translations.clear();
+	gameDirectory = newFolder;
+	if (newFolder != "") readTranslationFilesForLanguage();
+	return translations.count();
 }
 
 void GameTranslator::readTranslationFilesForLanguage() {

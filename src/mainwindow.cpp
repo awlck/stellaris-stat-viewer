@@ -149,7 +149,13 @@ void MainWindow::openFileSelected() {
 
 void MainWindow::settingsSelected() {
 	SettingsDialog dialog(this);
-	dialog.exec();
+	if (dialog.exec()) {
+		QSettings settings;
+		if (settings.value("game/folder").toString() != "") {
+			int tc = translator->setGameFolder(settings.value("game/folder").toString());
+			statusBar()->showMessage(tr("Loaded %1 strings for language %2.").arg(tc).arg(translator->getLanguage()));
+		}
+	}
 }
 
 void MainWindow::techTreeSelected() {
