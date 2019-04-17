@@ -23,8 +23,8 @@
 #include <QtCore/QMap>
 #include <QtCore/QString>
 #include <QtCore/QStringList>
-#include <QtWidgets/QWidget>
-class QGridLayout;
+#include <QtWidgets/QSplitter>
+class QVBoxLayout;
 class QLabel;
 class QListWidget;
 
@@ -33,7 +33,7 @@ namespace Galaxy {
 }
 class GameTranslator;
 
-class TechView : public QWidget {
+class TechView : public QSplitter {
 	Q_OBJECT
 public:
 	TechView(GameTranslator *t, QWidget *parent = nullptr);
@@ -43,11 +43,12 @@ public slots:
 private slots:
 	void selectedEmpireChanged(const QString &newEmpireName);
 private:
-	QGridLayout *layout;
+	QVBoxLayout *layoutLeft, *layoutRight;
 	QLabel *empireListLabel;
 	QLabel *techsListLabel;
 	QListWidget *empireList;
 	QListWidget *techsList;
+	QWidget *leftSide, *rightSide;
 	GameTranslator *translator;
 
 	QMap<QString, QStringList> empireTechs;

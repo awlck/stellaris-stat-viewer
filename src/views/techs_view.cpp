@@ -17,7 +17,7 @@
 
 #include "techs_view.h"
 
-#include <QtWidgets/QGridLayout>
+#include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QListWidget>
 #include <QtWidgets/QLabel>
 
@@ -25,19 +25,29 @@
 #include "../model/galaxy_state.h"
 #include "../model/empire.h"
 
-TechView::TechView(GameTranslator *t, QWidget* parent) : QWidget(parent), translator(t) {
-	layout = new QGridLayout;
+TechView::TechView(GameTranslator *t, QWidget* parent) : QSplitter(parent), translator(t) {
+	leftSide = new QWidget;
+	layoutLeft = new QVBoxLayout;
 	empireList = new QListWidget;
 	connect(empireList, &QListWidget::currentTextChanged, this, &TechView::selectedEmpireChanged);
 	empireListLabel = new QLabel(tr("Empires"));
 	empireListLabel->setBuddy(empireList);
+	layoutLeft->addWidget(empireListLabel);
+	layoutLeft->addWidget(empireList);
+	leftSide->setLayout(layoutLeft);
+	layoutLeft->setContentsMargins(1, 1, 1, 1);
+	addWidget(leftSide);
+
+	rightSide = new QWidget;
+	layoutRight = new QVBoxLayout;
 	techsList = new QListWidget;
 	techsListLabel = new QLabel(tr("Researched Technologies"));
-	layout->addWidget(empireListLabel, 0, 0);
-	layout->addWidget(empireList, 1, 0);
-	layout->addWidget(techsListLabel, 0, 1);
-	layout->addWidget(techsList, 1, 1);
-	setLayout(layout);
+	techsListLabel->setBuddy(techsList);
+	layoutRight->addWidget(techsListLabel);
+	layoutRight->addWidget(techsList);
+	rightSide->setLayout(layoutRight);
+	layoutRight->setContentsMargins(1, 1, 1, 1);
+	addWidget(rightSide);
 }
 
 void TechView::modelChanged(const Galaxy::State *newModel) {
