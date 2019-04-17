@@ -21,10 +21,11 @@
 #include <QtWidgets/QListWidget>
 #include <QtWidgets/QLabel>
 
+#include "../gametranslator.h"
 #include "../model/galaxy_state.h"
 #include "../model/empire.h"
 
-TechView::TechView(QWidget* parent) : QWidget(parent) {
+TechView::TechView(GameTranslator *t, QWidget* parent) : QWidget(parent), translator(t) {
 	layout = new QGridLayout;
 	empireList = new QListWidget;
 	connect(empireList, &QListWidget::currentTextChanged, this, &TechView::selectedEmpireChanged);
@@ -46,7 +47,11 @@ void TechView::modelChanged(const Galaxy::State *newModel) {
 	const QMap<qint64, Galaxy::Empire *> &empires = newModel->getEmpires();
 	for (auto it = empires.cbegin(); it != empires.cend(); it++) {
 		Galaxy::Empire *empire = it.value();
-		empireTechs.insert(empire->getName(), empire->getTechnologies());
+		QStringList translatedTechs;
+		for (const auto &tech: empire->getTechnologies()) {
+			translatedTechs << translator->getTranslationOf(tech);
+		}
+		empireTechs.insert(empire->getName(), translatedTechs);
 		empireList->addItem(empire->getName());
 	}
 	empireList->setSortingEnabled(true);

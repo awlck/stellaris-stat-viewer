@@ -31,11 +31,12 @@ class QListWidget;
 namespace Galaxy {
 	class State;
 }
+class GameTranslator;
 
 class TechView : public QWidget {
 	Q_OBJECT
 public:
-	TechView(QWidget *parent = nullptr);
+	TechView(GameTranslator *t, QWidget *parent = nullptr);
 public slots:
 	void modelChanged(const Galaxy::State *newModel);
 
@@ -47,6 +48,7 @@ private:
 	QLabel *techsListLabel;
 	QListWidget *empireList;
 	QListWidget *techsList;
+	GameTranslator *translator;
 
 	QMap<QString, QStringList> empireTechs;
 };

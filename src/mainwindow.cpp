@@ -32,6 +32,7 @@
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QTabWidget>
 
+#include "gametranslator.h"
 #include "model/galaxy_state.h"
 #include "parser/parser.h"
 #include "settingsdialog.h"
@@ -67,6 +68,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	aboutSsvAction = helpMenu->addAction(tr("About Stellaris Stat Viewer"));
 	connect(aboutSsvAction, &QAction::triggered, this, &MainWindow::aboutSsvSelected);
 
+	QSettings settings;
+	translator = new GameTranslator(settings.value("game/folder").toString(), "english");
+
 	powerRatingView = new OverviewView(this);
 	connect(this, &MainWindow::modelChanged, powerRatingView, &OverviewView::modelChanged);
 	tabs->addTab(powerRatingView, "Overview");
@@ -79,7 +83,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(this, &MainWindow::modelChanged, economyView, &EconomyView::modelChanged);
 	tabs->addTab(economyView, "Economy");
 
-	techView = new TechView(this);
+	techView = new TechView(translator, this);
 	connect(this, &MainWindow::modelChanged, techView, &TechView::modelChanged);
 	tabs->addTab(techView, "Technologies");
 

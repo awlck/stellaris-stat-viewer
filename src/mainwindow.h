@@ -32,6 +32,7 @@ class QTabWidget;
 enum class LoadStage;
 class EconomyView;
 class FleetsView;
+class GameTranslator;
 class OverviewView;
 class TechView;
 namespace Galaxy {
@@ -80,6 +81,7 @@ private:
 	QTabWidget *tabs;
 	
 	Galaxy::State *state = nullptr;
+	GameTranslator *translator;
 	EconomyView *economyView;
 	FleetsView *militaryView;
 	OverviewView *powerRatingView;

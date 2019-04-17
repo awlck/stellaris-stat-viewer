@@ -6,7 +6,7 @@
 
 GameTranslator::GameTranslator(const QString &gameFolder, const QString &language, QObject *parent)
 		: QObject(parent), gameDirectory(QDir(gameFolder)), language(language) {
-	if (language != "") readTranslationFilesForLanguage();
+	if (language != "" && gameFolder != "") readTranslationFilesForLanguage();
 }
 
 const QString &GameTranslator::getLanguage() const {
