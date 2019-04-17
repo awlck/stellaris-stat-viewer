@@ -53,7 +53,6 @@ TechView::TechView(GameTranslator *t, QWidget* parent) : QSplitter(parent), tran
 void TechView::modelChanged(const Galaxy::State *newModel) {
 	empireList->clear();
 	techsList->clear();
-	empireList->setSortingEnabled(false);
 	const QMap<qint64, Galaxy::Empire *> &empires = newModel->getEmpires();
 	for (auto it = empires.cbegin(); it != empires.cend(); it++) {
 		Galaxy::Empire *empire = it.value();
@@ -64,10 +63,12 @@ void TechView::modelChanged(const Galaxy::State *newModel) {
 		empireTechs.insert(empire->getName(), translatedTechs);
 		empireList->addItem(empire->getName());
 	}
-	empireList->setSortingEnabled(true);
+	techsListLabel->setText(tr("Researched Technologies"));
 }
 
 void TechView::selectedEmpireChanged(const QString &newEmpire) {
 	techsList->clear();
-	techsList->addItems(empireTechs.value(newEmpire));
+	const QStringList &techs = empireTechs.value(newEmpire);
+	techsListLabel->setText(tr("Researched Technologies (%1)").arg(techs.count()));
+	techsList->addItems(techs);
 }
