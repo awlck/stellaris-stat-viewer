@@ -30,10 +30,12 @@ class QLineEdit;
 class QPushButton;
 class QRadioButton;
 
+class GameTranslator;
+
 class TechTreeDialog : public QDialog {
 	Q_OBJECT
 public:
-	TechTreeDialog(QWidget *parent = nullptr);
+	TechTreeDialog(GameTranslator *translator, QWidget *parent = nullptr);
 
 private slots:
 	void goClicked();
@@ -45,6 +47,8 @@ private:
 	QLabel *statusLabel;
 	QPushButton *closeButton, *goButton;
 	QRadioButton *treeCompleteRadio, *treeReducedRadio;
+
+	GameTranslator *translator;
 };
 
 #endif //STELLARIS_STAT_VIEWER_TECHTREEDIALOG_H

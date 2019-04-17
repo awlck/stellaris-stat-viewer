@@ -184,7 +184,7 @@ void MainWindow::techTreeSelected() {
 		if (selected == QMessageBox::Yes) this->settingsSelected();
 		return;
 	}
-	TechTreeDialog ttd(this);
+	TechTreeDialog ttd(translator, this);
 	ttd.exec();
 }
 

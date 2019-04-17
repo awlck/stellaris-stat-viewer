@@ -37,15 +37,16 @@
 #include "model/galaxy_model.h"
 #include "model/technology.h"
 #include "parser/parser.h"
+#include "gametranslator.h"
 
 using Galaxy::Technology;
 using Parsing::AstNode;
 using Parsing::Parser;
 
-static void writeTechTreeNodes(QFile *out, const QMap<QString, Technology *> &techs) {
+static void writeTechTreeNodes(QFile *out, const QMap<QString, Technology *> &techs, GameTranslator *translator) {
 	for (auto it = techs.cbegin(); it != techs.cend(); it++) {
 		Technology *tech = it.value();
-		out->write(it.key().toUtf8().data());
+		out->write(it.key().toUtf8());
 		switch(tech->getArea()) {
 			case Galaxy::TechArea::Physics:
 				out->write("[color=blue");
@@ -57,6 +58,9 @@ static void writeTechTreeNodes(QFile *out, const QMap<QString, Technology *> &te
 				out->write("[color=orange");
 				break;
 		}
+		out->write(",label=\"");
+		out->write(translator->getTranslationOf(it.key()).toUtf8());
+		out->write("\"");
 		if (tech->getIsRare()) {
 			out->write(",style=filled,fillcolor=darkorchid");
 		} else if (tech->getIsStartingTech()) {
@@ -79,7 +83,8 @@ static void writeTechTreePrerequisites(QFile *out, const QMap<QString, Technolog
 	}
 }
 
-TechTreeDialog::TechTreeDialog(QWidget *parent) : QDialog(parent) {
+TechTreeDialog::TechTreeDialog(GameTranslator *translator, QWidget *parent)
+		: QDialog(parent), translator(translator) {
 	mainLayout = new QGridLayout;
 	setLayout(mainLayout);
 
@@ -167,7 +172,7 @@ void TechTreeDialog::goClicked() {
 		return;
 	}
 	outfile.write("strict digraph techs {\nnode[shape=box];ranksep=1.5;concentrate=true;rankdir=LR;\n");
-	writeTechTreeNodes(&outfile, techs);
+	writeTechTreeNodes(&outfile, techs, translator);
 	UPDATE_STATUS(tr("Writing connections"));
 	writeTechTreePrerequisites(&outfile, techs);
 	outfile.write("}\n");
