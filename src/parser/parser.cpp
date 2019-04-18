@@ -92,7 +92,7 @@ namespace Parsing {
 	}
 
 	// TODO: Not use stdlib
-	void printParseTree(AstNode *tree, int indent) {
+	void printParseTree(const AstNode *tree, int indent, bool toplevel) {
 		comeagain:
 		if (!tree) return;
 		for (int i = 0; i < indent; i++) {
@@ -218,7 +218,7 @@ namespace Parsing {
 			case NT_INDETERMINATE:
 				Q_UNREACHABLE();
 		}
-		if (tree->nextSibling) {
+		if (tree->nextSibling && toplevel) {
 			// shoddily avoid recursion
 			tree = tree->nextSibling;
 			goto comeagain;

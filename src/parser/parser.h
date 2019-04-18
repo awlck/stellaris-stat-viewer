@@ -123,9 +123,10 @@ namespace Parsing {
 		} val = {{'\0'}};
 	};
 
-	void printParseTree(AstNode *tree, int indent = 0);
+	void printParseTree(const AstNode *tree, int indent = 0, bool toplevel = true);
 
 	enum ParseErr {
+		PE_NONE,
 		PE_INVALID_IN_COMPOUND,
 		PE_INVALID_AFTER_NAME,
 		PE_INVALID_AFTER_EQUALS,
@@ -184,7 +185,7 @@ namespace Parsing {
 		unsigned long line = 1;
 		unsigned long charPos = 0;
 
-		ParserError latestParserError;
+		ParserError latestParserError{PE_NONE, {0, 0, TT_NONE, {{0}}}};
 
 		unsigned int lexCalls1 = 1;
 		unsigned int lexCalls2 = 1;
