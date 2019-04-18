@@ -33,6 +33,7 @@ public:
 	QString getTranslationOf(const QString &key) const;
 	int setGameFolder(const QString &newFolder);
 	int setLanguage(const QString &newLanguage);
+	int setFolderAndLanguage(const QString &newFolder, const QString &newLanguage);
 private:
 	void readTranslationFilesForLanguage();
 	void readSingleTranslationFile(QFile *f);

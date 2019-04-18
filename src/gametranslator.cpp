@@ -48,6 +48,14 @@ int GameTranslator::setGameFolder(const QString &newFolder) {
 	return translations.count();
 }
 
+int GameTranslator::setFolderAndLanguage(const QString &newFolder, const QString &newLanguage) {
+	translations.clear();
+	gameDirectory = newFolder;
+	language = newLanguage;
+	if (newFolder != "" && newLanguage != "") readTranslationFilesForLanguage();
+	return translations.count();
+}
+
 void GameTranslator::readTranslationFilesForLanguage() {
 	QDir localizationDir(gameDirectory.absoluteFilePath("localisation/") + language);
 

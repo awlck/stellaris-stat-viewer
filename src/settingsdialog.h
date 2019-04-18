@@ -17,7 +17,9 @@
 
 #pragma once
 
+#include <QtCore/QStringList>
 #include <QtWidgets/QDialog>
+class QComboBox;
 class QDialogButtonBox;
 class QGridLayout;
 class QLabel;
@@ -29,13 +31,15 @@ class SettingsDialog : public QDialog {
 public:
 	SettingsDialog(QWidget *parent = nullptr);
 public slots:
+	void gameDirChanged();
 	void okClicked();
 	void selectDotClicked();
 	void selectGameClicked();
 private:
+	QComboBox *gameLanguage;
 	QDialogButtonBox *buttonBox;
 	QGridLayout *mainLayout;
-	QLabel *dotProgramLabel, *gameFolderLabel;
+	QLabel *dotProgramLabel, *gameFolderLabel, *gameLanguageLabel;
 	QLineEdit *dotProgramEdit, *gameFolderEdit;
 	QPushButton *okButton, *cancelButton;
 	QPushButton *dotProgramSelect, *gameFolderSelect;

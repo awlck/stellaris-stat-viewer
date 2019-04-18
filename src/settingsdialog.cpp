@@ -18,13 +18,17 @@
 
 #include "settingsdialog.h"
 
+#include <QtCore/QDir>
 #include <QtCore/QSettings>
+#include <QtWidgets/QComboBox>
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QPushButton>
+
+#include <QtCore/QDebug>
 
 SettingsDialog::SettingsDialog(QWidget *parent) : QDialog(parent) {
 	mainLayout = new QGridLayout;
@@ -41,6 +45,7 @@ SettingsDialog::SettingsDialog(QWidget *parent) : QDialog(parent) {
 	gameFolderLabel = new QLabel(tr("Game Folder:"));
 	gameFolderLabel->setBuddy(gameFolderEdit);
 	connect(gameFolderSelect, &QPushButton::pressed, this, &SettingsDialog::selectGameClicked);
+	connect(gameFolderEdit, &QLineEdit::editingFinished, this, &SettingsDialog::gameDirChanged);
 
 	dotProgramEdit = new QLineEdit;
 	dotProgramSelect = new QPushButton(tr("Select"));
@@ -48,23 +53,39 @@ SettingsDialog::SettingsDialog(QWidget *parent) : QDialog(parent) {
 	dotProgramLabel->setBuddy(dotProgramEdit);
 	connect(dotProgramSelect, &QPushButton::pressed, this, &SettingsDialog::selectDotClicked);
 
+	gameLanguage = new QComboBox;
+	gameLanguageLabel = new QLabel(tr("Game Language:"));
+	gameLanguageLabel->setBuddy(gameLanguage);
+
 	mainLayout->addWidget(gameFolderLabel, 0, 0, 1, 1);
 	mainLayout->addWidget(gameFolderEdit, 0, 1, 1, 3);
 	mainLayout->addWidget(gameFolderSelect, 0, 4, 1, 1);
 	mainLayout->addWidget(dotProgramLabel, 1, 0, 1, 1);
 	mainLayout->addWidget(dotProgramEdit, 1, 1, 1, 3);
 	mainLayout->addWidget(dotProgramSelect, 1, 4, 1, 1);
-	mainLayout->addWidget(buttonBox, 2, 2, 1, 2);
+	mainLayout->addWidget(gameLanguageLabel, 2, 0, 1, 1);
+	mainLayout->addWidget(gameLanguage, 2, 1, 1, 4);
+	mainLayout->addWidget(buttonBox, 3, 2, 1, 2);
 
 	QSettings settings;
 	gameFolderEdit->setText(settings.value("game/folder", QString()).toString());
 	dotProgramEdit->setText(settings.value("tools/dot", QString()).toString());
+	gameDirChanged();
+	gameLanguage->setCurrentText(settings.value("game/language", QVariant(tr("(None)"))).toString());
+}
+
+void SettingsDialog::gameDirChanged() {
+	QDir dir(QDir(gameFolderEdit->text()).absoluteFilePath("localisation"));
+	gameLanguage->clear();
+	gameLanguage->addItem(tr("(None)"));
+	gameLanguage->addItems(dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot));
 }
 
 void SettingsDialog::okClicked() {
 	QSettings settings;
 	settings.setValue("game/folder", gameFolderEdit->text());
 	settings.setValue("tools/dot", dotProgramEdit->text());
+	settings.setValue("game/language", gameLanguage->currentText());
 	accept();
 }
 

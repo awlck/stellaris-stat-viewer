@@ -152,8 +152,11 @@ void MainWindow::settingsSelected() {
 	if (dialog.exec()) {
 		QSettings settings;
 		if (settings.value("game/folder").toString() != "") {
-			int tc = translator->setGameFolder(settings.value("game/folder").toString());
+			int tc = translator->setFolderAndLanguage(settings.value("game/folder").toString(),
+					settings.value("game/language").toString());
 			statusBar()->showMessage(tr("Loaded %1 strings for language %2.").arg(tc).arg(translator->getLanguage()));
+			// Cause techView to reload translations
+			if (state) emit modelChanged(state);
 		}
 	}
 }
