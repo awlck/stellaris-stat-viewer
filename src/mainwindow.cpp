@@ -154,7 +154,7 @@ void MainWindow::settingsSelected() {
 		if (settings.value("game/folder").toString() != "") {
 			int tc = translator->setFolderAndLanguage(settings.value("game/folder").toString(),
 					settings.value("game/language").toString());
-			statusBar()->showMessage(tr("Loaded %1 strings for language %2.").arg(tc).arg(translator->getLanguage()));
+			statusBar()->showMessage(tr("Loaded %1 strings for language %2.").arg(tc).arg(translator->getLanguage()), 5);
 			// Cause techView to reload translations
 			if (state) emit modelChanged(state);
 		}
