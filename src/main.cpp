@@ -28,6 +28,7 @@ void setupStellarisStyle(QApplication *app) {
 			"margin: 5px;"
 		"}"
 
+		"QHeaderView { margin: 0; }"
 		"QHeaderView::section {"
 			"border: 1px solid rgba(108, 255, 224, 255);"
 			"background-color: rgba(108, 255, 224, 13);"
@@ -42,7 +43,9 @@ void setupStellarisStyle(QApplication *app) {
 		"}"
 
 		"QListView::item {"
-			"margin: 2px;"
+			"margin-right: 20px;"
+			"margin-top: 2px;"
+			"margin-bottom: 2px;"
 			"border: 1px solid rgba(108, 255, 224, 64);"
 		"}"
 		"QListView::item:selected {"
@@ -72,7 +75,6 @@ void setupStellarisStyle(QApplication *app) {
 			"border: 1px solid #595154;"
 		"}"
 		"QProgressBar::Chunk:horizontal {"
-			// "background-color: #577e63;"
 			"background-color: qlineargradient(x1: 0, y1: 1, x2: 1, y2: 0, stop: 0 #3e614b, stop: 1 #679d79);"
 		"}"
 		
