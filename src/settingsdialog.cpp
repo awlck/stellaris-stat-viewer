@@ -27,6 +27,7 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QPushButton>
+#include <QtWidgets/QRadioButton>
 
 #include <QtCore/QDebug>
 
@@ -39,6 +40,12 @@ SettingsDialog::SettingsDialog(QWidget *parent) : QDialog(parent) {
 	cancelButton = buttonBox->addButton(QDialogButtonBox::Cancel);
 	connect(okButton, &QPushButton::pressed, this, &SettingsDialog::okClicked);
 	connect(cancelButton, &QPushButton::pressed, this, &QDialog::reject);
+
+	appStyleNative = new QRadioButton(tr("Native"));
+	appStyleNative->setToolTip(tr("The application will use your system's default style."));
+	appStyleStellaris = new QRadioButton(tr("Stellaris"));
+	appStyleStellaris->setToolTip(tr("The application will use a style resembling that of the game (experimental)."));
+	styleLabel = new QLabel(tr("App style:"));
 
 	gameFolderEdit = new QLineEdit;
 	gameFolderSelect = new QPushButton(tr("Select"));
@@ -65,11 +72,17 @@ SettingsDialog::SettingsDialog(QWidget *parent) : QDialog(parent) {
 	mainLayout->addWidget(dotProgramSelect, 1, 4, 1, 1);
 	mainLayout->addWidget(gameLanguageLabel, 2, 0, 1, 1);
 	mainLayout->addWidget(gameLanguage, 2, 1, 1, 4);
-	mainLayout->addWidget(buttonBox, 3, 2, 1, 2);
+	mainLayout->addWidget(styleLabel, 3, 0, 1, 1);
+	mainLayout->addWidget(appStyleNative, 3, 1, 1, 1);
+	mainLayout->addWidget(appStyleStellaris, 3, 2, 1, 1);
+	mainLayout->addWidget(buttonBox, 4, 2, 1, 2);
 
 	QSettings settings;
 	gameFolderEdit->setText(settings.value("game/folder", QString()).toString());
 	dotProgramEdit->setText(settings.value("tools/dot", QString()).toString());
+	if (settings.value("app/useStellarisStyle", false).toBool())
+		appStyleStellaris->setChecked(true);
+	else appStyleNative->setChecked(true);
 	gameDirChanged();
 	gameLanguage->setCurrentText(settings.value("game/language", QVariant(tr("(None)"))).toString());
 }
@@ -86,6 +99,7 @@ void SettingsDialog::okClicked() {
 	settings.setValue("game/folder", gameFolderEdit->text());
 	settings.setValue("tools/dot", dotProgramEdit->text());
 	settings.setValue("game/language", gameLanguage->currentText());
+	settings.setValue("app/useStellarisStyle", appStyleStellaris->isChecked());
 	accept();
 }
 

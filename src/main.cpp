@@ -123,7 +123,7 @@ int main(int argc, char *argv[]) {
 	QCoreApplication::setOrganizationDomain("diepixelecke.de");
 
 	QSettings settings;
-	if (settings.value("app/useStellarisStyle", true).toBool()) {
+	if (settings.value("app/useStellarisStyle", false).toBool()) {
 		setupStellarisStyle(&app);
 	}
 

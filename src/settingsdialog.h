@@ -25,6 +25,7 @@ class QGridLayout;
 class QLabel;
 class QLineEdit;
 class QPushButton;
+class QRadioButton;
 
 class SettingsDialog : public QDialog {
 	Q_OBJECT
@@ -39,8 +40,9 @@ private:
 	QComboBox *gameLanguage;
 	QDialogButtonBox *buttonBox;
 	QGridLayout *mainLayout;
-	QLabel *dotProgramLabel, *gameFolderLabel, *gameLanguageLabel;
+	QLabel *dotProgramLabel, *gameFolderLabel, *gameLanguageLabel, *styleLabel;
 	QLineEdit *dotProgramEdit, *gameFolderEdit;
 	QPushButton *okButton, *cancelButton;
 	QPushButton *dotProgramSelect, *gameFolderSelect;
+	QRadioButton *appStyleNative, *appStyleStellaris;
 };
