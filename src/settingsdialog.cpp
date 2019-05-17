@@ -72,6 +72,8 @@ SettingsDialog::SettingsDialog(QWidget *parent) : QDialog(parent) {
 	dotProgramEdit->setText(settings.value("tools/dot", QString()).toString());
 	gameDirChanged();
 	gameLanguage->setCurrentText(settings.value("game/language", QVariant(tr("(None)"))).toString());
+
+	okButton->setFocus();
 }
 
 void SettingsDialog::gameDirChanged() {
