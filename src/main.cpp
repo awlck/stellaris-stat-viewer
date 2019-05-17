@@ -91,6 +91,8 @@ void setupStellarisStyle(QApplication *app) {
 		"QScrollBar::handle:horizontal { min-width: 100; }"
 		"QScrollBar::handle:vertical { min-height: 100; }"
 
+		"QTableView QTableCornerButton::section { background: transparent; }"
+
 		"QTabWidget::pane { border: 2px solid rgba(108, 255, 224, 64); }"
 		"QTabWidget::tab-bar { left: 5px; }"
 		"QTabBar::tab {"
