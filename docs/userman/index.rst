@@ -18,4 +18,5 @@ User Manual
    :caption: Contents:
 
    Getting Started <gettingstarted>
+   techtree
 
