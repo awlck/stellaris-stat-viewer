@@ -57,8 +57,11 @@ add_executable(stellaris_stat_viewer WIN32 MACOSX_BUNDLE
         src/main.cpp)
 target_compile_definitions(stellaris_stat_viewer PRIVATE SSV_VERSION="${SSV_BUILD_VERSION}")
 target_link_libraries(stellaris_stat_viewer Qt5::Core)
+if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
+    target_link_libraries(stellaris_stat_viewer dl)
+endif()
 
-if(APPLE)
+if("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
     target_link_options(stellaris_stat_viewer PRIVATE -rpath @executable_path/.)
     target_link_options(ssv_frontend_widgets PRIVATE -rpath @executable_path/.)
 endif()
