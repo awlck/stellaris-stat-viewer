@@ -1,4 +1,4 @@
-/* model/fleet.h: Class representation of an interstellar fleet.
+/* core/empire.h: Class representation of a galactic empire.
  *
  * Copyright 2019 Adrian "ArdiMaster" Welcker
  *
@@ -17,34 +17,43 @@
 
 #pragma once
 
-#ifndef STELLARIS_STAT_VIEWER_FLEET_H
-#define STELLARIS_STAT_VIEWER_FLEET_H
+#ifndef STELLARIS_STAT_VIEWER_EMPIRE_H
+#define STELLARIS_STAT_VIEWER_EMPIRE_H
+
+#include "ssv_core.h"
 
 #include <QtCore/QObject>
+#include <QtCore/QMap>
+#include <QtCore/QStringList>
 
 namespace Parsing { struct AstNode; }
 
 namespace Galaxy {
-	class Empire;
 	class State;
 
-	class Fleet : public QObject {
+	class DLLEXPORT Empire : public QObject {
 		Q_OBJECT
 	public:
-		Fleet(State *parent);
+		Empire(State *parent);
 		qint64 getIndex() const;
 		const QString &getName() const;
-		Empire *getOwner() const;
-		bool getIsStation() const;
 		double getMilitaryPower() const;
-		static Fleet *createFromAst(Parsing::AstNode *tree, State *parent);
+		double getEconomyPower() const;
+		double getTechPower() const;
+		quint32 getOwnedSystemsCount() const;
+		const QMap<QString, double> &getIncomes() const;
+		const QStringList &getTechnologies() const;
+		static Empire *createFromAst(Parsing::AstNode *tree, State *parent);
 	private:
 		qint64 index;
 		QString name;
-		Empire *owner;
-		bool isStation;
 		double militaryPower;
+		double economyPower;
+		double techPower;
+		quint32 ownedSystems;
+		QMap<QString, double> incomes;
+		QStringList technologies;
 	};
 }
 
-#endif //STELLARIS_STAT_VIEWER_FLEET_H
+#endif //STELLARIS_STAT_VIEWER_EMPIRE_H

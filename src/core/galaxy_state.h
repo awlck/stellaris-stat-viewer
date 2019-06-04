@@ -1,4 +1,4 @@
-/* model/galaxy_state.h: Class representation of a savegame file.
+/* core/galaxy_state.h: Class representation of a savegame file.
  *
  * Copyright 2019 Adrian "ArdiMaster" Welcker
  *
@@ -20,6 +20,8 @@
 #ifndef STELLARIS_STAT_VIEWER_GALAXY_STATE_H
 #define STELLARIS_STAT_VIEWER_GALAXY_STATE_H
 
+#include "ssv_core.h"
+
 #include <QtCore/QObject>
 #include <QtCore/QMap>
 
@@ -31,7 +33,7 @@ namespace Galaxy {
 	class Ship;
 	class ShipDesign;
 
-	class State : public QObject {
+	class DLLEXPORT State : public QObject {
 		Q_OBJECT
 		/* No destructor necessary: Empire, etc. all inherit from QObject, and their
 		 * instances will be created with the State instance as their parent, so
@@ -54,7 +56,7 @@ namespace Galaxy {
 		friend class StateFactory;
 	};
 
-	class StateFactory : public QObject {
+	class DLLEXPORT StateFactory : public QObject {
 		Q_OBJECT
 	public:
 		State *createFromAst(Parsing::AstNode *tree, QObject *parent = nullptr);

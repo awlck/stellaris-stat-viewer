@@ -28,16 +28,17 @@ else()
 endif()
 
 add_library(ssv_core SHARED
-        src/parser/parser.cpp src/parser/parser.h
-        src/model/galaxy_model.cpp src/model/galaxy_model.h
-        src/model/galaxy_state.cpp src/model/galaxy_state.h
-        src/model/empire.cpp src/model/empire.h
-		src/model/fleet.cpp src/model/fleet.h
-		src/model/ship.cpp src/model/ship.h
-        src/model/ship_design.cpp src/model/ship_design.h
-		src/model/technology.cpp src/model/technology.h
-    )
+        src/core/parser.cpp src/core/parser.h
+        src/core/galaxy_model.cpp src/core/galaxy_model.h
+        src/core/galaxy_state.cpp src/core/galaxy_state.h
+        src/core/empire.cpp src/core/empire.h
+        src/core/fleet.cpp src/core/fleet.h
+        src/core/ship.cpp src/core/ship.h
+        src/core/ship_design.cpp src/core/ship_design.h
+        src/core/technology.cpp src/core/technology.h
+        src/core/ssv_core.h)
 target_link_libraries(ssv_core Qt5::Core)
+target_compile_definitions(ssv_core PRIVATE LIBRARY_BUILD)
 
 add_library(ssv_frontend_widgets SHARED
         src/frontends/widgets/widgets_main.cpp

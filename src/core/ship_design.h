@@ -1,4 +1,4 @@
-/* model/ship_design.h: Class representation of a ship design.
+/* core/ship_design.h: Class representation of a ship design.
  *
  * Copyright 2019 Adrian "ArdiMaster" Welcker
  *
@@ -20,6 +20,8 @@
 #ifndef STELLARIS_STAT_VIEWER_SHIP_DESIGN_H
 #define STELLARIS_STAT_VIEWER_SHIP_DESIGN_H
 
+#include "ssv_core.h"
+
 #include <QtCore/QObject>
 
 namespace Parsing { struct AstNode; }
@@ -27,7 +29,7 @@ namespace Parsing { struct AstNode; }
 namespace Galaxy {
 	class State;
 
-	enum class ShipSize {
+	enum class DLLEXPORT ShipSize {
 		StarbaseOutpost,
 		StarbaseStarport,
 		StarbaseStarhold,
@@ -60,7 +62,7 @@ namespace Galaxy {
 		INVALID
 	};
 
-	class ShipDesign : QObject {
+	class DLLEXPORT ShipDesign : QObject {
 		Q_OBJECT
 	public:
 		ShipDesign(QObject *parent);

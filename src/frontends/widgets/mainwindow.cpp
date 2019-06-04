@@ -40,7 +40,7 @@
 #include "gametranslator.h"
 #include "../../model/galaxy_state.h"
 #include "../../model/empire.h"
-#include "../../parser/parser.h"
+#include "../../core/parser.h"
 #include "settingsdialog.h"
 #include "techtreedialog.h"
 #include "views/economy_view.h"

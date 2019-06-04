@@ -1,4 +1,4 @@
-/* model/galaxy_state.cpp: Extracting data from a savegame file.
+/* core/galaxy_state.cpp: Extracting data from a savegame file.
  *
  * Copyright 2019 Adrian "ArdiMaster" Welcker
  *
@@ -22,7 +22,7 @@
 #include "model_private_macros.h"
 #include "ship.h"
 #include "ship_design.h"
-#include "../parser/parser.h"
+#include "parser.h"
 
 using Parsing::AstNode;
 

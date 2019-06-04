@@ -1,4 +1,4 @@
-/* model/ship.cpp: Extracting ship information from an AST.
+/* core/ship.cpp: Extracting ship information from an AST.
  *
  * Copyright 2019 Adrian "ArdiMaster" Welcker
  *
@@ -21,7 +21,7 @@
 #include "galaxy_state.h"
 #include "model_private_macros.h"
 #include "ship_design.h"
-#include "../parser/parser.h"
+#include "parser.h"
 
 using Parsing::AstNode;
 

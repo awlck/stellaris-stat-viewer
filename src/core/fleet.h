@@ -1,4 +1,4 @@
-/* model/technology.h: Extracting technology information from an AST.
+/* core/fleet.h: Class representation of an interstellar fleet.
  *
  * Copyright 2019 Adrian "ArdiMaster" Welcker
  *
@@ -17,43 +17,36 @@
 
 #pragma once
 
-#ifndef STELLARIS_STAT_VIEWER_TECHNOLOGY_H
-#define STELLARIS_STAT_VIEWER_TECHNOLOGY_H
+#ifndef STELLARIS_STAT_VIEWER_FLEET_H
+#define STELLARIS_STAT_VIEWER_FLEET_H
 
-#include <QtCore/QString>
-#include <QtCore/QStringList>
+#include "ssv_core.h"
+
 #include <QtCore/QObject>
 
 namespace Parsing { struct AstNode; }
 
 namespace Galaxy {
-	enum class TechArea {
-		Physics,
-		Society,
-		Engineering
-	};
+	class Empire;
+	class State;
 
-	class Technology : public QObject {
+	class DLLEXPORT Fleet : public QObject {
 		Q_OBJECT
 	public:
+		Fleet(State *parent);
+		qint64 getIndex() const;
 		const QString &getName() const;
-		const QStringList &getRequirements() const;
-		bool getIsStartingTech() const;
-		bool getIsRare() const;
-		bool getIsRepeatable() const;
-		int getTier() const;
-		TechArea getArea() const;
-		static Technology *createFromAst(const Parsing::AstNode *node, QObject *parent);
+		Empire *getOwner() const;
+		bool getIsStation() const;
+		double getMilitaryPower() const;
+		static Fleet *createFromAst(Parsing::AstNode *tree, State *parent);
 	private:
-		Technology(QObject *parent = nullptr);
+		qint64 index;
 		QString name;
-		QStringList requirements;
-		bool isStartingTech;
-		bool isRare;
-		bool isRepeatable;
-		int tier;
-		TechArea area;
+		Empire *owner;
+		bool isStation;
+		double militaryPower;
 	};
 }
 
-#endif //STELLARIS_STAT_VIEWER_TECHNOLOGY_H
+#endif //STELLARIS_STAT_VIEWER_FLEET_H

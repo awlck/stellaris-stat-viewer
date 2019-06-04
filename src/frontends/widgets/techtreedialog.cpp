@@ -36,7 +36,7 @@
 
 #include "../../model/galaxy_model.h"
 #include "../../model/technology.h"
-#include "../../parser/parser.h"
+#include "../../core/parser.h"
 #include "gametranslator.h"
 
 using Galaxy::Technology;
