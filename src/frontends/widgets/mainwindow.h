@@ -53,7 +53,6 @@ private slots:
 	void aboutQtSelected();
 	void aboutSsvSelected();
 	void checkForUpdatesSelected();
-	void exportSelected();
 	void openFileSelected();
 	void settingsSelected();
 	void techTreeSelected();

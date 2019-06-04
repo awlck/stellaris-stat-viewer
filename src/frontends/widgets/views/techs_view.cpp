@@ -22,8 +22,8 @@
 #include <QtWidgets/QLabel>
 
 #include "../gametranslator.h"
-#include "../model/galaxy_state.h"
-#include "../model/empire.h"
+#include "../../../model/galaxy_state.h"
+#include "../../../model/empire.h"
 
 TechView::TechView(GameTranslator *t, QWidget* parent) : QSplitter(parent), translator(t) {
 	leftSide = new QWidget;

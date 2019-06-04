@@ -34,9 +34,9 @@
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QRadioButton>
 
-#include "model/galaxy_model.h"
-#include "model/technology.h"
-#include "parser/parser.h"
+#include "../../model/galaxy_model.h"
+#include "../../model/technology.h"
+#include "../../parser/parser.h"
 #include "gametranslator.h"
 
 using Galaxy::Technology;

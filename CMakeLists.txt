@@ -27,11 +27,9 @@ else()
     )
 endif()
 
-add_library(ssv_parser src/parser/parser.cpp src/parser/parser.h)
-target_link_libraries(ssv_parser Qt5::Core)
-
-add_library(ssv_model
-		src/model/galaxy_model.cpp src/model/galaxy_model.h
+add_library(ssv_core SHARED
+        src/parser/parser.cpp src/parser/parser.h
+        src/model/galaxy_model.cpp src/model/galaxy_model.h
         src/model/galaxy_state.cpp src/model/galaxy_state.h
         src/model/empire.cpp src/model/empire.h
 		src/model/fleet.cpp src/model/fleet.h
@@ -39,27 +37,36 @@ add_library(ssv_model
         src/model/ship_design.cpp src/model/ship_design.h
 		src/model/technology.cpp src/model/technology.h
     )
-target_link_libraries(ssv_model Qt5::Core)
+target_link_libraries(ssv_core Qt5::Core)
+
+add_library(ssv_frontend_widgets SHARED
+        src/frontends/widgets/widgets_main.cpp
+        src/frontends/widgets/gametranslator.cpp src/frontends/widgets/gametranslator.h
+        src/frontends/widgets/mainwindow.cpp src/frontends/widgets/mainwindow.h
+        src/frontends/widgets/numerictableitem.cpp src/frontends/widgets/numerictableitem.h
+        src/frontends/widgets/settingsdialog.cpp src/frontends/widgets/settingsdialog.h
+        src/frontends/widgets/techtreedialog.cpp src/frontends/widgets/techtreedialog.h
+        src/frontends/widgets/views/economy_view.cpp src/frontends/widgets/views/economy_view.h
+        src/frontends/widgets/views/fleets_view.cpp src/frontends/widgets/views/fleets_view.h
+        src/frontends/widgets/views/overview_view.cpp src/frontends/widgets/views/overview_view.h
+        src/frontends/widgets/views/techs_view.cpp src/frontends/widgets/views/techs_view.h
+    )
+target_link_libraries(ssv_frontend_widgets Qt5::Widgets ssv_core)
 
 add_executable(stellaris_stat_viewer WIN32 MACOSX_BUNDLE
-        src/main.cpp
-		src/gametranslator.cpp src/gametranslator.h
-        src/mainwindow.cpp src/mainwindow.h
-        src/numerictableitem.cpp src/numerictableitem.h
-		src/settingsdialog.cpp src/settingsdialog.h
-		src/techtreedialog.cpp src/techtreedialog.h
-        src/views/economy_view.cpp src/views/economy_view.h
-        src/views/fleets_view.cpp src/views/fleets_view.h
-        src/views/overview_view.cpp src/views/overview_view.h
-        src/views/techs_view.cpp src/views/techs_view.h
-    )
+        src/main.cpp)
 target_compile_definitions(stellaris_stat_viewer PRIVATE SSV_VERSION="${SSV_BUILD_VERSION}")
-target_link_libraries(stellaris_stat_viewer Qt5::Widgets ssv_parser ssv_model)
+target_link_libraries(stellaris_stat_viewer Qt5::Core)
+
+if(APPLE)
+    target_link_options(stellaris_stat_viewer PRIVATE -rpath @executable_path/.)
+    target_link_options(ssv_frontend_widgets PRIVATE -rpath @executable_path/.)
+endif()
 
 if(SSV_BUILD_TESTS)
     find_package(Qt5Test CONFIG REQUIRED)
     enable_testing()
     add_executable(test_parser tests/test_parser.cpp)
-    target_link_libraries(test_parser ssv_parser Qt5::Test)
+    target_link_libraries(test_parser ssv_core Qt5::Test)
     add_test(NAME parser COMMAND test_parser)
 endif()

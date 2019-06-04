@@ -17,8 +17,8 @@
 
 #include "overview_view.h"
 
-#include "../model/galaxy_state.h"
-#include "../model/empire.h"
+#include "../../../model/galaxy_state.h"
+#include "../../../model/empire.h"
 #include "../numerictableitem.h"
 
 OverviewView::OverviewView(QWidget *parent) : QTableWidget(parent) {

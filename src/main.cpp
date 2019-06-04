@@ -15,20 +15,67 @@
  * limitations under the License.
  */
 
-#include "mainwindow.h"
-
 #include <QtWidgets/QApplication>
+#include <QtCore/QDir>
+#include <QtCore/QFileInfo>
 
 #ifdef Q_OS_WIN
-int __stdcall WinMain(int argc, char *argv[]) {
+#include <windows.h>
+int __stdcall WinMain(int argc, char *argv[])
 #else
-int main(int argc, char *argv[]) {
+#include <dlfcn.h>
+#include <stdlib.h>
+int main(int argc, char *argv[])
 #endif
-	QApplication app(argc, argv);
+{
 	QCoreApplication::setApplicationName("Stellaris Stat Viewer");
 	QCoreApplication::setOrganizationName("ArdiMaster");
 	QCoreApplication::setOrganizationDomain("diepixelecke.de");
-	MainWindow window;
-	window.show();
-	return app.exec();
+
+	char *frontendstr;
+	if (argc == 1) {
+		frontendstr = (char *) calloc(sizeof(char), 9);
+		strcpy(frontendstr, "widgets");
+	} else if (argc == 2) {
+		if (strncmp(argv[1], "--frontend=", 11) == 0) {
+			frontendstr = &argv[1][11];
+		} else {
+			frontendstr = (char *) calloc(sizeof(char), 9);
+			strcpy(frontendstr, "widgets");
+		}
+	} else if (argc == 3) {
+		if (strncmp(argv[1], "--frontend=", 11) == 0) {
+			frontendstr = &argv[1][11];
+		} else {
+			fprintf(stderr, "Usage: %s [--frontend=FRONTEND] [FILE]\n", argv[0]);
+			return 1;
+		}
+	} else {
+		fprintf(stderr, "Usage: %s [--frontend=FRONTEND] [FILE]\n", argv[0]);
+		return 1;
+	}
+
+	#ifdef Q_OS_WIN
+	typedef int (__cdecl *frontend_ptr_t)(int, char **);
+	QString felib = "ssv_frontend_";
+	felib += frontendstr;
+	HMODULE frontend = LoadLibraryA(felib.toLocal8Bit().data());
+	auto fb = (frontend_ptr_t) GetProcAddress(frontend, "frontend_begin");
+	#else
+	typedef int (*frontend_ptr_t)(int, char **);
+	QString felib = "libssv_frontend_";
+	felib += frontendstr;
+	#ifdef Q_OS_MAC
+	felib += ".dylib";
+	#else
+	felib += ".so";
+	#endif
+	void *frontend = dlopen(felib.toLocal8Bit().data(), RTLD_NOW);
+	if (!frontend) {
+		fprintf(stderr, "[ERROR] Error loading frontend %s: %s\n", frontendstr, dlerror());
+		return 1;
+	}
+	auto fb = (frontend_ptr_t) dlsym(frontend, "frontend_begin");
+	#endif
+	return fb(argc, argv);
 }
