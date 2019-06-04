@@ -38,8 +38,8 @@
 #include <QtWidgets/QTabWidget>
 
 #include "gametranslator.h"
-#include "../../model/galaxy_state.h"
-#include "../../model/empire.h"
+#include "../../core/galaxy_state.h"
+#include "../../core/empire.h"
 #include "../../core/parser.h"
 #include "settingsdialog.h"
 #include "techtreedialog.h"
