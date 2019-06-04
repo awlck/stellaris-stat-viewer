@@ -1,4 +1,5 @@
-/* main.cpp: Entry point for stellaris_stat_viewer.
+/* main.cpp: Entry point for stellaris_stat_viewer. Kicks off execution
+ *           by loading the frontend specified on the command line.
  *
  * Copyright 2019 Adrian "ArdiMaster" Welcker
  *
@@ -15,19 +16,20 @@
  * limitations under the License.
  */
 
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <QtWidgets/QApplication>
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>
 
 #ifdef Q_OS_WIN
 #include <windows.h>
-int __stdcall WinMain(int argc, char *argv[])
 #else
 #include <dlfcn.h>
 #include <stdlib.h>
-int main(int argc, char *argv[])
 #endif
-{
+
+int main(int argc, char *argv[]) {
 	QCoreApplication::setApplicationName("Stellaris Stat Viewer");
 	QCoreApplication::setOrganizationName("ArdiMaster");
 	QCoreApplication::setOrganizationDomain("diepixelecke.de");
