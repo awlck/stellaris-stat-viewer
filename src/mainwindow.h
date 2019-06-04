@@ -53,6 +53,7 @@ private slots:
 	void aboutQtSelected();
 	void aboutSsvSelected();
 	void checkForUpdatesSelected();
+	void exportSelected();
 	void openFileSelected();
 	void settingsSelected();
 	void techTreeSelected();
@@ -69,6 +70,7 @@ private:
 	QAction *aboutQtAction;
 	QAction *aboutSsvAction;
 	QAction *checkForUpdatesAction;
+	QAction *exportStatsAction;
 	QAction *openFileAction;
 	QAction *settingsAction;
 	QAction *techTreeAction;

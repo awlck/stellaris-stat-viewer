@@ -21,7 +21,12 @@
 #define SSV_VERSION "<unknown>"
 #endif
 
+#include <iostream>
+
 #include <QtCore/QDebug>
+#include <QtCore/QJsonArray>
+#include <QtCore/QJsonDocument>
+#include <QtCore/QJsonObject>
 #include <QtCore/QSettings>
 #include <QtGui/QDesktopServices>
 #include <QtWidgets/QFileDialog>
@@ -34,6 +39,7 @@
 
 #include "gametranslator.h"
 #include "model/galaxy_state.h"
+#include "model/empire.h"
 #include "parser/parser.h"
 #include "settingsdialog.h"
 #include "techtreedialog.h"
@@ -54,8 +60,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
 	toolsMenu = theMenuBar->addMenu(tr("Tools"));
 	techTreeAction = toolsMenu->addAction(tr("Draw Tech Tree..."));
+	exportStatsAction = toolsMenu->addAction(tr("Export..."));
+	//exportStatsAction->setEnabled(false);
 	settingsAction = toolsMenu->addAction(tr("Settings"));
 	connect(techTreeAction, &QAction::triggered, this, &MainWindow::techTreeSelected);
+	connect(exportStatsAction, &QAction::triggered, this, &MainWindow::exportSelected);
 	connect(settingsAction, &QAction::triggered, this, &MainWindow::settingsSelected);
 
 	helpMenu = theMenuBar->addMenu(tr("Help"));
@@ -108,6 +117,49 @@ void MainWindow::checkForUpdatesSelected() {
 		QMessageBox::warning(this, tr("Update Check Failed"), tr("An error occurred, and I was unable to open "
 			"the releases page in any browser."));
 	}
+}
+
+void MainWindow::exportSelected() {
+	const QMap<qint64, Galaxy::Empire *> &empires = state->getEmpires();
+	/* setRowCount(empires.size());
+	int i = 0;
+	for (auto it = empires.cbegin(); it != empires.cend(); it++) {
+		Galaxy::Empire *empire = it.value();
+		const QMap<QString, double> &incomes = empire->getIncomes();
+		QTableWidgetItem *nameItem = new QTableWidgetItem(empire->getName());
+		setItem(i, 0, nameItem);
+		NumericTableItem *energyItem = new NumericTableItem(incomes["energy"]);
+		setItem(i, 1, energyItem);
+		NumericTableItem *mineralsItem = new NumericTableItem(incomes["minerals"]);
+		setItem(i, 2, mineralsItem);
+		NumericTableItem *foodItem = new NumericTableItem(incomes["food"]);
+		setItem(i, 3, foodItem);
+		NumericTableItem *influenceItem = new NumericTableItem(incomes["influence"]);
+		setItem(i, 4, influenceItem);
+		NumericTableItem *unityItem = new NumericTableItem(incomes["unity"]);
+		setItem(i, 5, unityItem);
+		NumericTableItem *alloysItem = new NumericTableItem(incomes["alloys"]);
+		setItem(i, 6, alloysItem);
+		NumericTableItem *consumerGoodsItem = new NumericTableItem(incomes["consumer_goods"]);
+		setItem(i++, 7, consumerGoodsItem);
+	} */
+	QJsonArray eco;
+	for (auto it = empires.cbegin(); it != empires.cend(); it++) {
+		Galaxy::Empire *empire = it.value();
+		const QMap<QString, double> &incomes = empire->getIncomes();
+		QJsonObject empeco;
+		empeco["name"] = empire->getName();
+		empeco["energy"] = incomes["energy"];
+		empeco["minerals"] = incomes["minerals"];
+		empeco["food"] = incomes["food"];
+		empeco["influence"] = incomes["influence"];
+		empeco["unity"] = incomes["unity"];
+		empeco["alloys"] = incomes["alloys"];
+		empeco["consumer_goods"] = incomes["consumer_goods"];
+		eco.append(empeco);
+	}
+	QJsonDocument doc(eco);
+	std::cout << doc.toJson().data();
 }
 
 void MainWindow::openFileSelected() {
