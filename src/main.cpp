@@ -24,6 +24,41 @@
 
 #ifdef Q_OS_WIN
 #include <windows.h>
+#include <strsafe.h>
+
+// From https://docs.microsoft.com/en-us/windows/desktop/debug/retrieving-the-last-error-code
+void ErrorExit(LPTSTR lpszFunction)
+{
+	// Retrieve the system error message for the last-error code
+
+	LPVOID lpMsgBuf;
+	LPVOID lpDisplayBuf;
+	DWORD dw = GetLastError();
+
+	FormatMessage(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER |
+		FORMAT_MESSAGE_FROM_SYSTEM |
+		FORMAT_MESSAGE_IGNORE_INSERTS,
+		NULL,
+		dw,
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(LPTSTR)& lpMsgBuf,
+		0, NULL);
+
+	// Display the error message and exit the process
+
+	lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT,
+		(lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)lpszFunction) + 40) * sizeof(TCHAR));
+	StringCchPrintf((LPTSTR)lpDisplayBuf,
+		LocalSize(lpDisplayBuf) / sizeof(TCHAR),
+		TEXT("%s failed with error %d: %s"),
+		lpszFunction, dw, lpMsgBuf);
+	MessageBox(NULL, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK);
+
+	LocalFree(lpMsgBuf);
+	LocalFree(lpDisplayBuf);
+	ExitProcess(dw);
+}
 #else
 #include <dlfcn.h>
 #include <stdlib.h>
@@ -62,7 +97,19 @@ int main(int argc, char *argv[]) {
 	QString felib = "ssv_frontend_";
 	felib += frontendstr;
 	HMODULE frontend = LoadLibraryA(felib.toLocal8Bit().data());
+	if (frontend == NULL) {
+		QString errstr("Loading frontend ");
+		errstr += frontendstr;
+		errstr += " (LoadModuleA)";
+		ErrorExit(errstr.toLocal8Bit().data());
+	}
 	auto fb = (frontend_ptr_t) GetProcAddress(frontend, "frontend_begin");
+	if (fb == NULL) {
+		QString errstr("Loading frontend ");
+		errstr += frontendstr;
+		errstr += " (GetProcAddress)";
+		ErrorExit(errstr.toLocal8Bit().data());
+	}
 	#else
 	typedef int (*frontend_ptr_t)(int, char **);
 	QString felib = "libssv_frontend_";
