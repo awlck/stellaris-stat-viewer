@@ -41,7 +41,7 @@ from source. This is a bit outside the intended scope of this user's manual, but
 you will need a recent version of Qt5, CMake, and a C++11-capable compiler. The
 :doc:`Technical Manual </techman/index>` should cover building from source in the future, but
 until that is done, take a look at the (admittedly incomplete) `build instructions on GitHub
-<https://github.com/ArdiMaster/stellaris-stat-viewer/wiki/Building-SSV-from-Source>`_.
+<https://gitlab.com/ArdiMaster/stellaris-stat-viewer/wikis/Building%20SSV%20from%20source>`_.
 
 ========
 Overview
