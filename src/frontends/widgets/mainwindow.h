@@ -69,6 +69,7 @@ private:
 	QAction *aboutQtAction;
 	QAction *aboutSsvAction;
 	QAction *checkForUpdatesAction;
+	QAction *exportStatsAction;
 	QAction *openFileAction;
 	QAction *settingsAction;
 	QAction *techTreeAction;

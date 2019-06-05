@@ -1,4 +1,4 @@
-/* model/galaxy_state.cpp: Building the underlying model of the galaxy.
+/* core/galaxy_state.cpp: Building the underlying core of the galaxy.
  *
  * Copyright 2019 Adrian "ArdiMaster" Welcker
  *
@@ -19,7 +19,7 @@
 
 #include "model_private_macros.h"
 #include "technology.h"
-#include "../parser/parser.h"
+#include "parser.h"
 
 using Parsing::AstNode;
 

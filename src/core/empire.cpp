@@ -1,4 +1,4 @@
-/* model/empire.cpp: Extracting empire information from an AST.
+/* core/empire.cpp: Extracting empire information from an AST.
  *
  * Copyright 2019 Adrian "ArdiMaster" Welcker
  *
@@ -19,7 +19,7 @@
 
 #include "model_private_macros.h"
 #include "galaxy_state.h"
-#include "../parser/parser.h"
+#include "parser.h"
 
 using Parsing::AstNode;
 

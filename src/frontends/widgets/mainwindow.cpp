@@ -21,7 +21,12 @@
 #define SSV_VERSION "<unknown>"
 #endif
 
+#include <iostream>
+
 #include <QtCore/QDebug>
+#include <QtCore/QJsonArray>
+#include <QtCore/QJsonDocument>
+#include <QtCore/QJsonObject>
 #include <QtCore/QSettings>
 #include <QtGui/QDesktopServices>
 #include <QtWidgets/QFileDialog>
@@ -33,8 +38,9 @@
 #include <QtWidgets/QTabWidget>
 
 #include "gametranslator.h"
-#include "model/galaxy_state.h"
-#include "parser/parser.h"
+#include "../../core/galaxy_state.h"
+#include "../../core/empire.h"
+#include "../../core/parser.h"
 #include "settingsdialog.h"
 #include "techtreedialog.h"
 #include "views/economy_view.h"

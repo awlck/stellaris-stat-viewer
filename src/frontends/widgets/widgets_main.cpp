@@ -1,4 +1,4 @@
-/* model/model_private_macros.h: Utility macros used for constructing objects from ASTs.
+/* frontends/widgets/widgets_main.cpp: Entry point for the SSV widgets frontend.
  *
  * Copyright 2019 Adrian "ArdiMaster" Welcker
  *
@@ -15,13 +15,16 @@
  * limitations under the License.
  */
 
-#pragma once
+#include <QtWidgets/QApplication>
+#include "mainwindow.h"
 
-#ifndef STELLARIS_STAT_VIEWER_MODEL_PRIVATE_MACROS_H
-#define STELLARIS_STAT_VIEWER_MODEL_PRIVATE_MACROS_H
-
-#define CHECK_PTR(ptr) do { if (!(ptr)) { delete state; return nullptr; } } while (0)
-#define CHECK_COMPOUND(node) do { if (!(node) || (node)->type != Parsing::NT_COMPOUND) { delete state; return nullptr; } } while (0)
-#define ITERATE_CHILDREN(node, cn) for (AstNode *cn = (node)->val.firstChild; cn; cn = cn->nextSibling)
-
-#endif //STELLARIS_STAT_VIEWER_MODEL_PRIVATE_MACROS_H
+extern "C"
+#ifdef _MSC_VER
+__declspec(dllexport)
+#endif
+int frontend_begin(int argc, char **argv) {
+	QApplication app(argc, argv);
+	MainWindow window;
+	window.show();
+	return app.exec();
+}

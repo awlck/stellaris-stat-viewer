@@ -1,4 +1,4 @@
-/* model/technology.cpp: Extracting technology information from an AST.
+/* core/technology.cpp: Extracting technology information from an AST.
  *
  * Copyright 2019 Adrian "ArdiMaster" Welcker
  *
@@ -18,7 +18,7 @@
 #include "technology.h"
 
 #include "model_private_macros.h"
-#include "../parser/parser.h"
+#include "parser.h"
 
 using Parsing::AstNode;
 

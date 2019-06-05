@@ -1,6 +1,4 @@
-/* model/galaxy_model.h: Class representation of the basic world model.
- * This potentially encompasses everything that gets set during the initial
- * loading stage on game load.
+/* core/ship.h: Class representation of a ship.
  *
  * Copyright 2019 Adrian "ArdiMaster" Welcker
  *
@@ -17,30 +15,38 @@
  * limitations under the License.
  */
 
+
 #pragma once
 
-#ifndef STELLARIS_STAT_VIEWER_GALAXY_MODEL_H
-#define STELLARIS_STAT_VIEWER_GALAXY_MODEL_H
+#ifndef STELLARIS_STAT_VIEWER_SHIP_H
+#define STELLARIS_STAT_VIEWER_SHIP_H
 
-#include <QtCore/QMap>
+#include "ssv_core.h"
+
 #include <QtCore/QObject>
-#include <QtCore/QString>
 
 namespace Parsing { struct AstNode; }
 
 namespace Galaxy {
-	class Technology;
+	class Fleet;
+	class ShipDesign;
+	class State;
 
-	class Model : public QObject {
+	class DLLEXPORT Ship : public QObject {
 		Q_OBJECT
 	public:
-		Model(QObject *parent = nullptr);
-		const QMap<QString, Technology *> &getTechnologies() const;
-		const Technology *getTechnology(const QString &name) const;
-		void addTechnologies(const Parsing::AstNode *tree);
+		Ship(State *parent);
+		qint64 getIndex() const;
+		const QString &getName() const;
+		Fleet *getFleet() const;
+		ShipDesign *getDesign() const;
+		static Ship *createFromAst(Parsing::AstNode *tree, State *parent);
 	private:
-		QMap<QString, Technology *> techs;
+		qint64 index;
+		QString name;
+		Fleet *fleet;
+		ShipDesign *design;
 	};
 }
 
-#endif //STELLARIS_STAT_VIEWER_GALAXY_MODEL_H
+#endif
