@@ -81,11 +81,26 @@ QJsonObject getFleetsForEmpire(const QLinkedList<Galaxy::Ship *> &shipsOfEmpire)
 	return fleetObj;
 }
 
+QJsonObject getEconomyForEmpire(const Galaxy::Empire *empire) {
+	QJsonObject economy;
+	const QMap<QString, double> &incomes = empire->getIncomes();
+	// Unfortunately, no direct conversion from QMap to QJsonObject.
+	economy["energy"] = incomes["energy"];
+	economy["minerals"] = incomes["minerals"];
+	economy["food"] = incomes["food"];
+	economy["influence"] = incomes["influence"];
+	economy["unity"] = incomes["unity"];
+	economy["alloys"] = incomes["alloys"];
+	economy["consumer_goods"] = incomes["consumer_goods"];
+	return economy;
+}
+
 QJsonObject createDataForEmpire(const Galaxy::Empire *empire, const QLinkedList<Galaxy::Ship *> &shipsOfEmpire) {
 	QJsonObject result;
 
 	result["overview"] = getOverviewForEmpire(empire);
 	result["military"] = getFleetsForEmpire(shipsOfEmpire);
+	result["economy"] = getEconomyForEmpire(empire);
 
 	return result;
 }
