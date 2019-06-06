@@ -73,23 +73,13 @@ int main(int argc, char *argv[]) {
 	if (argc == 1) {
 		frontendstr = (char *) calloc(sizeof(char), 9);
 		strcpy(frontendstr, "widgets");
-	} else if (argc == 2) {
+	} else if (argc >= 2) {
 		if (strncmp(argv[1], "--frontend=", 11) == 0) {
 			frontendstr = &argv[1][11];
 		} else {
 			frontendstr = (char *) calloc(sizeof(char), 9);
 			strcpy(frontendstr, "widgets");
 		}
-	} else if (argc == 3) {
-		if (strncmp(argv[1], "--frontend=", 11) == 0) {
-			frontendstr = &argv[1][11];
-		} else {
-			fprintf(stderr, "Usage: %s [--frontend=FRONTEND] [FILE]\n", argv[0]);
-			return 1;
-		}
-	} else {
-		fprintf(stderr, "Usage: %s [--frontend=FRONTEND] [FILE]\n", argv[0]);
-		return 1;
 	}
 
 	#ifdef Q_OS_WIN

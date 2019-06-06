@@ -30,6 +30,17 @@ namespace Galaxy {
 	class Empire;
 	class State;
 
+	struct FleetData {
+		double power;
+		unsigned long corvettes;
+		unsigned long destroyers;
+		unsigned long cruisers;
+		unsigned long battleships;
+		unsigned int titans;
+		unsigned int colossi;
+		unsigned long fallen;
+	};
+
 	class DLLEXPORT Fleet : public QObject {
 		Q_OBJECT
 	public:
