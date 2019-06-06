@@ -42,11 +42,24 @@ int frontend_begin(int argc, char **argv) {
 		return 1;
 	}
 	fprintf(stderr, "Parsing file ...\n");
-	Parser parser{QFileInfo(argv[2]), FileType::SaveFile};
+	Parser parser(QFileInfo(argv[2]), FileType::SaveFile);
 	AstNode *node = parser.parse();
+	if (node == nullptr) {
+		ParserError err = parser.getLatestParserError();
+		fprintf(stderr, "Parser Error on %s:%lu:%lu: Error#%d\n",
+				argv[2], err.erroredToken.line, err.erroredToken.firstChar, err.etype);
+		return 2;
+	} else if (node->countChildren() == 0) {
+		fprintf(stderr, "%s: Unknown parse error.\n", argv[2]);
+		return 2;
+	}
 	fprintf(stderr, "Building galaxy ...\n");
 	Galaxy::StateFactory sf;
 	Galaxy::State *state = sf.createFromAst(node, nullptr);
+	if (state == nullptr) {
+		fprintf(stderr, "Error extracting data from the save file.\n");
+		return 3;
+	}
 	delete node;
 
 	fprintf(stderr, "Extracting data ... ");
