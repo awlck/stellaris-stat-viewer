@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+#include <QtCore/QJsonArray>
 #include "dataextraction.h"
 
 #include "../../core/empire.h"
@@ -95,12 +96,22 @@ QJsonObject getEconomyForEmpire(const Galaxy::Empire *empire) {
 	return economy;
 }
 
+QJsonArray getTechsForEmpire(const Galaxy::Empire *empire) {
+	QJsonArray arr;
+	// No direct conversion from QStringList to QJsonArray either, so ...
+	for (const auto &i : empire->getTechnologies()) {
+		arr.append(i);
+	}
+	return arr;
+}
+
 QJsonObject createDataForEmpire(const Galaxy::Empire *empire, const QLinkedList<Galaxy::Ship *> &shipsOfEmpire) {
 	QJsonObject result;
 
 	result["overview"] = getOverviewForEmpire(empire);
 	result["military"] = getFleetsForEmpire(shipsOfEmpire);
 	result["economy"] = getEconomyForEmpire(empire);
+	result["technologies"] = getTechsForEmpire(empire);
 
 	return result;
 }
