@@ -32,19 +32,9 @@ FleetsView::FleetsView(QWidget *parent) : QTableWidget(parent) {
 	setHorizontalHeaderLabels(headers);
 }
 
-struct FleetData {
-	double power;
-	unsigned long corvettes;
-	unsigned long destroyers;
-	unsigned long cruisers;
-	unsigned long battleships;
-	unsigned int titans;
-	unsigned int colossi;
-	unsigned long fallen;
-};
-
 void FleetsView::modelChanged(const Galaxy::State *newState) {
 	using Galaxy::ShipSize;
+	using Galaxy::FleetData;
 	setSortingEnabled(false);
 	const QMap<qint64, Galaxy::Fleet*> &fleets = newState->getFleets();
 	const QMap<qint64, Galaxy::Ship *> &ships = newState->getShips();

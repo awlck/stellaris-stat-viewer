@@ -54,6 +54,11 @@ add_library(ssv_frontend_widgets SHARED
     )
 target_link_libraries(ssv_frontend_widgets Qt5::Widgets ssv_core)
 
+add_library(ssv_frontend_json SHARED
+        src/frontends/json/json_main.cpp
+        src/frontends/json/dataextraction.cpp src/frontends/json/dataextraction.h)
+target_link_libraries(ssv_frontend_json Qt5::Core ssv_core)
+
 add_executable(stellaris_stat_viewer WIN32 MACOSX_BUNDLE
         src/main.cpp)
 target_compile_definitions(stellaris_stat_viewer PRIVATE SSV_VERSION="${SSV_BUILD_VERSION}")
