@@ -41,12 +41,15 @@ int frontend_begin(int argc, char **argv) {
 				  "  Read the gamestate file FILE and dump json stats to stdout\n", argv[0]);
 		return 1;
 	}
+	fprintf(stderr, "Parsing file ...\n");
 	Parser parser{QFileInfo(argv[2]), FileType::SaveFile};
 	AstNode *node = parser.parse();
+	fprintf(stderr, "Building galaxy ...\n");
 	Galaxy::StateFactory sf;
 	Galaxy::State *state = sf.createFromAst(node, nullptr);
 	delete node;
 
+	fprintf(stderr, "Extracting data ... ");
 	QJsonObject toplevelObj;
 	toplevelObj["date"] = state->getDate();
 	QJsonObject dataObj;
@@ -62,6 +65,7 @@ int frontend_begin(int argc, char **argv) {
 	for (auto it = empires.cbegin(); it != empires.cend(); it++) {
 		dataObj[it.value()->getName()] = createDataForEmpire(it.value(), shipsPerEmpire[it.value()]);
 	}
+	fprintf(stderr, "done.\n");
 
 	toplevelObj["content"] = dataObj;
 	QJsonDocument outdoc(toplevelObj);
