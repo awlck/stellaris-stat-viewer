@@ -16,7 +16,7 @@ build:
 test:
   stage: test
   before_script:
-    - apt-get update && apt-get -y install libqt5core5a libqt5test5
+    - apt-get update && apt-get -y install libqt5core5a libqt5test5 cmake
   script:
     - cd cmake-build-ci
     - ctest --verbose-about-failures
