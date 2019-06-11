@@ -1,9 +1,7 @@
 # Stellaris Stat Viewer
 ... for all your galactic stat needs.
 
-[![forthebadge](https://forthebadge.com/images/badges/built-with-resentment.svg)](https://forthebadge.com)
-[![forthebadge](https://forthebadge.com/images/badges/made-with-c-plus-plus.svg)](https://forthebadge.com)
-[![forthebadge](https://forthebadge.com/images/badges/uses-badges.svg)](https://forthebadge.com)
+[![gitlab-ci](https://gitlab.com/ArdiMaster/stellaris-stat-viewer/badges/master/pipeline.svg)](https://gitlab.com/ArdiMaster/stellaris-stat-viewer/pipelines)
 [![AppVeyor](https://ci.appveyor.com/api/projects/status/github/ArdiMaster/stellaris-stat-viewer)](https://ci.appveyor.com/project/ArdiMaster/stellaris-stat-viewer)
 
 (work in progress)
