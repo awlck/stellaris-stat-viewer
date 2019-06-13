@@ -16,8 +16,8 @@ install:
   - cd cmake-build-av
 
 build_script:
-  - cmd: cmake -DCMAKE_PREFIX_PATH=C:/Qt/5.12/msvc2017_64 -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DSSV_BUILD_VERSION="%APPVEYOR_BUILD_VERSION%" ..
-  - cmd: nmake
+  - cmd: cmake -DCMAKE_PREFIX_PATH=C:/Qt/5.12/msvc2017_64 -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DSSV_BUILD_VERSION="%APPVEYOR_BUILD_VERSION%" ..
+  - cmd: ninja
   - sh: cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DSSV_BUILD_VERSION="$APPVEYOR_BUILD_VERSION" ..
   - sh: make
 
@@ -31,9 +31,11 @@ test_script:
 
 after_test:
   - mkdir artifact
-  - cmd: C:\Qt\5.12\msvc2017_64\bin\windeployqt.exe --dir artifact --release --no-quick-import --no-system-d3d-compiler --compiler-runtime --no-webkit2 --no-opengl-sw stellaris_stat_viewer.exe
+  - cmd: C:\Qt\5.12\msvc2017_64\bin\windeployqt.exe --dir artifact --release --no-quick-import --no-system-d3d-compiler --compiler-runtime --no-webkit2 --no-opengl-sw stellaris_stat_viewer.exe ssv_core.dll ssv_frontend_widgets.dll ssv_frontend_json.dll
   - cmd: copy stellaris_stat_viewer.exe artifact
+  - cmd: copy ssv_*.dll artifact
   - sh: cp stellaris_stat_viewer artifact
+  - sh: cp *.so artifact
 
 artifacts:
   - path: cmake-build-av\artifact

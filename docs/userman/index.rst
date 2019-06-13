@@ -4,12 +4,19 @@
 User Manual
 ###########
 
-Welcome to the Stellaris Stat Viewer User Manual! Select a topic you would like to know
-about:
+.. only:: html
+
+    Welcome to the Stellaris Stat Viewer User Manual! Select a topic you would like to know
+    about:
+
+.. only:: not html
+
+    .. include:: ../intro.rst
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-   Installation <install>
+   Getting Started <gettingstarted>
+   techtree
 

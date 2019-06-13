@@ -1,4 +1,5 @@
-/* main.cpp: Entry point for stellaris_stat_viewer.
+/* main.cpp: Entry point for stellaris_stat_viewer. Kicks off execution
+ *           by loading the frontend specified on the command line.
  *
  * Copyright 2019 Adrian "ArdiMaster" Welcker
  *
@@ -15,121 +16,105 @@
  * limitations under the License.
  */
 
-#include "mainwindow.h"
+#define _CRT_SECURE_NO_WARNINGS
 
-#include <QtCore/QSettings>
-#include <QtWidgets/QApplication>
+#include <QtCore/QDir>
+#include <QtCore/QFileInfo>
 
-void setupStellarisStyle(QApplication *app) {
-	app->setStyleSheet(
-		"* {"
-			"background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #161f1c, stop: 1 #293a34);"
-			"color: white;"
-			"margin: 5px;"
-		"}"
-
-		"QHeaderView { margin: 0; }"
-		"QHeaderView::section {"
-			"border: 1px solid rgba(108, 255, 224, 255);"
-			"background-color: rgba(108, 255, 224, 13);"
-			"padding: 10 5 10 5;"
-		"}"
-
-		"QLabel, QMenuBar, QStatusBar, QHeaderView, QRadioButton { background: transparent; }"
-		
-		"QListView, QTableView {"
-			"background: transparent;"
-			"border: 2px solid rgba(108, 255, 224, 64);"
-		"}"
-
-		"QListView::item {"
-			"margin-right: 20px;"
-			"margin-top: 2px;"
-			"margin-bottom: 2px;"
-			"border: 1px solid rgba(108, 255, 224, 64);"
-		"}"
-		"QListView::item:selected {"
-			"border-color: rgba(243, 143, 87, 255);"
-			"background-color: rgba(255, 150, 80, 25);"
-		"}"
-
-		"QPushButton, QMenu::item, QGroupBox, QTabBar::tab { "
-			"border: 2px solid rgba(108, 255, 224, 64);"
-			"padding: 5 10 5 10;"
-			"border-radius: 0px;"
-			"background-color: rgba(108, 255, 224, 13);"
-		"}"
-		"QPushButton:pressed {"
-			"border-color: rgba(108, 255, 224, 255);"
-		"}"
-		"QPushButton:hover:!pressed, QMenu::item:selected, QHeaderView::section:checked {"
-			"border-color: rgba(243, 143, 87, 255);"
-			"background-color: rgba(255, 150, 80, 25);"
-		"}"
-
-		"QProgressBar {"
-			"text-align: center;"
-			"font-family: 'Orbitron';"
-			"font-size: 11pt;"
-			"background-color: #101c1c;"
-			"border: 1px solid #595154;"
-		"}"
-		"QProgressBar::Chunk:horizontal {"
-			"background-color: qlineargradient(x1: 0, y1: 1, x2: 1, y2: 0, stop: 0 #3e614b, stop: 1 #679d79);"
-		"}"
-		
-		"QScrollBar { background-color: #172e26; }"
-		"QScrollBar:horizontal { height: 20; }"
-		"QScrollBar:vertical { width: 20; }"
-		"QScrollBar::add-line, QScrollBar::sub-line {"
-			"border: none;"
-			"background: none;"
-			"width: 0px;"
-			"height: 0px;"
-		"}"
-		"QScrollBar::handle { background-color: #4a9380; }"
-		"QScrollBar::handle:horizontal { min-width: 100; }"
-		"QScrollBar::handle:vertical { min-height: 100; }"
-
-		"QTableView QTableCornerButton::section { background: transparent; }"
-
-		"QTabWidget::pane { border: 2px solid rgba(108, 255, 224, 64); }"
-		"QTabWidget::tab-bar { left: 5px; }"
-		"QTabBar::tab {"
-			"background-color: qlineargradient(x1: 1, y1: 0, x2: 0, y2: 1, stop: 0 #172820, stop: 1 #1e2f27);"
-			"min-width: 8ex;"
-			"padding: 7 15 7 15;"
-		"}"
-		"QTabBar::tab:selected {"
-			"background-color: qlineargradient(x1: 1, y1: 0, x2: 0, y2: 1, stop: 0 #1c2d27, stop: 1 #273c33);"
-		"}"
-		"QTabBar::tab:!selected { margin-top: 2px; }"
-		"QTabBar::tab:selected {"
-			"margin-left: -4px;"
-			"margin-right: -4px;"
-		"}"
-		"QTabBar::tab:first:selected { margin-left: 0; }"
-		"QTabBar::tab:last:selected { margin-right: 0; }"
-		"QTabBar::tab:only-one { margin: 0; }"
-	);
-}
 
 #ifdef Q_OS_WIN
-int __stdcall WinMain(int argc, char *argv[]) {
+#include <windows.h>
+#include <strsafe.h>
+
+// From https://docs.microsoft.com/en-us/windows/desktop/debug/retrieving-the-last-error-code
+void ErrorExit(LPTSTR lpszFunction)
+{
+	// Retrieve the system error message for the last-error code
+
+	LPVOID lpMsgBuf;
+	LPVOID lpDisplayBuf;
+	DWORD dw = GetLastError();
+
+	FormatMessage(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER |
+		FORMAT_MESSAGE_FROM_SYSTEM |
+		FORMAT_MESSAGE_IGNORE_INSERTS,
+		NULL,
+		dw,
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(LPTSTR)& lpMsgBuf,
+		0, NULL);
+
+	// Display the error message and exit the process
+
+	lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT,
+		(lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)lpszFunction) + 40) * sizeof(TCHAR));
+	StringCchPrintf((LPTSTR)lpDisplayBuf,
+		LocalSize(lpDisplayBuf) / sizeof(TCHAR),
+		TEXT("%s failed with error %d: %s"),
+		lpszFunction, dw, lpMsgBuf);
+	MessageBox(NULL, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK);
+
+	LocalFree(lpMsgBuf);
+	LocalFree(lpDisplayBuf);
+	ExitProcess(dw);
+}
 #else
-int main(int argc, char *argv[]) {
+#include <dlfcn.h>
+#include <stdlib.h>
 #endif
-	QApplication app(argc, argv);
+
+int main(int argc, char *argv[]) {
 	QCoreApplication::setApplicationName("Stellaris Stat Viewer");
 	QCoreApplication::setOrganizationName("ArdiMaster");
 	QCoreApplication::setOrganizationDomain("diepixelecke.de");
 
-	QSettings settings;
-	if (settings.value("app/useStellarisStyle", false).toBool()) {
-		setupStellarisStyle(&app);
+	char *frontendstr;
+	if (argc == 1) {
+		frontendstr = (char *) calloc(sizeof(char), 9);
+		strcpy(frontendstr, "widgets");
+	} else if (argc >= 2) {
+		if (strncmp(argv[1], "--frontend=", 11) == 0) {
+			frontendstr = &argv[1][11];
+		} else {
+			frontendstr = (char *) calloc(sizeof(char), 9);
+			strcpy(frontendstr, "widgets");
+		}
 	}
 
-	MainWindow window;
-	window.show();
-	return app.exec();
+	#ifdef Q_OS_WIN
+	typedef int (__cdecl *frontend_ptr_t)(int, char **);
+	QString felib = "ssv_frontend_";
+	felib += frontendstr;
+	HMODULE frontend = LoadLibraryA(felib.toLocal8Bit().data());
+	if (frontend == NULL) {
+		QString errstr("Loading frontend ");
+		errstr += frontendstr;
+		errstr += " (LoadModuleA)";
+		ErrorExit(errstr.toLocal8Bit().data());
+	}
+	auto fb = (frontend_ptr_t) GetProcAddress(frontend, "frontend_begin");
+	if (fb == NULL) {
+		QString errstr("Loading frontend ");
+		errstr += frontendstr;
+		errstr += " (GetProcAddress)";
+		ErrorExit(errstr.toLocal8Bit().data());
+	}
+	#else
+	typedef int (*frontend_ptr_t)(int, char **);
+	QString felib = "libssv_frontend_";
+	felib += frontendstr;
+	#ifdef Q_OS_MAC
+	felib += ".dylib";
+	#else
+	felib += ".so";
+	#endif
+	void *frontend = dlopen(felib.toLocal8Bit().data(), RTLD_NOW);
+	if (!frontend) {
+		fprintf(stderr, "[ERROR] Error loading frontend %s: %s\n", frontendstr, dlerror());
+		return 1;
+	}
+	auto fb = (frontend_ptr_t) dlsym(frontend, "frontend_begin");
+	#endif
+	return fb(argc, argv);
 }

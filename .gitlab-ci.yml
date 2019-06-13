@@ -1,0 +1,22 @@
+image: ubuntu:disco
+
+build:
+  stage: build
+  before_script:
+    - apt-get update && apt-get -y install make cmake qt5-default g++
+  script:
+    - mkdir -v cmake-build-ci && cd cmake-build-ci
+    - cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DSSV_BUILD_VERSION="git-`echo $CI_COMMIT_SHA|cut -c1-7`" ..
+    - make -j
+  artifacts:
+    paths:
+      - cmake-build-ci/
+
+# run tests using the binary built before
+test:
+  stage: test
+  before_script:
+    - apt-get update && apt-get -y install libqt5core5a libqt5test5 cmake
+  script:
+    - cd cmake-build-ci
+    - ctest --verbose-about-failures
