@@ -18,6 +18,7 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
+#include <QtCore/QCoreApplication>
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>
 
