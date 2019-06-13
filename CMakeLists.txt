@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0.2)
 
-project(stellaris_stat_viewer VERSION 0.2.0 LANGUAGES CXX)
+project(stellaris_stat_viewer VERSION 0.2.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
@@ -102,3 +102,4 @@ endif()
 if(NOT SOME_FRONTEND_FOUND AND NOT SSV_BUILD_TESTS)
 	message(WARNING "All frontends and tests disabled, the built application will not run on its own.")
 endif()
+

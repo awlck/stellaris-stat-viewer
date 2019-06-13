@@ -621,6 +621,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 		unsigned int len = 0;
 		bool haveOpenQuote = false;
 		bool comment = false;
+		bool haveEscape = false;
 		while (!stream->atEnd() && tokensRead < atLeast && lexQueue.count() < queueCapacity-1) {
 			c = stream->read(1)[0];
 
@@ -640,7 +641,23 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 			// According to the wiki, the game uses only unix-style line endings (LF), so ignore CR characters.
 			if (c == '\r') continue;
 			if (haveOpenQuote || (!c.isSpace() && c != '{' && c != '}' && c != '=' && c != '<' && c != '>' && c != '#')) {
-				if (c == '"') {
+				if (haveOpenQuote) {
+					if (!haveEscape) {
+						haveEscape = (c == '\\');
+					} else {
+						if (c == '"') {
+							current += c;
+							len++;
+						}
+						else if (c == '\\') {
+							current += c;
+							len++;
+						}
+						haveEscape = false;
+						continue;
+					}
+				}
+ 				if (c == '"') {
 					if (haveOpenQuote) {  // This ends a quoted string
 						haveOpenQuote = false;
 						goto finish_off_token;  // Immediately finish this token, don't add the quotation mark to the result.
