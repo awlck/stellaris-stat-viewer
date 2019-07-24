@@ -22,8 +22,6 @@
 #ifndef STELLARIS_STAT_VIEWER_GALAXY_MODEL_H
 #define STELLARIS_STAT_VIEWER_GALAXY_MODEL_H
 
-#include "ssv_core.h"
-
 #include <QtCore/QMap>
 #include <QtCore/QObject>
 #include <QtCore/QString>
@@ -33,7 +31,7 @@ namespace Parsing { struct AstNode; }
 namespace Galaxy {
 	class Technology;
 
-	class DLLEXPORT Model : public QObject {
+	class Model : public QObject {
 		Q_OBJECT
 	public:
 		Model(QObject *parent = nullptr);

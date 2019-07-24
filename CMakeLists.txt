@@ -78,7 +78,7 @@ add_executable(stellaris_stat_viewer WIN32 MACOSX_BUNDLE
         src/core/ship.cpp src/core/ship.h
         src/core/ship_design.cpp src/core/ship_design.h
         src/core/technology.cpp src/core/technology.h
-        src/core/ssv_core.h)
+        )
 target_compile_definitions(stellaris_stat_viewer PRIVATE SSV_VERSION="${SSV_BUILD_VERSION}")
 target_link_libraries(stellaris_stat_viewer ssv_parser Qt5::Core)
 target_include_directories(stellaris_stat_viewer PRIVATE ${CMAKE_CURRENT_BINARY_DIR})

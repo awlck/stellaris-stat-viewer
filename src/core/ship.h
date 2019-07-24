@@ -21,8 +21,6 @@
 #ifndef STELLARIS_STAT_VIEWER_SHIP_H
 #define STELLARIS_STAT_VIEWER_SHIP_H
 
-#include "ssv_core.h"
-
 #include <QtCore/QObject>
 
 namespace Parsing { struct AstNode; }
@@ -32,7 +30,7 @@ namespace Galaxy {
 	class ShipDesign;
 	class State;
 
-	class DLLEXPORT Ship : public QObject {
+	class Ship : public QObject {
 		Q_OBJECT
 	public:
 		Ship(State *parent);

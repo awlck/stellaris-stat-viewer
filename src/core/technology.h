@@ -20,8 +20,6 @@
 #ifndef STELLARIS_STAT_VIEWER_TECHNOLOGY_H
 #define STELLARIS_STAT_VIEWER_TECHNOLOGY_H
 
-#include "ssv_core.h"
-
 #include <QtCore/QString>
 #include <QtCore/QStringList>
 #include <QtCore/QObject>
@@ -29,13 +27,13 @@
 namespace Parsing { struct AstNode; }
 
 namespace Galaxy {
-	enum class DLLEXPORT TechArea {
+	enum class TechArea {
 		Physics,
 		Society,
 		Engineering
 	};
 
-	class DLLEXPORT Technology : public QObject {
+	class Technology : public QObject {
 		Q_OBJECT
 	public:
 		const QString &getName() const;

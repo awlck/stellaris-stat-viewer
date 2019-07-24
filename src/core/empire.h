@@ -20,8 +20,6 @@
 #ifndef STELLARIS_STAT_VIEWER_EMPIRE_H
 #define STELLARIS_STAT_VIEWER_EMPIRE_H
 
-#include "ssv_core.h"
-
 #include <QtCore/QObject>
 #include <QtCore/QMap>
 #include <QtCore/QStringList>
@@ -31,7 +29,7 @@ namespace Parsing { struct AstNode; }
 namespace Galaxy {
 	class State;
 
-	class DLLEXPORT Empire : public QObject {
+	class Empire : public QObject {
 		Q_OBJECT
 	public:
 		Empire(State *parent);

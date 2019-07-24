@@ -20,8 +20,6 @@
 #ifndef STELLARIS_STAT_VIEWER_PARSER_H
 #define STELLARIS_STAT_VIEWER_PARSER_H
 
-#include "ssv_core.h"
-
 #include <QtCore/QFileInfo>
 #include <QtCore/QObject>
 #include <QtCore/QQueue>
@@ -91,7 +89,7 @@ namespace Parsing {
 		RT_LE
 	};
 
-	struct DLLEXPORT AstNode {
+	struct AstNode {
 		~AstNode();
 		/** Merge 'other' into this tree
 		 *
@@ -125,7 +123,7 @@ namespace Parsing {
 		} val = {{'\0'}};
 	};
 
-	DLLEXPORT void printParseTree(const AstNode *tree, int indent = 0, bool toplevel = true);
+	void printParseTree(const AstNode *tree, int indent = 0, bool toplevel = true);
 
 	enum ParseErr {
 		PE_NONE,
@@ -152,7 +150,7 @@ namespace Parsing {
 		Token erroredToken;
 	};
 
-	class DLLEXPORT Parser : public QObject {
+	class Parser : public QObject {
 		Q_OBJECT
 	public:
 		explicit Parser(QString *text, QObject *parent = nullptr);

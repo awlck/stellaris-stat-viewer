@@ -20,8 +20,6 @@
 #ifndef STELLARIS_STAT_VIEWER_SHIP_DESIGN_H
 #define STELLARIS_STAT_VIEWER_SHIP_DESIGN_H
 
-#include "ssv_core.h"
-
 #include <QtCore/QObject>
 
 namespace Parsing { struct AstNode; }
@@ -29,7 +27,7 @@ namespace Parsing { struct AstNode; }
 namespace Galaxy {
 	class State;
 
-	enum class DLLEXPORT ShipSize {
+	enum class ShipSize {
 		StarbaseOutpost,
 		StarbaseStarport,
 		StarbaseStarhold,
@@ -62,7 +60,7 @@ namespace Galaxy {
 		INVALID
 	};
 
-	class DLLEXPORT ShipDesign : QObject {
+	class ShipDesign : QObject {
 		Q_OBJECT
 	public:
 		ShipDesign(QObject *parent);
