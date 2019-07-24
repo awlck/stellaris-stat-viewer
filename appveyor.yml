@@ -35,5 +35,9 @@ after_test:
   - cmd: copy stellaris_stat_viewer.exe artifact
   - sh: cp stellaris_stat_viewer artifact
 
+on_finish:
+  - ps: if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2017") {$wc = New-Object 'System.Net.WebClient'; $wc.UploadFile("https://ci.appveyor.com/api/testresults/xunit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\test_result_parser.xml))}
+  - sh:  curl -F 'file=test_result_parser.xml' "https://ci.appveyor.com/api/testresults/xunit/$APPVEYOR_JOB_ID"
+
 artifacts:
   - path: cmake-build-av\artifact
