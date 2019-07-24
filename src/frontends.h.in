@@ -1,4 +1,8 @@
-/* frontends/widgets/widgets_main.cpp: Entry point for the SSV widgets frontend.
+/* frontends.h.in: Figuring out available frontends.
+ *
+ * This file will be turned into a 'frontends.h' file using CMake's
+ * configure_file function. '#cmakedefine' directives will be
+ * replaced as appropriate.
  *
  * Copyright 2019 Adrian "ArdiMaster" Welcker
  *
@@ -15,12 +19,23 @@
  * limitations under the License.
  */
 
-#include <QtWidgets/QApplication>
-#include "mainwindow.h"
+#cmakedefine SSV_BUILD_WIDGETS
+#cmakedefine SSV_BUILD_JSON
 
-int frontend_widgets_begin(int argc, char **argv) {
-	QApplication app(argc, argv);
-	MainWindow window;
-	window.show();
-	return app.exec();
-}
+#ifdef SSV_BUILD_WIDGETS
+int frontend_widgets_begin(int, char **);
+#endif
+
+#ifdef SSV_BUILD_JSON
+int frontend_json_begin(int, char **);
+#endif
+
+enum Frontend {
+	#ifdef SSV_BUILD_WIDGETS
+	FRONTEND_WIDGETS,
+	#endif
+	#ifdef SSV_BUILD_JSON
+	FRONTEND_JSON,
+	#endif
+	FRONTEND_NONE
+};

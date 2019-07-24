@@ -31,11 +31,7 @@
 
 using namespace Parsing;
 
-extern "C"
-#ifdef Q_OS_WIN
-__declspec(dllexport)
-#endif
-int frontend_begin(int argc, char **argv) {
+int frontend_json_begin(int argc, char **argv) {
 	if (argc != 3) {
 		fprintf(stderr, "USAGE: %s --frontend=json <FILE>\n\n"
 				  "  Read the gamestate file FILE and dump json stats to stdout\n", argv[0]);
