@@ -41,6 +41,7 @@
 #include "../../core/galaxy_state.h"
 #include "../../core/empire.h"
 #include "../../core/parser.h"
+#include "../../core/extract_gamestate.h"
 #include "settingsdialog.h"
 #include "techtreedialog.h"
 #include "views/economy_view.h"
@@ -117,22 +118,49 @@ void MainWindow::checkForUpdatesSelected() {
 }
 
 void MainWindow::openFileSelected() {
-	QString which = QFileDialog::getOpenFileName(this, tr("Select gamestate file"), QString(),
-			tr("Stellaris Game State Files (gamestate)"));
+	QString which = QFileDialog::getOpenFileName(this, tr("Select save file"), QString(),
+			tr("Stellaris Compressed Save Files (*.sav);;Stellaris Game State Files (gamestate)"));
 	if (which == "") return;  // Cancel was clicked
 	delete state;
 	gamestateLoadBegin();
-	Parsing::Parser parser(QFileInfo(which), Parsing::FileType::SaveFile, this);
-	connect(&parser, &Parsing::Parser::progress, this, &MainWindow::parserProgressUpdate);
-	Parsing::AstNode *result = parser.parse();
+	Parsing::Parser *parser;
+	bool isCompressedFile = which.endsWith(QStringLiteral(".sav"));
+	unsigned char *dest;
+	QTextStream *stream;
+	if (isCompressedFile) {
+		unsigned long destsize;
+		QFile f(which);
+		f.open(QIODevice::ReadOnly);
+		int result = extractGamestate(f, &dest, &destsize);
+		f.close();
+		if (result != 0) {
+			QMessageBox::critical(this, tr("Compression Error"), tr("An error occurred while puffing the selected file."));
+			// TODO: report exact error
+			if (result <= 2) free(dest);
+			return;
+		}
+		stream = new QTextStream(QByteArray((char *) dest, destsize));
+		parser = new Parsing::Parser(stream, which, Parsing::FileType::SaveFile, this);
+	} else {
+		stream = nullptr;
+		dest = nullptr;
+		parser = new Parsing::Parser(QFileInfo(which), Parsing::FileType::SaveFile, this);
+	}
+	connect(parser, &Parsing::Parser::progress, this, &MainWindow::parserProgressUpdate);
+	Parsing::AstNode *result = parser->parse();
+	if (isCompressedFile) {
+		delete stream;
+		free(dest);
+	}
 	if (!result) {
 		gamestateLoadDone();
-		Parsing::ParserError error = parser.getLatestParserError();
-		QMessageBox::critical(this, tr("Parse Error"), tr("A parse error occurred:\n") + which +
-			":" + QString::number(error.erroredToken.line) + ":" + QString::number(error.erroredToken.firstChar) +
-			".");
+		Parsing::ParserError error = parser->getLatestParserError();
+		QMessageBox::critical(this, tr("Parse Error"),
+			tr("A parse error (%1) occurred:\n %2:%3:%4.").arg(error.etype).arg(which).arg(error.erroredToken.line).arg(error.erroredToken.firstChar));
+		delete parser;
 		return;
 	}
+	delete parser;
 
 	gamestateLoadSwitch();
 	Galaxy::StateFactory stateFactory;
@@ -141,7 +169,7 @@ void MainWindow::openFileSelected() {
 	if (!state) {
 		gamestateLoadDone();
 		QMessageBox::critical(this, tr("Galaxy Creation Error"), tr("An error occurred while trying to extract "
-			"inforation from ") + which + tr(". Perhaps something isn't right with the input file."));
+			"information from ") + which + tr(". Perhaps something isn't right with the input file."));
 		return;
 	}
 
