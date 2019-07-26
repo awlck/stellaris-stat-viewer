@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0.2)
 
-project(stellaris_stat_viewer VERSION 0.2.1 LANGUAGES CXX)
+project(stellaris_stat_viewer VERSION 0.2.1 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
@@ -78,6 +78,7 @@ add_executable(stellaris_stat_viewer WIN32 MACOSX_BUNDLE
         src/core/ship.cpp src/core/ship.h
         src/core/ship_design.cpp src/core/ship_design.h
         src/core/technology.cpp src/core/technology.h
+        src/core/puff/puff.c src/core/puff/puff.h
         )
 target_compile_definitions(stellaris_stat_viewer PRIVATE SSV_VERSION="${SSV_BUILD_VERSION}")
 target_link_libraries(stellaris_stat_viewer ssv_parser Qt5::Core)

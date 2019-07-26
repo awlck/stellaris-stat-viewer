@@ -200,3 +200,7 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
+
+-- Notes on included 3rd-party software --
+Stellaris Stat Viewer incorporates the puff library written by Mark Adler,
+distributed under the zlib license. See src/core/puff/puff.h for details.
