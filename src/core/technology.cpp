@@ -45,6 +45,14 @@ namespace Galaxy {
 		return isRepeatable;
 	}
 
+	bool Technology::getIsWeightZero() const {
+		return isWeightZero;
+	}
+
+	const QList<WeightModifier>& Technology::getWeightModifyingTechs() const {
+		return weightModifyingTechs;
+	}
+
 	int Technology::getTier() const {
 		return tier;
 	}
@@ -81,6 +89,32 @@ namespace Galaxy {
 		if (prerequisitesNode && prerequisitesNode->type == Parsing::NT_STRINGLIST) {
 			ITERATE_CHILDREN(prerequisitesNode, aPrerequisite) {
 				state->requirements.append(aPrerequisite->val.Str);
+			}
+		}
+
+		AstNode *weightNode = node->findChildWithName("weight");
+		state->isWeightZero = !weightNode || (weightNode->type == Parsing::NT_INT && weightNode->val.Int == 0);
+
+		AstNode *weightModifierNode = node->findChildWithName("weight_modifier");
+		if (weightModifierNode) {
+			ITERATE_CHILDREN(weightModifierNode, modifier) {
+				if (qstrcmp(modifier->myName, "modifier") == 0) {
+					if (modifier->countChildren() != 2) continue;
+					AstNode *factorNode = modifier->findChildWithName("factor");
+					AstNode *hasTechNode = modifier->findChildWithName("has_technology");
+					if (!factorNode || !hasTechNode) continue;
+					if (hasTechNode->type != Parsing::NT_STRING) continue;
+					switch (factorNode->type) {
+						case Parsing::NT_INT:
+							state->weightModifyingTechs.append({QString(hasTechNode->val.Str), (double) factorNode->val.Int});
+							break;
+						case Parsing::NT_DOUBLE:
+							state->weightModifyingTechs.append({QString(hasTechNode->val.Str), factorNode->val.Double});
+							break;
+						default:
+							continue;
+					}
+				}
 			}
 		}
 		

@@ -47,7 +47,7 @@ static void writeTechTreeNodes(QFile *out, const QMap<QString, Technology *> &te
 	for (auto it = techs.cbegin(); it != techs.cend(); it++) {
 		Technology *tech = it.value();
 		out->write(it.key().toUtf8());
-		switch(tech->getArea()) {
+		switch (tech->getArea()) {
 			case Galaxy::TechArea::Physics:
 				out->write("[color=blue");
 				break;
@@ -61,16 +61,18 @@ static void writeTechTreeNodes(QFile *out, const QMap<QString, Technology *> &te
 		out->write(",label=\"");
 		out->write(translator->getTranslationOf(it.key()).toUtf8());
 		out->write("\"");
-		if (tech->getIsRare()) {
-			out->write(",style=filled,fillcolor=darkorchid");
-		} else if (tech->getIsStartingTech()) {
+		if (tech->getIsStartingTech()) {
 			out->write(",style=filled,fillcolor=green");
+		} else if (tech->getIsWeightZero()) {
+			out->write(",style=filled,fillcolor=gray");
+		} else if (tech->getIsRare()) {
+			out->write(",style=filled,fillcolor=darkorchid");
 		}
 		out->write("];\n");
 	}
 }
 
-static void writeTechTreePrerequisites(QFile *out, const QMap<QString, Technology *> &techs) {
+static void writeTechTreeRelations(QFile *out, const QMap<QString, Technology *> &techs, bool enableWeights) {
 	for (auto it = techs.cbegin(); it != techs.cend(); it++) {
 		const QStringList &reqs = it.value()->getRequirements();
 		const QString &tech = it.key();
@@ -79,6 +81,21 @@ static void writeTechTreePrerequisites(QFile *out, const QMap<QString, Technolog
 			out->write("->");
 			out->write(tech.toUtf8().data());
 			out->write(";\n");
+		}
+		if (enableWeights) {
+			const auto &wms = it.value()->getWeightModifyingTechs();
+			for (const auto &wm: wms) {
+				out->write(wm.tech.toUtf8().data());
+				out->write(" -> ");
+				out->write(tech.toUtf8().data());
+				out->write(" [style=dashed, color=");
+				if (wm.modifier < 1.0) {
+					out->write("red");
+				} else {
+					out->write("forestgreen");
+				}
+				out->write("];\n");
+			}
 		}
 	}
 }
@@ -91,10 +108,10 @@ TechTreeDialog::TechTreeDialog(GameTranslator *translator, QWidget *parent)
 	treeTypeBox = new QGroupBox(tr("Tree type"));
 	treeTypeBoxLayout = new QHBoxLayout;
 	treeTypeBox->setLayout(treeTypeBoxLayout);
-	treeCompleteRadio = new QRadioButton(tr("Full"));
-	treeReducedRadio = new QRadioButton(tr("Reduced"));
-	treeCompleteRadio->setEnabled(false);
-	treeCompleteRadio->setToolTip(tr("Not yet available."));
+	treeCompleteRadio = new QRadioButton(tr("Advanced"));
+	treeReducedRadio = new QRadioButton(tr("Standard"));
+	// treeCompleteRadio->setEnabled(false);
+	treeCompleteRadio->setToolTip(tr("Attempt to draw how technologies in more detail. Experimental."));
 	treeReducedRadio->setToolTip(tr("Only render the prerequisite relation."));
 	treeReducedRadio->setChecked(true);
 	treeTypeBoxLayout->addWidget(treeReducedRadio);
@@ -174,14 +191,14 @@ void TechTreeDialog::goClicked() {
 	outfile.write("strict digraph techs {\nnode[shape=box];ranksep=1.5;concentrate=true;rankdir=LR;\n");
 	writeTechTreeNodes(&outfile, techs, translator);
 	UPDATE_STATUS(tr("Writing connections"));
-	writeTechTreePrerequisites(&outfile, techs);
+	writeTechTreeRelations(&outfile, techs, treeCompleteRadio->isChecked());
 	outfile.write("}\n");
 	outfile.close();
 	UPDATE_STATUS(tr("Running dot"));
 	QProcess dot(this);
 	dot.setWorkingDirectory(dir.path());
 	QStringList args;
-	args << "techs.dot" << "-Tsvg" << "-otechs.svg";
+	args << "techs.dot" << "-Tpdf" << "-otechs.pdf";
 	dot.start(settings.value("tools/dot").toString(), args);
 	dot.waitForFinished();
 	if (dot.exitStatus() == QProcess::CrashExit || dot.exitCode() != 0) {
@@ -194,12 +211,15 @@ void TechTreeDialog::goClicked() {
 		return;
 	} else {
 		QString saveTo = QFileDialog::getSaveFileName(this, tr("Select target location"), QString(),
-				tr("Scalable Vector Graphics (*.svg)"));
+				tr("Portable Document Format (*.pdf)"));
 		if (saveTo == "") {
 			UPDATE_STATUS(tr("Cancelled"));
 			return;
 		}
-		QFile::copy(dir.filePath("techs.svg"), saveTo);
+		// Allow overwriting exisiting files -- a "file exists" query should be provided
+		// by the OS's "save file" dialog.
+		if (QFile::exists(saveTo)) QFile::remove(saveTo);
+		QFile::copy(dir.filePath("techs.pdf"), saveTo);
 		QDesktopServices::openUrl(QUrl::fromLocalFile(saveTo));
 	}
 	UPDATE_STATUS(tr("Ready."));

@@ -33,6 +33,11 @@ namespace Galaxy {
 		Engineering
 	};
 
+	struct WeightModifier {
+		QString tech;
+		double modifier;
+	};
+
 	class Technology : public QObject {
 		Q_OBJECT
 	public:
@@ -41,16 +46,21 @@ namespace Galaxy {
 		bool getIsStartingTech() const;
 		bool getIsRare() const;
 		bool getIsRepeatable() const;
+		bool getIsWeightZero() const;
+		const QList<WeightModifier> &getWeightModifyingTechs() const;
 		int getTier() const;
+
 		TechArea getArea() const;
 		static Technology *createFromAst(const Parsing::AstNode *node, QObject *parent);
 	private:
 		Technology(QObject *parent = nullptr);
 		QString name;
 		QStringList requirements;
+		QList<WeightModifier> weightModifyingTechs;
 		bool isStartingTech;
 		bool isRare;
 		bool isRepeatable;
+		bool isWeightZero;
 		int tier;
 		TechArea area;
 	};
