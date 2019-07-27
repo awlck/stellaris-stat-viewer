@@ -23,4 +23,6 @@
 
 int extractGamestate(QFile &f, unsigned char **dest, unsigned long *destsize);
 
+QString getInflateErrmsg(int result);
+
 #endif //STELLARIS_STAT_VIEWER_EXTRACT_GAMESTATE_H

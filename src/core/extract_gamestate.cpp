@@ -18,6 +18,8 @@
 
 #include "extract_gamestate.h"
 
+#include <QtCore/QTextStream>
+
 extern "C" {
 #include "puff/puff.h"
 }
@@ -63,7 +65,49 @@ int extractGamestate(QFile &f, unsigned char **dest, unsigned long *destsize) {
 	quint16 fileExtraLength = LEtoSystem(*reinterpret_cast<const quint16 *>(&data[28]));
 	const unsigned char *compr = (const unsigned char *) &data[30+fileNameLength+fileExtraLength];
 	*dest = (unsigned char *) calloc(sizeof(unsigned char), fileUncompressedSize+1);
+	unsigned char *puffdest = *dest;
 	*destsize = ((unsigned long) fileUncompressedSize) + 1;
 	auto inputSize = (unsigned long) fileCompressedSize;
-	return puff(*dest, destsize, compr, &inputSize);
+	return puff(puffdest, destsize, compr, &inputSize);
+}
+
+QString getInflateErrmsg(int result) {
+	switch (result) {
+		case 6:
+			return QObject::tr("Input file too short.");
+		case 5:
+			return QObject::tr("'gamestate' file not first in save.");
+		case 4:
+			return QObject::tr("File is not deflate (zlib) compressed.");
+		case 3:
+			return QObject::tr("File has invalid header.");
+		case 2:
+			return QStringLiteral("puff internal error (2): Available inflate data did not terminate.");
+		case 1:
+			return QStringLiteral("puff internal error (1): Output space exhausted before completing inflate.");
+		case -1:
+			return QStringLiteral("puff internal error (-1): invalid block type (type == 3)");
+		case -2:
+			return QStringLiteral("puff internal error (-2): stored block length did not match one's complement");
+		case -3:
+			return QStringLiteral("puff internal error (-3): dynamic block code description: too many length or distance codes");
+		case -4:
+			return QStringLiteral("puff internal error (-4): dynamic block code description: code lengths codes incomplete");
+		case -5:
+			return QStringLiteral("puff internal error (-5): dynamic block code description: repeat lengths with no first length");
+		case -6:
+			return QStringLiteral("puff internal error (-6): dynamic block code description: repeat more than specified lengths");
+		case -7:
+			return QStringLiteral("puff internal error (-7): dynamic block code description: invalid literal/length code lengths");
+		case -8:
+			return QStringLiteral("puff internal error (-8): dynamic block code description: invalid distance code lengths");
+		case -9:
+			return QStringLiteral("puff internal error (-9): dynamic block code description: missing end-of-block code");
+		case -10:
+			return QStringLiteral("puff internal error (-10): invalid literal/length or distance code in fixed or dynamic block");
+		case -11:
+			return QStringLiteral("puff internal error (-11): distance is too far back in fixed or dynamic block");
+		default:
+			return QStringLiteral("puff internal error (%1): Unknown error while inflating file.").arg(result);
+	}
 }

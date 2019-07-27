@@ -23,11 +23,11 @@
 
 #include <iostream>
 
-#include <QtCore/QDebug>
 #include <QtCore/QJsonArray>
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
 #include <QtCore/QSettings>
+#include <QtCore/QTextStream>
 #include <QtGui/QDesktopServices>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QLabel>
@@ -134,8 +134,11 @@ void MainWindow::openFileSelected() {
 		int result = extractGamestate(f, &dest, &destsize);
 		f.close();
 		if (result != 0) {
-			QMessageBox::critical(this, tr("Compression Error"), tr("An error occurred while puffing the selected file."));
-			// TODO: report exact error
+			QMessageBox::critical(this, tr("Compression Error"), tr("An error occurred while inflating the selected "
+				"file:\n%1\nPlease make sure that you have selected a valid save file. If the selected file loads fine "
+				"in the game, please report this issue "
+				"to the developer.").arg(getInflateErrmsg(result)));
+
 			if (result <= 2) free(dest);
 			return;
 		}
