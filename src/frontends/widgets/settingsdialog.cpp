@@ -45,7 +45,7 @@ SettingsDialog::SettingsDialog(QWidget *parent) : QDialog(parent) {
 	gameFolderLabel = new QLabel(tr("Game Folder:"));
 	gameFolderLabel->setBuddy(gameFolderEdit);
 	connect(gameFolderSelect, &QPushButton::pressed, this, &SettingsDialog::selectGameClicked);
-	connect(gameFolderEdit, &QLineEdit::editingFinished, this, &SettingsDialog::gameDirChanged);
+	connect(gameFolderEdit, &QLineEdit::textChanged, this, &SettingsDialog::gameDirChanged);
 
 	dotProgramEdit = new QLineEdit;
 	dotProgramSelect = new QPushButton(tr("Select"));
@@ -71,7 +71,7 @@ SettingsDialog::SettingsDialog(QWidget *parent) : QDialog(parent) {
 	gameFolderEdit->setText(settings.value("game/folder", QString()).toString());
 	dotProgramEdit->setText(settings.value("tools/dot", QString()).toString());
 	gameDirChanged();
-	gameLanguage->setCurrentText(settings.value("game/language", QVariant(tr("(None)"))).toString());
+	gameLanguage->setCurrentText(settings.value("game/language", tr("(None)")).toString());
 
 	okButton->setFocus();
 }
@@ -80,7 +80,7 @@ void SettingsDialog::gameDirChanged() {
 	QDir dir(QDir(gameFolderEdit->text()).absoluteFilePath("localisation"));
 	gameLanguage->clear();
 	gameLanguage->addItem(tr("(None)"));
-	gameLanguage->addItems(dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot));
+	if (dir.exists()) gameLanguage->addItems(dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot));
 }
 
 void SettingsDialog::okClicked() {
