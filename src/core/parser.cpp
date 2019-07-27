@@ -282,7 +282,12 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 #define PARSE_ERROR(error) do { latestParserError = { (error), currentToken }; delete root; return nullptr; } while (0)
 
 	AstNode* Parser::parse() {
-		lex();  // Initially fill token queue
+		try {
+			lex();  // Initially fill token queue
+		} catch (const ParserError &e) {
+			latestParserError = e;
+			return nullptr;
+		}
 		// Create a root node that will encompass the entire file.
 		AstNode *root = new AstNode;
 		root->type = NT_COMPOUND;

@@ -21,11 +21,13 @@
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
 #include <QtCore/QLinkedList>
+#include <QtCore/QTextStream>
 #include "../../core/empire.h"
 #include "../../core/fleet.h"
 #include "../../core/galaxy_state.h"
 #include "../../core/ship.h"
 #include "../../core/parser.h"
+#include "../../core/extract_gamestate.h"
 
 #include "dataextraction.h"
 
@@ -37,17 +39,49 @@ int frontend_json_begin(int argc, char **argv) {
 				  "  Read the gamestate file FILE and dump json stats to stdout\n", argv[0]);
 		return 1;
 	}
+	QString filename(argv[2]);
+	Parser *parser;
+	bool isCompressed = filename.endsWith(QStringLiteral(".sav"));
+	unsigned char *dest;
+	QTextStream *stream;
+	if (isCompressed) {
+		fprintf(stderr, "Inflating file ...\n");
+		unsigned long destsize;
+		QFile f(filename);
+		f.open(QIODevice::ReadOnly);
+		int result = extractGamestate(f, &dest, &destsize);
+		f.close();
+
+		if (result != 0) {
+			fprintf(stderr, "%s:\n%s\n\nPlease make sure you have selected a valid save file. If the selected file "
+				   "loads fine in the game, please report this issue to the developer.\n",
+				   argv[2], getInflateErrmsg(result).toLocal8Bit().data());
+			if (result <= 2) free(dest);
+			return 3;
+		}
+
+		stream = new QTextStream(QByteArray((char *) dest, destsize));
+		parser = new Parser(stream, filename, Parsing::FileType::SaveFile);
+	} else {
+		dest = nullptr;
+		stream = nullptr;
+		parser = new Parser(QFileInfo(argv[2]), FileType::SaveFile);
+	}
 	fprintf(stderr, "Parsing file ...\n");
-	Parser parser(QFileInfo(argv[2]), FileType::SaveFile);
-	AstNode *node = parser.parse();
+	AstNode *node = parser->parse();
 	if (node == nullptr) {
-		ParserError err = parser.getLatestParserError();
+		ParserError err = parser->getLatestParserError();
 		fprintf(stderr, "Parser Error on %s:%lu:%lu: Error#%d\n",
 				argv[2], err.erroredToken.line, err.erroredToken.firstChar, err.etype);
 		return 2;
 	} else if (node->countChildren() == 0) {
 		fprintf(stderr, "%s: Unknown parse error.\n", argv[2]);
 		return 2;
+	}
+	delete parser;
+	if (isCompressed) {
+		delete stream;
+		free(dest);
 	}
 	fprintf(stderr, "Building galaxy ...\n");
 	Galaxy::StateFactory sf;
