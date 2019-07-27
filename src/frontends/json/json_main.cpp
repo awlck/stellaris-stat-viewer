@@ -53,12 +53,8 @@ int frontend_json_begin(int argc, char **argv) {
 		f.close();
 
 		if (result != 0) {
-			/*QMessageBox::critical(this, tr("Compression Error"), tr("An error occurred while inflating the selected "
-																	"file:\n%1\nPlease make sure that you have selected a valid save file. If the selected file loads fine "
-																	"in the game, please report this issue "
-																	"to the developer.").arg(getInflateErrmsg(result)));*/
-			fprintf(stderr, "%s:\n%s\n\nPlease make sure you have selected a valid save file. If the selected file"
-				   "loads file in the game, please report this issue to the developer.\n",
+			fprintf(stderr, "%s:\n%s\n\nPlease make sure you have selected a valid save file. If the selected file "
+				   "loads fine in the game, please report this issue to the developer.\n",
 				   argv[2], getInflateErrmsg(result).toLocal8Bit().data());
 			if (result <= 2) free(dest);
 			return 3;
