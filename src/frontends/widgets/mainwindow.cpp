@@ -76,7 +76,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(aboutSsvAction, &QAction::triggered, this, &MainWindow::aboutSsvSelected);
 
 	QSettings settings;
-	translator = new GameTranslator(settings.value("game/folder").toString(), "english");
+	translator = new GameTranslator(settings.value("game/folder").toString(), settings.value("game/language", "english").toString());
 
 	powerRatingView = new OverviewView(this);
 	connect(this, &MainWindow::modelChanged, powerRatingView, &OverviewView::modelChanged);
