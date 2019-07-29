@@ -24,9 +24,9 @@ copyright = '2019, Adrian Welcker'
 author = 'Adrian Welcker'
 
 # The short X.Y version
-version = '0.2.1'
+version = '0.3-beta'
 # The full version, including alpha/beta/rc tags
-release = '0.2.1'
+release = '0.3-beta'
 
 applehelp_bundle_id = 'de.diepixelecke.Stellaris-Stat-Viewer'
 

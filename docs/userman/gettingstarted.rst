@@ -62,18 +62,4 @@ settings, and to draw the game's tech tree. More on that later.
 Loading a save file
 -------------------
 
-Right now, this isn't as straightforward as it should be, and therefore warrants a section
-of its own. The `.sav` files created by the game are really just fancy zip files, and can
-be treated accordingly. However, although zip is a fairly common format, dealing with them
-programatically is quite the pain in C++, and as such Stellaris Stat Viewer does not yet
-have the ability to deal with them on its own.
-
-In order to open a save file, first copy it somewhere safe. Then change the `.sav` at the
-end of the file name to `.zip`. Many operating systems (including Windows and macOS) will
-complain when you attempt to change this ending part (called the file extension), but in
-this case, it's fine. Now extract the file using your favorite tool. In particluar, we
-are interested in the `gamestate` file, as it contains the actual save data.
-
-After extracting the file, you can choose "Open Save File" from the "File" menu in Stellaris
-Stat Viewer, choose the `gamestate` file, and wait a moment for it to load.
-
+As of version 0.3, SSV understands `.sav` compressed save files.
