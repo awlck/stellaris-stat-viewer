@@ -50,6 +50,7 @@ add_library(ssv_frontend_widgets STATIC
         src/frontends/widgets/views/overview_view.cpp src/frontends/widgets/views/overview_view.h
         src/frontends/widgets/views/techs_view.cpp src/frontends/widgets/views/techs_view.h
     )
+target_compile_definitions(ssv_frontend_widgets PRIVATE SSV_VERSION="${SSV_BUILD_VERSION}")
 target_link_libraries(ssv_frontend_widgets Qt5::Widgets)
 set(SOME_FRONTEND_FOUND ON)
 endif()

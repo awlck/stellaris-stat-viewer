@@ -106,7 +106,7 @@ void MainWindow::aboutSsvSelected() {
 	QMessageBox::about(this, tr("About Stellars Stat Viewer"), tr("Stellaris Stat Viewer: EU4-inspired "
 		"statistics and rankings for Stellaris.\n\nVersion: %1\n(c) 2019 Adrian "
 		"\"ArdiMaster\" Welcker, Licensed under the Apache License version 2.0\n\nCheck out the source "
-		"code and contribute at\nhttps://github.com/ArdiMaster/stellaris-stat-viewer").arg(SSV_VERSION));
+		"code and contribute at\nhttps://gitlab.com/ArdiMaster/stellaris-stat-viewer").arg(SSV_VERSION));
 }
 
 void MainWindow::checkForUpdatesSelected() {
