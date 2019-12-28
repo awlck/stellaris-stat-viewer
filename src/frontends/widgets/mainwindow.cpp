@@ -80,19 +80,19 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
 	powerRatingView = new OverviewView(this);
 	connect(this, &MainWindow::modelChanged, powerRatingView, &OverviewView::modelChanged);
-	tabs->addTab(powerRatingView, "Overview");
+	tabs->addTab(powerRatingView, tr("Overview"));
 
 	militaryView = new FleetsView(this);
 	connect(this, &MainWindow::modelChanged, militaryView, &FleetsView::modelChanged);
-	tabs->addTab(militaryView, "Fleets");
+	tabs->addTab(militaryView, tr("Fleets"));
 
 	economyView = new EconomyView(this);
 	connect(this, &MainWindow::modelChanged, economyView, &EconomyView::modelChanged);
-	tabs->addTab(economyView, "Economy");
+	tabs->addTab(economyView, tr("Economy"));
 
 	techView = new TechView(translator, this);
 	connect(this, &MainWindow::modelChanged, techView, &TechView::modelChanged);
-	tabs->addTab(techView, "Technologies");
+	tabs->addTab(techView, tr("Technologies"));
 
 	statusLabel = new QLabel(tr("No file loaded."));
 	statusBar()->addPermanentWidget(statusLabel);
@@ -205,8 +205,8 @@ void MainWindow::techTreeSelected() {
 	QSettings settings;
 	if (settings.value("game/folder", QString()).toString() == "") {
 		QMessageBox messageBox;
-		messageBox.setText("Game folder not set");
-		messageBox.setInformativeText("Would you like to open settings and set the game folder now?");
+		messageBox.setText(tr("Game folder not set"));
+		messageBox.setInformativeText(tr("Would you like to open settings and set the game folder now?"));
 		messageBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
 		messageBox.setDefaultButton(QMessageBox::Yes);
 		messageBox.setIcon(QMessageBox::Warning);
@@ -216,10 +216,10 @@ void MainWindow::techTreeSelected() {
 	}
 	if (settings.value("tools/dot", QString()).toString() == "") {
 		QMessageBox messageBox;
-		messageBox.setText("Dot utility not found");
-		messageBox.setInformativeText("The tech tree functionality relies on the <code>dot</code> utility "
-			"from the GraphViz suite, but I was unable to locate it on your system. Would you like to open "
-			"settings and look for it manually right now?");
+		messageBox.setText(tr("Dot utility not found"));
+		messageBox.setInformativeText(tr("The tech tree functionality relies on the <code>dot</code> utility "
+		                                 "from the GraphViz suite, but I was unable to locate it on your system. Would you like to open "
+		                                 "settings and look for it manually right now?"));
 		messageBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
 		messageBox.setDefaultButton(QMessageBox::Yes);
 		messageBox.setIcon(QMessageBox::Warning);
