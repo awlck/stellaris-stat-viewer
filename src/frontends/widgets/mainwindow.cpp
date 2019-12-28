@@ -155,14 +155,17 @@ void MainWindow::openFileSelected() {
 		delete stream;
 		free(dest);
 	}
-	if (!result) {
-		gamestateLoadDone();
-		Parsing::ParserError error = parser->getLatestParserError();
-		QMessageBox::critical(this, tr("Parse Error"),
-			tr("A parse error (%1) occurred:\n %2:%3:%4.").arg(error.etype).arg(which).arg(error.erroredToken.line).arg(error.erroredToken.firstChar));
-		delete parser;
-		return;
-	}
+    if (!result) {
+        gamestateLoadDone();
+        Parsing::ParserError error(parser->getLatestParserError());
+        if (error.etype != Parsing::PE_CANCELLED)
+            QMessageBox::critical(this, tr("Parse Error"),
+                                  tr("%1:%2:%3: %4 (error #%5)").arg(which).arg(error.erroredToken.line)
+                                          .arg(error.erroredToken.firstChar).arg(
+                                                  Parsing::getErrorDescription(error.etype)).arg(error.etype));
+        delete parser;
+        return;
+    }
 	delete parser;
 
 	gamestateLoadSwitch();

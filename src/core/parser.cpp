@@ -225,6 +225,46 @@ namespace Parsing {
 		}
 	}
 
+	const QString getErrorDescription(ParseErr etype) {
+		switch(etype) {
+			case PE_NONE:
+				return QObject::tr("No error.");
+			case PE_INVALID_IN_COMPOUND:
+				return QObject::tr("Invalid token in Compound node.");
+			case PE_INVALID_AFTER_NAME:
+				return QObject::tr("Invalid token after name.");
+			case PE_INVALID_AFTER_EQUALS:
+				return QObject::tr("Invalid token after equals.");
+			case PE_INVALID_AFTER_RELATION:
+				return QObject::tr("Invalid token after relation.");
+			case PE_INVALID_AFTER_OPEN:
+				return QObject::tr("Invalid token after open brace.");
+			case PE_INVALID_COMBO_AFTER_OPEN:
+				return QObject::tr("Invalid combination of tokens after open brace.");
+			case PE_INVALID_IN_INT_LIST:
+				return QObject::tr("Invalid token in int list.");
+			case PE_INVALID_IN_DOUBLE_LIST:
+				return QObject::tr("Invalid token in double list.");
+			case PE_INVALID_IN_COMPOUND_LIST:
+				return QObject::tr("Invalid token in compound list.");
+			case PE_INVALID_IN_STRING_LIST:
+				return QObject::tr("Invalid token in string list.");
+			case PE_INVALID_IN_BOOL_LIST:
+				return QObject::tr("Invalid token in bool list.");
+			case PE_UNEXPECTED_END:
+				return QObject::tr("Unexpected end of file.");
+			case PE_TOO_MANY_CLOSE_BRACES:
+				return QObject::tr("Too many closing braces.");
+			case LE_INVALID_INT:
+				return QObject::tr("Invalid int literal.");
+			case LE_INVALID_DOUBLE:
+				return QObject::tr("Invalid double literal.");
+			case PE_CANCELLED:
+				return QObject::tr("Parsing cancelled (no error).");
+		}
+		return QStringLiteral("??? (BUG: unknown error type.)");
+	}
+
 	Parser::Parser(QString *text, QObject *parent) : QObject::QObject(parent),
 			shouldDeleteStream(true), fileType(FileType::NoFile),
 			file(nullptr), filename(tr("<string>")) {
@@ -589,11 +629,12 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 			}
 		}
 
+		// Bail out if user cancelled.
+		if (shouldCancel) PARSE_ERROR(PE_CANCELLED);
 		// alternatively, if all input is consumed but the parser isn't "at rest"...
 		if (things.size() > 1 || state != State::CompoundRoot) {
 			PARSE_ERROR(PE_UNEXPECTED_END);
 		}
-		if (shouldCancel) PARSE_ERROR(PE_CANCELLED);
 
 		return root;
 	}

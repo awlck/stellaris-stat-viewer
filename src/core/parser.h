@@ -145,6 +145,8 @@ namespace Parsing {
 		PE_CANCELLED
 	};
 
+	const QString getErrorDescription(ParseErr etype);
+
 	struct ParserError {
 		ParseErr etype;
 		Token erroredToken;
