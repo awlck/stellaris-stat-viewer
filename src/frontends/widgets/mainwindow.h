@@ -22,6 +22,8 @@
 
 #include <QtWidgets/QMainWindow>
 
+#include "frontends.h"
+
 class QAction;
 class QLabel;
 class QMenu;
@@ -57,6 +59,10 @@ private slots:
 	void settingsSelected();
 	void techTreeSelected();
 
+#ifdef SSV_BUILD_JSON
+	void exportStatsSelected();
+#endif
+
 	void parserProgressUpdate(Parsing::Parser *parser, qint64 current, qint64 max);
 	void galaxyProgressUpdate(Galaxy::StateFactory *factory, int current, int max);
 
@@ -69,17 +75,19 @@ private:
 	QAction *aboutQtAction;
 	QAction *aboutSsvAction;
 	QAction *checkForUpdatesAction;
-	QAction *exportStatsAction;
 	QAction *openFileAction;
 	QAction *settingsAction;
 	QAction *techTreeAction;
 	QLabel *statusLabel;
-	QMenuBar *theMenuBar;
 	QMenu *fileMenu;
 	QMenu *helpMenu;
 	QMenu *toolsMenu;
 	QProgressDialog *currentProgressDialog;
 	QTabWidget *tabs;
+
+#ifdef SSV_BUILD_JSON
+	QAction *exportStatsAction;
+#endif
 	
 	Galaxy::State *state = nullptr;
 	GameTranslator *translator;

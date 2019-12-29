@@ -54,10 +54,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	tabs = new QTabWidget;
 	setCentralWidget(tabs);
 
-	theMenuBar = menuBar();
+	QMenuBar *theMenuBar = menuBar();
 	fileMenu = theMenuBar->addMenu(tr("File"));
 	openFileAction = fileMenu->addAction(tr("Open Save File"));
 	connect(openFileAction, &QAction::triggered, this, &MainWindow::openFileSelected);
+#ifdef SSV_BUILD_JSON
+	exportStatsAction = fileMenu->addAction(tr("Export Data"));
+	exportStatsAction->setEnabled(false);
+	exportStatsAction->setToolTip(tr("Export the currently loaded statistics in JSON format."));
+	connect(exportStatsAction, &QAction::triggered, this, &MainWindow::exportStatsSelected);
+#endif
 
 	toolsMenu = theMenuBar->addMenu(tr("Tools"));
 	techTreeAction = toolsMenu->addAction(tr("Draw Tech Tree..."));
@@ -183,8 +189,54 @@ void MainWindow::openFileSelected() {
 	emit modelChanged(state);
 	statusLabel->setText(state->getDate());
 	statusBar()->showMessage(tr("Loaded ") + which, 5000);
+#ifdef SSV_BUILD_JSON
+	exportStatsAction->setEnabled(true);
+#endif
 	gamestateLoadDone();
 }
+
+#ifdef SSV_BUILD_JSON
+#include "../json/dataextraction.h"
+
+void MainWindow::exportStatsSelected() {
+	QString saveTo = QFileDialog::getSaveFileName(this, tr("Select target location"), QString(),
+	                                              tr("JSON files (*.json)"));
+	if (saveTo == "") {
+		return;
+	}
+
+	QJsonObject result = createJsonFromState(state);
+	// Allow overwriting exisiting files -- a "file exists" query should already be provided
+	// by the OS's "save file" dialog.
+	if (QFile::exists(saveTo)) QFile::remove(saveTo);
+
+	QFile out(saveTo);
+	if (!out.open(QIODevice::WriteOnly | QIODevice::Text)) {
+		QMessageBox message(this);
+		message.setText(tr("Unable to open export file"));
+		message.setInformativeText(tr("I can think of several potential reasons for this, "
+		                              "but perhaps the most likely one is that your system has run out of disk space."));
+		message.setIcon(QMessageBox::Critical);
+		message.setStandardButtons(QMessageBox::Ok);
+		message.exec();
+		return;
+	}
+	qint64 written = out.write(QJsonDocument(result).toJson());
+	out.close();
+
+	if (written == -1) {
+		QMessageBox message(this);
+		message.setText(tr("Unable to write export file"));
+		message.setInformativeText(tr("I can think of several potential reasons for this, "
+		                              "but perhaps the most likely one is that your system has run out of disk space."));
+		message.setIcon(QMessageBox::Critical);
+		message.setStandardButtons(QMessageBox::Ok);
+		message.exec();
+		return;
+	}
+	statusBar()->showMessage(tr("Wrote %1").arg(saveTo), 5000);
+}
+#endif
 
 void MainWindow::settingsSelected() {
 	SettingsDialog dialog(this);

@@ -21,8 +21,13 @@
 #include <QtCore/QJsonObject>
 #include <QtCore/QLinkedList>
 
-namespace Galaxy { class Empire; class Ship; }
+namespace Galaxy {
+	class Empire;
+	class Ship;
+	class State;
+}
 
 QJsonObject createDataForEmpire(const Galaxy::Empire *e, const QLinkedList<Galaxy::Ship *> &ships);
+QJsonObject createJsonFromState(const Galaxy::State *state);
 
 #endif //STELLARIS_STAT_VIEWER_DATAEXTRACTION_H

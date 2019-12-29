@@ -38,28 +38,29 @@ endif()
 endif()
 
 if(SSV_BUILD_WIDGETS)
-add_library(ssv_frontend_widgets STATIC
-        src/frontends/widgets/widgets_main.cpp
-        src/frontends/widgets/mainwindow.cpp src/frontends/widgets/mainwindow.h
-        src/frontends/widgets/numerictableitem.cpp src/frontends/widgets/numerictableitem.h
-        src/frontends/widgets/settingsdialog.cpp src/frontends/widgets/settingsdialog.h
-        src/frontends/widgets/techtreedialog.cpp src/frontends/widgets/techtreedialog.h
-        src/frontends/widgets/views/economy_view.cpp src/frontends/widgets/views/economy_view.h
-        src/frontends/widgets/views/fleets_view.cpp src/frontends/widgets/views/fleets_view.h
-        src/frontends/widgets/views/overview_view.cpp src/frontends/widgets/views/overview_view.h
-        src/frontends/widgets/views/techs_view.cpp src/frontends/widgets/views/techs_view.h
-    )
-target_compile_definitions(ssv_frontend_widgets PRIVATE SSV_VERSION="${SSV_BUILD_VERSION}")
-target_link_libraries(ssv_frontend_widgets Qt5::Widgets)
-set(SOME_FRONTEND_FOUND ON)
+    add_library(ssv_frontend_widgets STATIC
+            src/frontends/widgets/widgets_main.cpp
+            src/frontends/widgets/mainwindow.cpp src/frontends/widgets/mainwindow.h
+            src/frontends/widgets/numerictableitem.cpp src/frontends/widgets/numerictableitem.h
+            src/frontends/widgets/settingsdialog.cpp src/frontends/widgets/settingsdialog.h
+            src/frontends/widgets/techtreedialog.cpp src/frontends/widgets/techtreedialog.h
+            src/frontends/widgets/views/economy_view.cpp src/frontends/widgets/views/economy_view.h
+            src/frontends/widgets/views/fleets_view.cpp src/frontends/widgets/views/fleets_view.h
+            src/frontends/widgets/views/overview_view.cpp src/frontends/widgets/views/overview_view.h
+            src/frontends/widgets/views/techs_view.cpp src/frontends/widgets/views/techs_view.h
+        )
+    target_compile_definitions(ssv_frontend_widgets PRIVATE SSV_VERSION="${SSV_BUILD_VERSION}")
+    target_link_libraries(ssv_frontend_widgets Qt5::Widgets)
+    target_include_directories(ssv_frontend_widgets PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+    set(SOME_FRONTEND_FOUND ON)
 endif()
 
 if(SSV_BUILD_JSON)
-add_library(ssv_frontend_json STATIC
-        src/frontends/json/json_main.cpp
-        src/frontends/json/dataextraction.cpp src/frontends/json/dataextraction.h)
-target_link_libraries(ssv_frontend_json Qt5::Core)
-set(SOME_FRONTEND_FOUND ON)
+    add_library(ssv_frontend_json STATIC
+            src/frontends/json/json_main.cpp
+            src/frontends/json/dataextraction.cpp src/frontends/json/dataextraction.h)
+    target_link_libraries(ssv_frontend_json Qt5::Core)
+    set(SOME_FRONTEND_FOUND ON)
 endif()
 
 configure_file(src/frontends.h.in frontends.h)
