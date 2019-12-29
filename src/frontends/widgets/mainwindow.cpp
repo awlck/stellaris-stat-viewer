@@ -31,6 +31,7 @@
 #include <QtCore/QTextStream>
 #include <QtGui/QDesktopServices>
 #include <QtGui/QDragEnterEvent>
+#include <QtWidgets/QApplication>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMenuBar>
@@ -60,6 +61,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	QMenuBar *theMenuBar = menuBar();
 	fileMenu = theMenuBar->addMenu(tr("File"));
 	openFileAction = fileMenu->addAction(tr("Open Save File"));
+	openFileAction->setShortcut(QKeySequence::Open);
 	connect(openFileAction, &QAction::triggered, this, &MainWindow::openFileSelected);
 #ifdef SSV_BUILD_JSON
 	exportStatsAction = fileMenu->addAction(tr("Export Data"));
@@ -67,10 +69,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	exportStatsAction->setToolTip(tr("Export the currently loaded statistics in JSON format."));
 	connect(exportStatsAction, &QAction::triggered, this, &MainWindow::exportStatsSelected);
 #endif
+	quitAction = fileMenu->addAction(tr("Exit"));
+	quitAction->setMenuRole(QAction::QuitRole);
+	quitAction->setShortcut(QKeySequence::Quit);
+	connect(quitAction, &QAction::triggered, this, &MainWindow::quitSelected);
 
 	toolsMenu = theMenuBar->addMenu(tr("Tools"));
 	techTreeAction = toolsMenu->addAction(tr("Draw Tech Tree..."));
 	settingsAction = toolsMenu->addAction(tr("Settings"));
+	settingsAction->setMenuRole(QAction::PreferencesRole);
+	settingsAction->setShortcut(QKeySequence::Preferences);
 	connect(techTreeAction, &QAction::triggered, this, &MainWindow::techTreeSelected);
 	connect(settingsAction, &QAction::triggered, this, &MainWindow::settingsSelected);
 
@@ -80,8 +88,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	checkForUpdatesAction->setToolTip(tr("Open your default browser to check GitHub for new releases."));
 	connect(checkForUpdatesAction, &QAction::triggered, this, &MainWindow::checkForUpdatesSelected);
 	aboutQtAction = helpMenu->addAction(tr("About Qt"));
+	aboutQtAction->setMenuRole(QAction::AboutQtRole);
 	connect(aboutQtAction, &QAction::triggered, this, &MainWindow::aboutQtSelected);
 	aboutSsvAction = helpMenu->addAction(tr("About Stellaris Stat Viewer"));
+	aboutSsvAction->setMenuRole(QAction::AboutRole);
 	connect(aboutSsvAction, &QAction::triggered, this, &MainWindow::aboutSsvSelected);
 
 	QSettings settings;
@@ -175,6 +185,10 @@ void MainWindow::exportStatsSelected() {
 	statusBar()->showMessage(tr("Wrote %1").arg(saveTo), 5000);
 }
 #endif
+
+void MainWindow::quitSelected() {
+	QApplication::exit();
+}
 
 void MainWindow::settingsSelected() {
 	SettingsDialog dialog(this);
