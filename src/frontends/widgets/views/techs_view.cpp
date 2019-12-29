@@ -21,7 +21,7 @@
 #include <QtWidgets/QListWidget>
 #include <QtWidgets/QLabel>
 
-#include "../gametranslator.h"
+#include "../../../core/gametranslator.h"
 #include "../../../core/galaxy_state.h"
 #include "../../../core/empire.h"
 

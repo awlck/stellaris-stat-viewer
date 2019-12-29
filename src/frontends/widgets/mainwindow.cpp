@@ -37,7 +37,7 @@
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QTabWidget>
 
-#include "gametranslator.h"
+#include "../../core/gametranslator.h"
 #include "../../core/galaxy_state.h"
 #include "../../core/empire.h"
 #include "../../core/parser.h"

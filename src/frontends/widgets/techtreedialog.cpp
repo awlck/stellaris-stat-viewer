@@ -27,7 +27,6 @@
 #include <QtWidgets/QBoxLayout>
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QFileDialog>
-#include <QtWidgets/QGridLayout>
 #include <QtWidgets/QGroupBox>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMessageBox>
@@ -37,7 +36,7 @@
 #include "../../core/galaxy_model.h"
 #include "../../core/technology.h"
 #include "../../core/parser.h"
-#include "gametranslator.h"
+#include "../../core/gametranslator.h"
 
 using Galaxy::Technology;
 using Parsing::AstNode;

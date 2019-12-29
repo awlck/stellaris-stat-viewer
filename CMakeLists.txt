@@ -40,7 +40,6 @@ endif()
 if(SSV_BUILD_WIDGETS)
 add_library(ssv_frontend_widgets STATIC
         src/frontends/widgets/widgets_main.cpp
-        src/frontends/widgets/gametranslator.cpp src/frontends/widgets/gametranslator.h
         src/frontends/widgets/mainwindow.cpp src/frontends/widgets/mainwindow.h
         src/frontends/widgets/numerictableitem.cpp src/frontends/widgets/numerictableitem.h
         src/frontends/widgets/settingsdialog.cpp src/frontends/widgets/settingsdialog.h
@@ -74,6 +73,7 @@ add_executable(stellaris_stat_viewer WIN32 MACOSX_BUNDLE
         src/main.cpp src/frontends.h.in
         src/core/galaxy_model.cpp src/core/galaxy_model.h
         src/core/galaxy_state.cpp src/core/galaxy_state.h
+        src/core/gametranslator.cpp src/core/gametranslator.h
         src/core/empire.cpp src/core/empire.h
         src/core/fleet.cpp src/core/fleet.h
         src/core/ship.cpp src/core/ship.h
