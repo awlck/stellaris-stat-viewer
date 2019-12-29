@@ -173,7 +173,6 @@ void TechTreeDialog::goClicked() {
 		Parser parser(f, Parsing::FileType::GameFile, this);
 		AstNode *tree = parser.parse();
 		if (tree) model.addTechnologies(tree);
-		delete tree;
 	}
 	UPDATE_STATUS(tr("Writing nodes"));
 	const QMap<QString, Technology *> &techs = model.getTechnologies();
