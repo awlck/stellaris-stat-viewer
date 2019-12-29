@@ -92,7 +92,6 @@ namespace Parsing {
 	};
 
 	struct AstNode {
-		// ~AstNode();
 		/** Merge 'other' into this tree
 		 *
 		 * All children of 'other' will become children of this.

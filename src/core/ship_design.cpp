@@ -81,7 +81,7 @@ namespace Galaxy {
 		AstNode *nameNode = tree->findChildWithName("name");
 		AstNode *sizeNode;
 		if (nameNode) {
-			state->name = nameNode != nullptr ? QString(nameNode->val.Str) : tr("<anonymous design>");
+			state->name = QString(nameNode->val.Str);
 
 			sizeNode = nameNode->nextSibling;
 			if (qstrcmp(sizeNode->myName, "ship_size") != 0) {
@@ -89,6 +89,7 @@ namespace Galaxy {
 				CHECK_PTR(sizeNode);
 			}
 		} else {
+			state->name = tr("<anonymous design>");
 			sizeNode = tree->findChildWithName("ship_size");
 			CHECK_PTR(sizeNode);
 		}

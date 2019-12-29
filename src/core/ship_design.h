@@ -21,6 +21,7 @@
 #define STELLARIS_STAT_VIEWER_SHIP_DESIGN_H
 
 #include <QtCore/QObject>
+#include <QtCore/QMap>
 
 namespace Parsing { struct AstNode; }
 

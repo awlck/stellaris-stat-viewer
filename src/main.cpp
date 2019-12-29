@@ -19,7 +19,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <QtCore/QCoreApplication>
-#include <stdlib.h>
 #include <string.h>
 
 #include "frontends.h"

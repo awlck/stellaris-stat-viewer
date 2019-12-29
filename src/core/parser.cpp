@@ -41,20 +41,6 @@ namespace Parsing {
 		}
 	}
 
-	/* AstNode::~AstNode() {
-		if (typeHasChildren(type)) delete val.firstChild;
-		if (nextSibling) {
-			AstNode *sib, *tmp;
-			sib = nextSibling;
-			do {
-				tmp = sib->nextSibling;
-				sib->nextSibling = nullptr;
-				delete sib;
-				sib = tmp;
-			} while (sib);
-		}
-	} */
-
 	void AstNode::merge(Parsing::AstNode *other) {
 		if (type != other->type || !typeHasChildren(type)) return;
 		if (other->val.firstChild != nullptr) {
@@ -689,10 +675,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 					if (!haveEscape) {
 						haveEscape = (c == '\\');
 					} else {
-						if (c == '"') {
-							current += c;
-							len++;
-						} else if (c == '\\') {
+						if (c == '"' || c == '\\') {
 							current += c;
 							len++;
 						}
@@ -719,10 +702,9 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 					if (c.isDigit()) assumption = TT_INT;
 					else if (c == '-') assumption = TT_INT;
 					else assumption = TT_STRING;
-				}
-				else if (assumption == TT_INT && c == '.') assumption = TT_DOUBLE;
+				} else if (assumption == TT_INT && c == '.') assumption = TT_DOUBLE;
 			} else { finish_off_token:
-				Token token;
+				Token token{};
 				token.line = line;
 				token.firstChar = charPos - len;
 				switch (assumption) {
@@ -790,7 +772,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 					comment = true;
 				}
 				if (specialType != TT_NONE) {
-					Token stok;
+					Token stok{};
 					stok.line = line;
 					stok.firstChar = charPos;
 					stok.type = specialType;
@@ -810,7 +792,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 		if (stream->atEnd()) {
 			lexerDone = true;
 			if (assumption != TT_NONE) {
-				Token currentToken{ line, charPos - len, TT_NONE, {0} };
+				Token currentToken{ line, charPos - len, TT_NONE, {{0}} };
 				qstrncpy(currentToken.tok.String, current.toUtf8().data(), 64);
 				throw ParserError{ PE_UNEXPECTED_END, currentToken };
 			}
