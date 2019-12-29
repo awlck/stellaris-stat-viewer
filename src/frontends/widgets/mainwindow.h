@@ -20,6 +20,7 @@
 #ifndef STELLARIS_STAT_VIEWER_MAINWINDOW_H
 #define STELLARIS_STAT_VIEWER_MAINWINDOW_H
 
+#include <QtCore/QFileInfo>
 #include <QtWidgets/QMainWindow>
 
 #include "frontends.h"
@@ -51,6 +52,10 @@ public:
 signals:
 	void modelChanged(const Galaxy::State *newModel);
 
+protected:
+	void dragEnterEvent(QDragEnterEvent *event) override;
+	void dropEvent(QDropEvent *event) override;
+
 private slots:
 	void aboutQtSelected();
 	void aboutSsvSelected();
@@ -71,6 +76,7 @@ private:
 	void gamestateLoadSwitch();
 	void gamestateLoadFinishing();
 	void gamestateLoadDone();
+	void loadFromFile(const QFileInfo& file);
 
 	QAction *aboutQtAction;
 	QAction *aboutSsvAction;
