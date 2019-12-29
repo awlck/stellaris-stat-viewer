@@ -33,71 +33,14 @@
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QRadioButton>
 
-#include "../../core/galaxy_model.h"
-#include "../../core/technology.h"
-#include "../../core/parser.h"
 #include "../../core/gametranslator.h"
+#include "../../core/galaxy_model.h"
+#include "../../core/parser.h"
+#include "../../core/technology.h"
+#include "../../core/techtree.h"
 
-using Galaxy::Technology;
 using Parsing::AstNode;
 using Parsing::Parser;
-
-static void writeTechTreeNodes(QFile *out, const QMap<QString, Technology *> &techs, GameTranslator *translator) {
-	for (auto it = techs.cbegin(); it != techs.cend(); it++) {
-		Technology *tech = it.value();
-		out->write(it.key().toUtf8());
-		switch (tech->getArea()) {
-			case Galaxy::TechArea::Physics:
-				out->write("[color=blue");
-				break;
-			case Galaxy::TechArea::Society:
-				out->write("[color=forestgreen");
-				break;
-			case Galaxy::TechArea::Engineering:
-				out->write("[color=orange");
-				break;
-		}
-		out->write(",label=\"");
-		out->write(translator->getTranslationOf(it.key()).toUtf8());
-		out->write("\"");
-		if (tech->getIsStartingTech()) {
-			out->write(",style=filled,fillcolor=green");
-		} else if (tech->getIsWeightZero()) {
-			out->write(",style=filled,fillcolor=gray");
-		} else if (tech->getIsRare()) {
-			out->write(",style=filled,fillcolor=darkorchid");
-		}
-		out->write("];\n");
-	}
-}
-
-static void writeTechTreeRelations(QFile *out, const QMap<QString, Technology *> &techs, bool enableWeights) {
-	for (auto it = techs.cbegin(); it != techs.cend(); it++) {
-		const QStringList &reqs = it.value()->getRequirements();
-		const QString &tech = it.key();
-		for (const auto &aReq: reqs) {
-			out->write(aReq.toUtf8().data());
-			out->write("->");
-			out->write(tech.toUtf8().data());
-			out->write(";\n");
-		}
-		if (enableWeights) {
-			const auto &wms = it.value()->getWeightModifyingTechs();
-			for (const auto &wm: wms) {
-				out->write(wm.tech.toUtf8().data());
-				out->write(" -> ");
-				out->write(tech.toUtf8().data());
-				out->write(" [style=dashed, color=");
-				if (wm.modifier < 1.0) {
-					out->write("red");
-				} else {
-					out->write("forestgreen");
-				}
-				out->write("];\n");
-			}
-		}
-	}
-}
 
 TechTreeDialog::TechTreeDialog(GameTranslator *translator, QWidget *parent)
 		: QDialog(parent), translator(translator) {
@@ -169,12 +112,10 @@ void TechTreeDialog::goClicked() {
 	while (it.hasNext()) {
 		QFileInfo f(it.next());
 		UPDATE_STATUS(tr("Reading %1").arg(f.fileName()));
-		Parser parser(f, Parsing::FileType::GameFile, this);
-		AstNode *tree = parser.parse();
-		if (tree) model.addTechnologies(tree);
+		
 	}
 	UPDATE_STATUS(tr("Writing nodes"));
-	const QMap<QString, Technology *> &techs = model.getTechnologies();
+	const QMap<QString, Galaxy::Technology *> &techs = model.getTechnologies();
 	QFile outfile(dir.filePath("techs.dot"));
 	if (!outfile.open(QIODevice::WriteOnly | QIODevice::Text)) {
 		QMessageBox message(this);
@@ -186,11 +127,11 @@ void TechTreeDialog::goClicked() {
 		message.exec();
 		return;
 	}
-	outfile.write("strict digraph techs {\nnode[shape=box];ranksep=1.5;concentrate=true;rankdir=LR;\n");
+	writeTechTreePreamble(&outfile);
 	writeTechTreeNodes(&outfile, techs, translator);
 	UPDATE_STATUS(tr("Writing connections"));
 	writeTechTreeRelations(&outfile, techs, treeCompleteRadio->isChecked());
-	outfile.write("}\n");
+	writeTechTreeClosing(&outfile);
 	outfile.close();
 	UPDATE_STATUS(tr("Running dot"));
 	QProcess dot(this);
