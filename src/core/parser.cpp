@@ -17,8 +17,10 @@
 
 #include "parser.h"
 
-#include <QtCore/QStack>
+#include <stack>
+
 #include <QtCore/QTextStream>
+#include <utility>
 
 #include <stdio.h>  // TODO: Not use stdlib
 
@@ -39,7 +41,7 @@ namespace Parsing {
 		}
 	}
 
-	AstNode::~AstNode() {
+	/* AstNode::~AstNode() {
 		if (typeHasChildren(type)) delete val.firstChild;
 		if (nextSibling) {
 			AstNode *sib, *tmp;
@@ -51,7 +53,7 @@ namespace Parsing {
 				sib = tmp;
 			} while (sib);
 		}
-	}
+	} */
 
 	void AstNode::merge(Parsing::AstNode *other) {
 		if (type != other->type || !typeHasChildren(type)) return;
@@ -65,7 +67,6 @@ namespace Parsing {
 			other->val.firstChild = nullptr;
 			other->val.lastChild = nullptr;
 		}
-		delete other;
 	}
 
 	AstNode* AstNode::findChildWithName(const char *name) const {
@@ -225,7 +226,7 @@ namespace Parsing {
 		}
 	}
 
-	const QString getErrorDescription(ParseErr etype) {
+	QString getErrorDescription(ParseErr etype) {
 		switch(etype) {
 			case PE_NONE:
 				return QObject::tr("No error.");
@@ -282,9 +283,9 @@ namespace Parsing {
 		totalSize = file->size();
 	}
 
-	Parser::Parser(QTextStream *stream, const QString &filename, FileType ftype, QObject *parent) :
+	Parser::Parser(QTextStream *stream, QString filename, FileType ftype, QObject *parent) :
 			QObject::QObject(parent), shouldDeleteStream(false), fileType(ftype),
-			file(nullptr), filename(filename), stream(stream) {
+			file(nullptr), filename(std::move(filename)), stream(stream) {
 		// Get the total size of stuff to be processed, if possible.
 		QIODevice *device = stream->device();
 		totalSize = device ? device->size() : 0;
@@ -319,7 +320,7 @@ if (things.top()->val.firstChild) { things.top()->val.lastChild->nextSibling = (
 else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (node); } \
 } while (0)
 
-#define PARSE_ERROR(error) do { latestParserError = { (error), currentToken }; delete root; return nullptr; } while (0)
+#define PARSE_ERROR(error) do { latestParserError = { (error), currentToken }; return nullptr; } while (0)
 
 	AstNode* Parser::parse() {
 		try {
@@ -329,10 +330,10 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 			return nullptr;
 		}
 		// Create a root node that will encompass the entire file.
-		AstNode *root = new AstNode;
+		AstNode *root = createNode();
 		root->type = NT_COMPOUND;
 		qstrcpy(root->myName, "tree_root");
-		QStack<AstNode *> things;  // Explicitly use a stack instead of using recursion.
+		std::stack<AstNode *> things;  // Explicitly use a stack instead of using recursion.
 		things.push(root);
 		State state = State::CompoundRoot;
 		Token currentToken = {0, 0, TT_NONE, {{'\0'}}};
@@ -343,20 +344,19 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 			} catch (const ParserError &e) {
 				if (lexerDone) break;  // in case the first token the lexer encounters is EOF
 				latestParserError = e;
-				delete root;
 				return nullptr;
 			}
 			switch (state) {
 			case State::CompoundRoot:
 				if (currentToken.type == TT_STRING) {
 					state = State::HaveName;
-					AstNode *nextNode = new AstNode;
+					AstNode *nextNode = createNode();
 					qstrcpy(nextNode->myName, currentToken.tok.String);
 					ADD_AS_CHILD(nextNode);
 					things.push(nextNode);
 				} else if (currentToken.type == TT_INT) {
 					state = State::HaveName;
-					AstNode * nextNode = new AstNode;
+					AstNode *nextNode = createNode();
 					QString tmp = QString::number(currentToken.tok.Int);
 					qstrcpy(nextNode->myName, tmp.toUtf8().data());
 					ADD_AS_CHILD(nextNode);
@@ -484,12 +484,11 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 						nextType = lookahead(1);
 					} catch (const ParserError &e) {
 						latestParserError = e;
-						delete root;
 						return nullptr;
 					}
 					if (nextType == TT_EQUALS || nextType == TT_GT || nextType == TT_LT) {
 						things.top()->type = NT_COMPOUND;
-						AstNode *nextNode = new AstNode;
+						AstNode *nextNode = createNode();
 						nextNode->type = NT_INDETERMINATE;
 						state = State::HaveName;
 						qstrcpy(nextNode->myName, currentToken.tok.String);
@@ -498,7 +497,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 					} else if (lookahead(1) == TT_STRING || lookahead(1) == TT_CBRACE) {
 						state = State::BegunStringList;
 						things.top()->type = NT_STRINGLIST;
-						AstNode *member = new AstNode;
+						AstNode *member = createNode();
 						member->type = NT_STRINGLIST_MEMBER;
 						qstrcpy(member->val.Str, currentToken.tok.String);
 						ADD_AS_CHILD(member);
@@ -509,13 +508,13 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 						if (lookahead(1) == TT_INT || lookahead(1) == TT_CBRACE) {
 							state = State::BegunIntList;
 							things.top()->type = NT_INTLIST;
-							AstNode *member = new AstNode;
+							AstNode *member = createNode();
 							member->type = NT_INTLIST_MEMBER;
 							member->val.Int = currentToken.tok.Int;
 							ADD_AS_CHILD(member);
 						} else if (lookahead(1) == TT_EQUALS) {
 							things.top()->type = NT_COMPOUND;
-							AstNode *nextNode = new AstNode;
+							AstNode *nextNode = createNode();
 							nextNode->type = NT_INDETERMINATE;
 							state = State::HaveName;
 							QString tmp = QString::number(currentToken.tok.Int);
@@ -525,14 +524,13 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 						} else PARSE_ERROR(PE_INVALID_COMBO_AFTER_OPEN);
 					} catch (const ParserError &e) {
 						latestParserError = e;
-						delete root;
 						return nullptr;
 					}
 					break;
 				case TT_DOUBLE: {
 					state = State::BegunDoubleList;
 					things.top()->type = NT_DOUBLELIST;
-					AstNode *member = new AstNode;
+					AstNode *member = createNode();
 					member->type = NT_DOUBLELIST_MEMBER;
 					member->val.Double = currentToken.tok.Double;
 					ADD_AS_CHILD(member);
@@ -541,7 +539,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 				case TT_BOOL: {
 					state = State::BegunBoolList;
 					things.top()->type = NT_BOOLLIST;
-					AstNode *member = new AstNode;
+					AstNode *member = createNode();
 					member->type = NT_BOOLLIST_MEMBER;
 					member->val.Bool = currentToken.tok.Bool;
 					ADD_AS_CHILD(member);
@@ -550,7 +548,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 				case TT_OBRACE: {
 					state = State::CompoundRoot;
 					things.top()->type = NT_COMPOUNDLIST;
-					AstNode *member = new AstNode;
+					AstNode *member = createNode();
 					member->type = NT_COMPUNDLIST_MEMBER;
 					ADD_AS_CHILD(member);
 					things.push(member);
@@ -571,7 +569,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 					state = State::CompoundRoot;
 					things.pop();
 				} else if (currentToken.type == TT_INT) {
-					AstNode *member = new AstNode;
+					AstNode *member = createNode();
 					member->type = NT_INTLIST_MEMBER;
 					member->val.Int = currentToken.tok.Int;
 					ADD_AS_CHILD(member);
@@ -582,7 +580,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 					state = State::CompoundRoot;
 					things.pop();
 				} else if (currentToken.type == TT_DOUBLE) {
-					AstNode *member = new AstNode;
+					AstNode *member = createNode();
 					member->type = NT_DOUBLELIST_MEMBER;
 					member->val.Double = currentToken.tok.Double;
 					ADD_AS_CHILD(member);
@@ -591,7 +589,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 			case State::BegunCompoundList:
 				if (currentToken.type == TT_OBRACE) {
 					state = State::CompoundRoot;
-					AstNode *member = new AstNode;
+					AstNode *member = createNode();
 					member->type = NT_COMPUNDLIST_MEMBER;
 					ADD_AS_CHILD(member);
 					things.push(member);
@@ -603,7 +601,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 				break;
 			case State::BegunStringList:
 				if (currentToken.type == TT_STRING) {
-					AstNode *member = new AstNode;
+					AstNode *member = createNode();
 					member->type = NT_STRINGLIST_MEMBER;
 					qstrcpy(member->val.Str, currentToken.tok.String);
 					ADD_AS_CHILD(member);
@@ -614,7 +612,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 				break;
 			case State::BegunBoolList:
 				if (currentToken.type == TT_BOOL) {
-					AstNode *member = new AstNode;
+					AstNode *member = createNode();
 					member->type = NT_BOOLLIST_MEMBER;
 					member->val.Bool = currentToken.tok.Bool;
 					ADD_AS_CHILD(member);
@@ -694,8 +692,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 						if (c == '"') {
 							current += c;
 							len++;
-						}
-						else if (c == '\\') {
+						} else if (c == '\\') {
 							current += c;
 							len++;
 						}
@@ -827,5 +824,10 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 		if (lexQueue.size() < n) lex(n);
 		if (lexQueue.size() < n) return TT_NONE;
 		return lexQueue[n-1].type;
+	}
+
+	AstNode *Parser::createNode() {
+		allCreatedNodes.emplace_front();
+		return &allCreatedNodes.front();
 	}
 }

@@ -125,7 +125,7 @@ void MainWindow::openFileSelected() {
 	gamestateLoadBegin();
 	Parsing::Parser *parser;
 	bool isCompressedFile = which.endsWith(QStringLiteral(".sav"));
-	unsigned char *dest;
+	unsigned char *dest;  // where the extracted gamestate file will go, if necessary
 	QTextStream *stream;
 	if (isCompressedFile) {
 		unsigned long destsize;
@@ -166,7 +166,6 @@ void MainWindow::openFileSelected() {
         delete parser;
         return;
     }
-	delete parser;
 
 	gamestateLoadSwitch();
 	Galaxy::StateFactory stateFactory;
@@ -180,7 +179,7 @@ void MainWindow::openFileSelected() {
 	}
 
 	gamestateLoadFinishing();
-	delete result;
+	delete parser;
 	emit modelChanged(state);
 	statusLabel->setText(state->getDate());
 	statusBar()->showMessage(tr("Loaded ") + which, 5000);

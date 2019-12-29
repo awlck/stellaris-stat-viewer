@@ -53,8 +53,6 @@ private slots:
 		QCOMPARE(result->type, NT_INT);
 		QCOMPARE(result->relation, RT_EQ);
 		QCOMPARE(result->val.Int, value);
-
-		delete tree;
 	}
 
 	void integers_relations_data() {
@@ -99,8 +97,6 @@ private slots:
 		QCOMPARE(result->type, Parsing::NT_INT);
 		QCOMPARE(result->relation, relation);
 		QCOMPARE(result->val.Int, value);
-
-		delete tree;
 	}
 
 	void doubles_equals_data() {
@@ -130,8 +126,6 @@ private slots:
 		QCOMPARE(result->type, NT_DOUBLE);
 		QCOMPARE(result->relation, RT_EQ);
 		QCOMPARE(result->val.Double, value);
-
-		delete tree;
 	}
 
 	void doubles_relations_data() {
@@ -176,8 +170,6 @@ private slots:
 		QCOMPARE(result->type, Parsing::NT_DOUBLE);
 		QCOMPARE(result->relation, relation);
 		QCOMPARE(result->val.Double, value);
-
-		delete tree;
 	}
 
 	void bools_data() {
@@ -215,8 +207,6 @@ private slots:
 		QCOMPARE(result->type, NT_BOOL);
 		QCOMPARE(result->relation, RT_EQ);
 		QCOMPARE(result->val.Bool, value);
-
-		delete tree;
 	}
 
 	void strings_data() {
@@ -253,8 +243,6 @@ private slots:
 		QCOMPARE(qstrcmp(result->myName, "stuff"), 0);
 		QCOMPARE(result->type, NT_STRING);
 		QCOMPARE(QString::fromUtf8(result->val.Str), value);
-
-		delete tree;
 	}
 
 	void intlists_three_data() {
@@ -299,8 +287,6 @@ private slots:
 		list = list->nextSibling;
 		QCOMPARE(list->type, NT_INTLIST_MEMBER);
 		QCOMPARE(list->val.Int, val3);
-
-		delete tree;
 	}
 
 	void intlists_single_data() {
@@ -332,8 +318,6 @@ private slots:
 		AstNode *list = result->val.firstChild;
 		QCOMPARE(list->type, NT_INTLIST_MEMBER);
 		QCOMPARE(list->val.Int, value);
-
-		delete tree;
 	}
 
 	void doublelists_three_data() {
@@ -378,8 +362,6 @@ private slots:
 		list = list->nextSibling;
 		QCOMPARE(list->type, NT_DOUBLELIST_MEMBER);
 		QCOMPARE(list->val.Double, val3);
-
-		delete tree;
 	}
 
 	void doublelists_single_data() {
@@ -411,8 +393,6 @@ private slots:
 		AstNode *list = result->val.firstChild;
 		QCOMPARE(list->type, NT_DOUBLELIST_MEMBER);
 		QCOMPARE(list->val.Double, value);
-
-		delete tree;
 	}
 
 	void boollists_three_data() {
@@ -452,8 +432,6 @@ private slots:
 		list = list->nextSibling;
 		QCOMPARE(list->type, NT_BOOLLIST_MEMBER);
 		QCOMPARE(list->val.Bool, val3);
-
-		delete tree;
 	}
 
 	void boollists_single_data() {
@@ -482,8 +460,6 @@ private slots:
 		AstNode *list = result->val.firstChild;
 		QCOMPARE(list->type, NT_BOOLLIST_MEMBER);
 		QCOMPARE(list->val.Bool, value);
-
-		delete tree;
 	}
 
 	void stringlists_single_data() {
@@ -511,8 +487,6 @@ private slots:
 		AstNode *list = result->val.firstChild;
 		QCOMPARE(list->type, NT_STRINGLIST_MEMBER);
 		QCOMPARE(QString::fromUtf8(list->val.Str), value);
-
-		delete tree;
 	}
 
 	void stringlists_specific() {
@@ -561,8 +535,6 @@ private slots:
 		list = list->nextSibling;
 		QCOMPARE(list->type, NT_STRINGLIST_MEMBER);
 		QCOMPARE(QString::fromUtf8(list->val.Str), val6);
-
-		delete tree;
 	}
 
 	void compound_int_relations_data() {
@@ -596,8 +568,6 @@ private slots:
 		QCOMPARE(entry->type, NT_INT);
 		QCOMPARE(entry->relation, relation);
 		QCOMPARE(entry->val.Int, 10);
-
-		delete tree;
 	}
 
 	void compound_double_relations_data() {
@@ -631,8 +601,6 @@ private slots:
 		QCOMPARE(entry->type, NT_DOUBLE);
 		QCOMPARE(entry->relation, relation);
 		QCOMPARE(entry->val.Double, 10.5);
-
-		delete tree;
 	}
 
 	void invalid_data() {

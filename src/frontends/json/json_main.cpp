@@ -78,7 +78,6 @@ int frontend_json_begin(int argc, char **argv) {
 		fprintf(stderr, "%s: Unknown parse error.\n", argv[2]);
 		return 2;
 	}
-	delete parser;
 	if (isCompressed) {
 		delete stream;
 		free(dest);
@@ -90,7 +89,7 @@ int frontend_json_begin(int argc, char **argv) {
 		fprintf(stderr, "Error extracting data from the save file.\n");
 		return 3;
 	}
-	delete node;
+	delete parser;
 
 	fprintf(stderr, "Extracting data ... ");
 	QJsonObject toplevelObj;

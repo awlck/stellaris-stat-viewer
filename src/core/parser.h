@@ -20,6 +20,8 @@
 #ifndef STELLARIS_STAT_VIEWER_PARSER_H
 #define STELLARIS_STAT_VIEWER_PARSER_H
 
+#include <forward_list>
+
 #include <QtCore/QFileInfo>
 #include <QtCore/QObject>
 #include <QtCore/QQueue>
@@ -90,11 +92,10 @@ namespace Parsing {
 	};
 
 	struct AstNode {
-		~AstNode();
+		// ~AstNode();
 		/** Merge 'other' into this tree
 		 *
 		 * All children of 'other' will become children of this.
-		 * 'other' will be deleted.
 		 *
 		 * If this and other are not of the same type, nothing will happen.
 		 * Also works if 'this' and/or 'other' does not have any children.
@@ -145,7 +146,7 @@ namespace Parsing {
 		PE_CANCELLED
 	};
 
-	const QString getErrorDescription(ParseErr etype);
+	QString getErrorDescription(ParseErr etype);
 
 	struct ParserError {
 		ParseErr etype;
@@ -157,7 +158,7 @@ namespace Parsing {
 	public:
 		explicit Parser(QString *text, QObject *parent = nullptr);
 		Parser(const QFileInfo &fileInfo, FileType ftype, QObject *parent = nullptr);
-		Parser(QTextStream *stream, const QString &filename, FileType ftype, QObject *parent = nullptr);
+		Parser(QTextStream *stream, QString filename, FileType ftype, QObject *parent = nullptr);
 		~Parser() override;
 		AstNode *parse();
 		void cancel();
@@ -170,6 +171,7 @@ namespace Parsing {
 		Token getNextToken();
 		int lex(int atLeast = 0);
 		TokenType lookahead(int n);
+		AstNode *createNode();
 
 		bool lexerDone = false;
 		bool shouldCancel = false;
@@ -182,6 +184,7 @@ namespace Parsing {
 		QTextStream *stream;
 		qint64 totalProgress = 0;
 		qint64 totalSize;
+		std::forward_list<AstNode> allCreatedNodes;
 
 		const int queueCapacity = 50;
 		unsigned long line = 1;
