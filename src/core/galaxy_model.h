@@ -27,6 +27,7 @@
 #include <QtCore/QString>
 
 namespace Parsing { struct AstNode; }
+class QFileInfo;
 
 namespace Galaxy {
 	class Technology;
@@ -42,5 +43,7 @@ namespace Galaxy {
 		QMap<QString, Technology *> techs;
 	};
 }
+
+void readAnotherTechFile(const QFileInfo &in, Galaxy::Model &model);
 
 #endif //STELLARIS_STAT_VIEWER_GALAXY_MODEL_H

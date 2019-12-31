@@ -112,7 +112,7 @@ void TechTreeDialog::goClicked() {
 	while (it.hasNext()) {
 		QFileInfo f(it.next());
 		UPDATE_STATUS(tr("Reading %1").arg(f.fileName()));
-		
+		readAnotherTechFile(f, model);
 	}
 	UPDATE_STATUS(tr("Writing nodes"));
 	const QMap<QString, Galaxy::Technology *> &techs = model.getTechnologies();
