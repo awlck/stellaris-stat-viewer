@@ -21,20 +21,25 @@ Set the paths for both of these in the settings dialog before proceeding.
 Drawing the Tree
 ----------------
 
-Access the tech tree drawing utility by clicking `Tools` > `Draw Tech Tree...`.
-You are presented with two options for drawing the tree: `Standard` only draws
-the "prerequisite" relation, whereas `Advanced` attempts to visualize how having
+Access the tech tree drawing utility by clicking *Tools* > *Draw Tech Tree...*.
+You are presented with two options for drawing the tree: *Standard* only draws
+the "prerequisite" relation, whereas *Advanced* attempts to visualize how having
 researched certain technologies affects the likelihood of other technologies
 appearing as a choice.
 
-Click the `Go` button, and wait a second or two for the entire thing to run.
+Click the *Go* button, and wait a second or two for the entire thing to run.
 You will then be prompted for where to save the resulting file. Once you do
 that, the result will be opened in your default application for `.pdf` files.
+The ability to change the output file format planned for a future version of
+Stellaris Stat Viewer.
 
 .. note::
-    The ability to change the output file format planned for a future
-    version of Stellaris Stat Viewer.
-
+   Currently, the tree is drawn using all the game files as they are: it always
+   includes all DLCs available for the version of the game currently installed,
+   regardless of whether the user usually enables, or even posesses, any of them.
+   Mods are not currently taken into account either. Both features are planned
+   for a future release of Stellaris Stat Viewer.
+    
 Interpreting the output
 -----------------------
 
