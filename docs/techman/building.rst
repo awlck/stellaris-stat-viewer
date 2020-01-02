@@ -125,7 +125,7 @@ the build process. They must all be specified in the form ``-DVARIABLE=VALUE``
   Set ``ON`` to include a console-based `JSON` output. Enabling this also allows exporting
   `JSON` data from the graphical interface.
 
-``SSV_VERSION``
+``SSV_BUILD_VERSION``
   Set the version displayed in the *About* dialog. Used for release builds.
 
 Troubleshooting
