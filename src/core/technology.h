@@ -20,8 +20,6 @@
 #ifndef STELLARIS_STAT_VIEWER_TECHNOLOGY_H
 #define STELLARIS_STAT_VIEWER_TECHNOLOGY_H
 
-#include "ssv_core.h"
-
 #include <QtCore/QString>
 #include <QtCore/QStringList>
 #include <QtCore/QObject>
@@ -29,13 +27,18 @@
 namespace Parsing { struct AstNode; }
 
 namespace Galaxy {
-	enum class DLLEXPORT TechArea {
+	enum class TechArea {
 		Physics,
 		Society,
 		Engineering
 	};
 
-	class DLLEXPORT Technology : public QObject {
+	struct WeightModifier {
+		QString tech;
+		double modifier;
+	};
+
+	class Technology : public QObject {
 		Q_OBJECT
 	public:
 		const QString &getName() const;
@@ -43,16 +46,21 @@ namespace Galaxy {
 		bool getIsStartingTech() const;
 		bool getIsRare() const;
 		bool getIsRepeatable() const;
+		bool getIsWeightZero() const;
+		const QList<WeightModifier> &getWeightModifyingTechs() const;
 		int getTier() const;
+
 		TechArea getArea() const;
 		static Technology *createFromAst(const Parsing::AstNode *node, QObject *parent);
 	private:
 		Technology(QObject *parent = nullptr);
 		QString name;
 		QStringList requirements;
+		QList<WeightModifier> weightModifyingTechs;
 		bool isStartingTech;
 		bool isRare;
 		bool isRepeatable;
+		bool isWeightZero;
 		int tier;
 		TechArea area;
 	};

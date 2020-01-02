@@ -27,6 +27,12 @@ version! You have a choice between a traditional installer `exe`, and a simple `
 
 .. _GitHub releases page: https://github.com/ArdiMaster/stellaris-stat-viewer/releases
 
+If you are using a 64-bit version of **macOS** Mavericks (10.12) or newer, we finally got
+you covered: starting with version 0.3.1, macOS builds are also provided at the
+`GitHub releases page`_. Note that macOS's *Gatekeeper* feature will likely stop you from
+running Stellaris Stat Viewer the first time with every new release. To get around this,
+it should be sufficient to right-click the `.app`, then selecting "Open" from the menu.
+
 If you are using a 64-bit version of **Ubuntu**, then you *may* just be able to snatch a
 current build from the `CI server`_. You will need to install **Qt 5.9** using `apt`.
 
@@ -36,7 +42,7 @@ you should be good to go!
 
 .. _CI server: https://ci.appveyor.com/project/ArdiMaster/stellaris-stat-viewer
 
-On all **other** systems, I am afraid you're currently out of luck: you will have to build
+On all **other systems**, I am afraid you're currently out of luck: you will have to build
 from source. This is a bit outside the intended scope of this user's manual, but in short,
 you will need a recent version of Qt5, CMake, and a C++11-capable compiler. The
 :doc:`Technical Manual </techman/index>` should cover building from source in the future, but
@@ -62,18 +68,10 @@ settings, and to draw the game's tech tree. More on that later.
 Loading a save file
 -------------------
 
-Right now, this isn't as straightforward as it should be, and therefore warrants a section
-of its own. The `.sav` files created by the game are really just fancy zip files, and can
-be treated accordingly. However, although zip is a fairly common format, dealing with them
-programatically is quite the pain in C++, and as such Stellaris Stat Viewer does not yet
-have the ability to deal with them on its own.
+To load a save file, simply choose *Open Save File* from the *File* menu. Then select the
+save file you want to inspect. Check `the Stellaris wiki`_ to find out where save files
+are stored on your system.
 
-In order to open a save file, first copy it somewhere safe. Then change the `.sav` at the
-end of the file name to `.zip`. Many operating systems (including Windows and macOS) will
-complain when you attempt to change this ending part (called the file extension), but in
-this case, it's fine. Now extract the file using your favorite tool. In particluar, we
-are interested in the `gamestate` file, as it contains the actual save data.
+As of version 0.3, SSV understands `.sav` compressed save files.
 
-After extracting the file, you can choose "Open Save File" from the "File" menu in Stellaris
-Stat Viewer, choose the `gamestate` file, and wait a moment for it to load.
-
+.. _the Stellaris wiki: https://stellaris.paradoxwikis.com/Save-game_editing

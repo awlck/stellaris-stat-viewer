@@ -17,8 +17,10 @@
 
 #include "parser.h"
 
-#include <QtCore/QStack>
+#include <stack>
+
 #include <QtCore/QTextStream>
+#include <utility>
 
 #include <stdio.h>  // TODO: Not use stdlib
 
@@ -39,20 +41,6 @@ namespace Parsing {
 		}
 	}
 
-	AstNode::~AstNode() {
-		if (typeHasChildren(type)) delete val.firstChild;
-		if (nextSibling) {
-			AstNode *sib, *tmp;
-			sib = nextSibling;
-			do {
-				tmp = sib->nextSibling;
-				sib->nextSibling = nullptr;
-				delete sib;
-				sib = tmp;
-			} while (sib);
-		}
-	}
-
 	void AstNode::merge(Parsing::AstNode *other) {
 		if (type != other->type || !typeHasChildren(type)) return;
 		if (other->val.firstChild != nullptr) {
@@ -65,7 +53,6 @@ namespace Parsing {
 			other->val.firstChild = nullptr;
 			other->val.lastChild = nullptr;
 		}
-		delete other;
 	}
 
 	AstNode* AstNode::findChildWithName(const char *name) const {
@@ -225,6 +212,46 @@ namespace Parsing {
 		}
 	}
 
+	QString getErrorDescription(ParseErr etype) {
+		switch(etype) {
+			case PE_NONE:
+				return QObject::tr("No error.");
+			case PE_INVALID_IN_COMPOUND:
+				return QObject::tr("Invalid token in Compound node.");
+			case PE_INVALID_AFTER_NAME:
+				return QObject::tr("Invalid token after name.");
+			case PE_INVALID_AFTER_EQUALS:
+				return QObject::tr("Invalid token after equals.");
+			case PE_INVALID_AFTER_RELATION:
+				return QObject::tr("Invalid token after relation.");
+			case PE_INVALID_AFTER_OPEN:
+				return QObject::tr("Invalid token after open brace.");
+			case PE_INVALID_COMBO_AFTER_OPEN:
+				return QObject::tr("Invalid combination of tokens after open brace.");
+			case PE_INVALID_IN_INT_LIST:
+				return QObject::tr("Invalid token in int list.");
+			case PE_INVALID_IN_DOUBLE_LIST:
+				return QObject::tr("Invalid token in double list.");
+			case PE_INVALID_IN_COMPOUND_LIST:
+				return QObject::tr("Invalid token in compound list.");
+			case PE_INVALID_IN_STRING_LIST:
+				return QObject::tr("Invalid token in string list.");
+			case PE_INVALID_IN_BOOL_LIST:
+				return QObject::tr("Invalid token in bool list.");
+			case PE_UNEXPECTED_END:
+				return QObject::tr("Unexpected end of file.");
+			case PE_TOO_MANY_CLOSE_BRACES:
+				return QObject::tr("Too many closing braces.");
+			case LE_INVALID_INT:
+				return QObject::tr("Invalid int literal.");
+			case LE_INVALID_DOUBLE:
+				return QObject::tr("Invalid double literal.");
+			case PE_CANCELLED:
+				return QObject::tr("Parsing cancelled (no error).");
+		}
+		return QStringLiteral("??? (BUG: unknown error type.)");
+	}
+
 	Parser::Parser(QString *text, QObject *parent) : QObject::QObject(parent),
 			shouldDeleteStream(true), fileType(FileType::NoFile),
 			file(nullptr), filename(tr("<string>")) {
@@ -242,9 +269,9 @@ namespace Parsing {
 		totalSize = file->size();
 	}
 
-	Parser::Parser(QTextStream *stream, const QString &filename, FileType ftype, QObject *parent) :
+	Parser::Parser(QTextStream *stream, QString filename, FileType ftype, QObject *parent) :
 			QObject::QObject(parent), shouldDeleteStream(false), fileType(ftype),
-			file(nullptr), filename(filename), stream(stream) {
+			file(nullptr), filename(std::move(filename)), stream(stream) {
 		// Get the total size of stuff to be processed, if possible.
 		QIODevice *device = stream->device();
 		totalSize = device ? device->size() : 0;
@@ -279,15 +306,20 @@ if (things.top()->val.firstChild) { things.top()->val.lastChild->nextSibling = (
 else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (node); } \
 } while (0)
 
-#define PARSE_ERROR(error) do { latestParserError = { (error), currentToken }; delete root; return nullptr; } while (0)
+#define PARSE_ERROR(error) do { latestParserError = { (error), currentToken }; return nullptr; } while (0)
 
 	AstNode* Parser::parse() {
-		lex();  // Initially fill token queue
+		try {
+			lex();  // Initially fill token queue
+		} catch (const ParserError &e) {
+			latestParserError = e;
+			return nullptr;
+		}
 		// Create a root node that will encompass the entire file.
-		AstNode *root = new AstNode;
+		AstNode *root = createNode();
 		root->type = NT_COMPOUND;
 		qstrcpy(root->myName, "tree_root");
-		QStack<AstNode *> things;  // Explicitly use a stack instead of using recursion.
+		std::stack<AstNode *> things;  // Explicitly use a stack instead of using recursion.
 		things.push(root);
 		State state = State::CompoundRoot;
 		Token currentToken = {0, 0, TT_NONE, {{'\0'}}};
@@ -298,20 +330,19 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 			} catch (const ParserError &e) {
 				if (lexerDone) break;  // in case the first token the lexer encounters is EOF
 				latestParserError = e;
-				delete root;
 				return nullptr;
 			}
 			switch (state) {
 			case State::CompoundRoot:
 				if (currentToken.type == TT_STRING) {
 					state = State::HaveName;
-					AstNode *nextNode = new AstNode;
+					AstNode *nextNode = createNode();
 					qstrcpy(nextNode->myName, currentToken.tok.String);
 					ADD_AS_CHILD(nextNode);
 					things.push(nextNode);
 				} else if (currentToken.type == TT_INT) {
 					state = State::HaveName;
-					AstNode * nextNode = new AstNode;
+					AstNode *nextNode = createNode();
 					QString tmp = QString::number(currentToken.tok.Int);
 					qstrcpy(nextNode->myName, tmp.toUtf8().data());
 					ADD_AS_CHILD(nextNode);
@@ -439,12 +470,11 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 						nextType = lookahead(1);
 					} catch (const ParserError &e) {
 						latestParserError = e;
-						delete root;
 						return nullptr;
 					}
 					if (nextType == TT_EQUALS || nextType == TT_GT || nextType == TT_LT) {
 						things.top()->type = NT_COMPOUND;
-						AstNode *nextNode = new AstNode;
+						AstNode *nextNode = createNode();
 						nextNode->type = NT_INDETERMINATE;
 						state = State::HaveName;
 						qstrcpy(nextNode->myName, currentToken.tok.String);
@@ -453,7 +483,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 					} else if (lookahead(1) == TT_STRING || lookahead(1) == TT_CBRACE) {
 						state = State::BegunStringList;
 						things.top()->type = NT_STRINGLIST;
-						AstNode *member = new AstNode;
+						AstNode *member = createNode();
 						member->type = NT_STRINGLIST_MEMBER;
 						qstrcpy(member->val.Str, currentToken.tok.String);
 						ADD_AS_CHILD(member);
@@ -464,13 +494,13 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 						if (lookahead(1) == TT_INT || lookahead(1) == TT_CBRACE) {
 							state = State::BegunIntList;
 							things.top()->type = NT_INTLIST;
-							AstNode *member = new AstNode;
+							AstNode *member = createNode();
 							member->type = NT_INTLIST_MEMBER;
 							member->val.Int = currentToken.tok.Int;
 							ADD_AS_CHILD(member);
 						} else if (lookahead(1) == TT_EQUALS) {
 							things.top()->type = NT_COMPOUND;
-							AstNode *nextNode = new AstNode;
+							AstNode *nextNode = createNode();
 							nextNode->type = NT_INDETERMINATE;
 							state = State::HaveName;
 							QString tmp = QString::number(currentToken.tok.Int);
@@ -480,14 +510,13 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 						} else PARSE_ERROR(PE_INVALID_COMBO_AFTER_OPEN);
 					} catch (const ParserError &e) {
 						latestParserError = e;
-						delete root;
 						return nullptr;
 					}
 					break;
 				case TT_DOUBLE: {
 					state = State::BegunDoubleList;
 					things.top()->type = NT_DOUBLELIST;
-					AstNode *member = new AstNode;
+					AstNode *member = createNode();
 					member->type = NT_DOUBLELIST_MEMBER;
 					member->val.Double = currentToken.tok.Double;
 					ADD_AS_CHILD(member);
@@ -496,7 +525,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 				case TT_BOOL: {
 					state = State::BegunBoolList;
 					things.top()->type = NT_BOOLLIST;
-					AstNode *member = new AstNode;
+					AstNode *member = createNode();
 					member->type = NT_BOOLLIST_MEMBER;
 					member->val.Bool = currentToken.tok.Bool;
 					ADD_AS_CHILD(member);
@@ -505,7 +534,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 				case TT_OBRACE: {
 					state = State::CompoundRoot;
 					things.top()->type = NT_COMPOUNDLIST;
-					AstNode *member = new AstNode;
+					AstNode *member = createNode();
 					member->type = NT_COMPUNDLIST_MEMBER;
 					ADD_AS_CHILD(member);
 					things.push(member);
@@ -526,7 +555,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 					state = State::CompoundRoot;
 					things.pop();
 				} else if (currentToken.type == TT_INT) {
-					AstNode *member = new AstNode;
+					AstNode *member = createNode();
 					member->type = NT_INTLIST_MEMBER;
 					member->val.Int = currentToken.tok.Int;
 					ADD_AS_CHILD(member);
@@ -537,7 +566,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 					state = State::CompoundRoot;
 					things.pop();
 				} else if (currentToken.type == TT_DOUBLE) {
-					AstNode *member = new AstNode;
+					AstNode *member = createNode();
 					member->type = NT_DOUBLELIST_MEMBER;
 					member->val.Double = currentToken.tok.Double;
 					ADD_AS_CHILD(member);
@@ -546,7 +575,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 			case State::BegunCompoundList:
 				if (currentToken.type == TT_OBRACE) {
 					state = State::CompoundRoot;
-					AstNode *member = new AstNode;
+					AstNode *member = createNode();
 					member->type = NT_COMPUNDLIST_MEMBER;
 					ADD_AS_CHILD(member);
 					things.push(member);
@@ -558,7 +587,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 				break;
 			case State::BegunStringList:
 				if (currentToken.type == TT_STRING) {
-					AstNode *member = new AstNode;
+					AstNode *member = createNode();
 					member->type = NT_STRINGLIST_MEMBER;
 					qstrcpy(member->val.Str, currentToken.tok.String);
 					ADD_AS_CHILD(member);
@@ -569,7 +598,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 				break;
 			case State::BegunBoolList:
 				if (currentToken.type == TT_BOOL) {
-					AstNode *member = new AstNode;
+					AstNode *member = createNode();
 					member->type = NT_BOOLLIST_MEMBER;
 					member->val.Bool = currentToken.tok.Bool;
 					ADD_AS_CHILD(member);
@@ -584,11 +613,12 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 			}
 		}
 
+		// Bail out if user cancelled.
+		if (shouldCancel) PARSE_ERROR(PE_CANCELLED);
 		// alternatively, if all input is consumed but the parser isn't "at rest"...
 		if (things.size() > 1 || state != State::CompoundRoot) {
 			PARSE_ERROR(PE_UNEXPECTED_END);
 		}
-		if (shouldCancel) PARSE_ERROR(PE_CANCELLED);
 
 		return root;
 	}
@@ -645,11 +675,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 					if (!haveEscape) {
 						haveEscape = (c == '\\');
 					} else {
-						if (c == '"') {
-							current += c;
-							len++;
-						}
-						else if (c == '\\') {
+						if (c == '"' || c == '\\') {
 							current += c;
 							len++;
 						}
@@ -676,10 +702,9 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 					if (c.isDigit()) assumption = TT_INT;
 					else if (c == '-') assumption = TT_INT;
 					else assumption = TT_STRING;
-				}
-				else if (assumption == TT_INT && c == '.') assumption = TT_DOUBLE;
+				} else if (assumption == TT_INT && c == '.') assumption = TT_DOUBLE;
 			} else { finish_off_token:
-				Token token;
+				Token token{};
 				token.line = line;
 				token.firstChar = charPos - len;
 				switch (assumption) {
@@ -747,7 +772,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 					comment = true;
 				}
 				if (specialType != TT_NONE) {
-					Token stok;
+					Token stok{};
 					stok.line = line;
 					stok.firstChar = charPos;
 					stok.type = specialType;
@@ -767,7 +792,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 		if (stream->atEnd()) {
 			lexerDone = true;
 			if (assumption != TT_NONE) {
-				Token currentToken{ line, charPos - len, TT_NONE, {0} };
+				Token currentToken{ line, charPos - len, TT_NONE, {{0}} };
 				qstrncpy(currentToken.tok.String, current.toUtf8().data(), 64);
 				throw ParserError{ PE_UNEXPECTED_END, currentToken };
 			}
@@ -781,5 +806,10 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 		if (lexQueue.size() < n) lex(n);
 		if (lexQueue.size() < n) return TT_NONE;
 		return lexQueue[n-1].type;
+	}
+
+	AstNode *Parser::createNode() {
+		allCreatedNodes.emplace_front();
+		return &allCreatedNodes.front();
 	}
 }

@@ -51,7 +51,8 @@ namespace Galaxy {
 		AstNode *fleetNode = tree->findChildWithName("fleet");
 		CHECK_PTR(fleetNode);
 		state->fleet = parent->getFleets().value(fleetNode->val.Int);
-		Q_ASSERT_X(state->fleet != nullptr, "Ship::createFromAst", "invalid fleet");
+		// Q_ASSERT_X(state->fleet != nullptr, "Ship::createFromAst", "invalid fleet");
+		CHECK_PTR(state->fleet);
 
 		AstNode *nameNode = fleetNode->nextSibling;
 		if (qstrcmp(nameNode->myName, "name") != 0) {
@@ -66,7 +67,8 @@ namespace Galaxy {
 			CHECK_PTR(designNode);
 		}
 		state->design = parent->getShipDesigns().value(designNode->val.Int);
-		Q_ASSERT_X(state->design != nullptr, "Ship::createFromAst", "invalid design");
+		// Q_ASSERT_X(state->design != nullptr, "Ship::createFromAst", "invalid design");
+		CHECK_PTR(state->design);
 
 		return state;
 	}

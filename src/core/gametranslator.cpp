@@ -17,9 +17,9 @@
 
 #include "gametranslator.h"
 
-#include <QtCore/qdebug.h>
 #include <QtCore/QDirIterator>
 #include <QtCore/QRegularExpression>
+#include <QtCore/QTextStream>
 
 GameTranslator::GameTranslator(const QString &gameFolder, const QString &language, QObject *parent)
 		: QObject(parent), gameDirectory(QDir(gameFolder)), language(language) {

@@ -23,12 +23,15 @@
 
 #include <iostream>
 
-#include <QtCore/QDebug>
 #include <QtCore/QJsonArray>
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
+#include <QtCore/QMimeData>
 #include <QtCore/QSettings>
+#include <QtCore/QTextStream>
 #include <QtGui/QDesktopServices>
+#include <QtGui/QDragEnterEvent>
+#include <QtWidgets/QApplication>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMenuBar>
@@ -37,10 +40,11 @@
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QTabWidget>
 
-#include "gametranslator.h"
+#include "../../core/gametranslator.h"
 #include "../../core/galaxy_state.h"
 #include "../../core/empire.h"
 #include "../../core/parser.h"
+#include "../../core/extract_gamestate.h"
 #include "settingsdialog.h"
 #include "techtreedialog.h"
 #include "views/economy_view.h"
@@ -50,17 +54,31 @@
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	setWindowTitle(tr("Stellaris Stat Viewer"));
+	setAcceptDrops(true);
 	tabs = new QTabWidget;
 	setCentralWidget(tabs);
 
-	theMenuBar = menuBar();
+	QMenuBar *theMenuBar = menuBar();
 	fileMenu = theMenuBar->addMenu(tr("File"));
 	openFileAction = fileMenu->addAction(tr("Open Save File"));
+	openFileAction->setShortcut(QKeySequence::Open);
 	connect(openFileAction, &QAction::triggered, this, &MainWindow::openFileSelected);
+#ifdef SSV_BUILD_JSON
+	exportStatsAction = fileMenu->addAction(tr("Export Data"));
+	exportStatsAction->setEnabled(false);
+	exportStatsAction->setToolTip(tr("Export the currently loaded statistics in JSON format."));
+	connect(exportStatsAction, &QAction::triggered, this, &MainWindow::exportStatsSelected);
+#endif
+	quitAction = fileMenu->addAction(tr("Exit"));
+	quitAction->setMenuRole(QAction::QuitRole);
+	quitAction->setShortcut(QKeySequence::Quit);
+	connect(quitAction, &QAction::triggered, this, &MainWindow::quitSelected);
 
 	toolsMenu = theMenuBar->addMenu(tr("Tools"));
 	techTreeAction = toolsMenu->addAction(tr("Draw Tech Tree..."));
 	settingsAction = toolsMenu->addAction(tr("Settings"));
+	settingsAction->setMenuRole(QAction::PreferencesRole);
+	settingsAction->setShortcut(QKeySequence::Preferences);
 	connect(techTreeAction, &QAction::triggered, this, &MainWindow::techTreeSelected);
 	connect(settingsAction, &QAction::triggered, this, &MainWindow::settingsSelected);
 
@@ -70,28 +88,30 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	checkForUpdatesAction->setToolTip(tr("Open your default browser to check GitHub for new releases."));
 	connect(checkForUpdatesAction, &QAction::triggered, this, &MainWindow::checkForUpdatesSelected);
 	aboutQtAction = helpMenu->addAction(tr("About Qt"));
+	aboutQtAction->setMenuRole(QAction::AboutQtRole);
 	connect(aboutQtAction, &QAction::triggered, this, &MainWindow::aboutQtSelected);
 	aboutSsvAction = helpMenu->addAction(tr("About Stellaris Stat Viewer"));
+	aboutSsvAction->setMenuRole(QAction::AboutRole);
 	connect(aboutSsvAction, &QAction::triggered, this, &MainWindow::aboutSsvSelected);
 
 	QSettings settings;
-	translator = new GameTranslator(settings.value("game/folder").toString(), "english");
+	translator = new GameTranslator(settings.value("game/folder").toString(), settings.value("game/language", "english").toString());
 
 	powerRatingView = new OverviewView(this);
 	connect(this, &MainWindow::modelChanged, powerRatingView, &OverviewView::modelChanged);
-	tabs->addTab(powerRatingView, "Overview");
+	tabs->addTab(powerRatingView, tr("Overview"));
 
 	militaryView = new FleetsView(this);
 	connect(this, &MainWindow::modelChanged, militaryView, &FleetsView::modelChanged);
-	tabs->addTab(militaryView, "Fleets");
+	tabs->addTab(militaryView, tr("Fleets"));
 
 	economyView = new EconomyView(this);
 	connect(this, &MainWindow::modelChanged, economyView, &EconomyView::modelChanged);
-	tabs->addTab(economyView, "Economy");
+	tabs->addTab(economyView, tr("Economy"));
 
 	techView = new TechView(translator, this);
 	connect(this, &MainWindow::modelChanged, techView, &TechView::modelChanged);
-	tabs->addTab(techView, "Technologies");
+	tabs->addTab(techView, tr("Technologies"));
 
 	statusLabel = new QLabel(tr("No file loaded."));
 	statusBar()->addPermanentWidget(statusLabel);
@@ -103,9 +123,9 @@ void MainWindow::aboutQtSelected() {
 
 void MainWindow::aboutSsvSelected() {
 	QMessageBox::about(this, tr("About Stellars Stat Viewer"), tr("Stellaris Stat Viewer: EU4-inspired "
-		"statistics and rankings for Stellaris.\n\nVersion: " SSV_VERSION "\n(c) 2019 Adrian "
+		"statistics and rankings for Stellaris.\n\nVersion: %1\n(c) 2019 Adrian "
 		"\"ArdiMaster\" Welcker, Licensed under the Apache License version 2.0\n\nCheck out the source "
-		"code and contribute at\nhttps://github.com/ArdiMaster/stellaris-stat-viewer"));
+		"code and contribute at\nhttps://gitlab.com/ArdiMaster/stellaris-stat-viewer").arg(SSV_VERSION));
 }
 
 void MainWindow::checkForUpdatesSelected() {
@@ -117,40 +137,57 @@ void MainWindow::checkForUpdatesSelected() {
 }
 
 void MainWindow::openFileSelected() {
-	QString which = QFileDialog::getOpenFileName(this, tr("Select gamestate file"), QString(),
-			tr("Stellaris Game State Files (gamestate)"));
+	QString which = QFileDialog::getOpenFileName(this, tr("Select save file"), QString(),
+			tr("Stellaris Compressed Save Files (*.sav);;Stellaris Game State Files (gamestate)"));
 	if (which == "") return;  // Cancel was clicked
-	delete state;
-	gamestateLoadBegin();
-	Parsing::Parser parser(QFileInfo(which), Parsing::FileType::SaveFile, this);
-	connect(&parser, &Parsing::Parser::progress, this, &MainWindow::parserProgressUpdate);
-	Parsing::AstNode *result = parser.parse();
-	if (!result) {
-		gamestateLoadDone();
-		Parsing::ParserError error = parser.getLatestParserError();
-		QMessageBox::critical(this, tr("Parse Error"), tr("A parse error occurred:\n") + which +
-			":" + QString::number(error.erroredToken.line) + ":" + QString::number(error.erroredToken.firstChar) +
-			".");
+	loadFromFile(QFileInfo(which));
+}
+
+#ifdef SSV_BUILD_JSON
+#include "../json/dataextraction.h"
+
+void MainWindow::exportStatsSelected() {
+	QString saveTo = QFileDialog::getSaveFileName(this, tr("Select target location"), QString(),
+	                                              tr("JSON files (*.json)"));
+	if (saveTo == "") {
 		return;
 	}
 
-	gamestateLoadSwitch();
-	Galaxy::StateFactory stateFactory;
-	connect(&stateFactory, &Galaxy::StateFactory::progress, this, &MainWindow::galaxyProgressUpdate);
-	state = stateFactory.createFromAst(result, this);
-	if (!state) {
-		gamestateLoadDone();
-		QMessageBox::critical(this, tr("Galaxy Creation Error"), tr("An error occurred while trying to extract "
-			"inforation from ") + which + tr(". Perhaps something isn't right with the input file."));
+	QJsonObject result = createJsonFromState(state);
+	// Allow overwriting exisiting files -- a "file exists" query should already be provided
+	// by the OS's "save file" dialog.
+	if (QFile::exists(saveTo)) QFile::remove(saveTo);
+
+	QFile out(saveTo);
+	if (!out.open(QIODevice::WriteOnly | QIODevice::Text)) {
+		QMessageBox message(this);
+		message.setText(tr("Unable to open export file"));
+		message.setInformativeText(tr("I can think of several potential reasons for this, "
+		                              "but perhaps the most likely one is that your system has run out of disk space."));
+		message.setIcon(QMessageBox::Critical);
+		message.setStandardButtons(QMessageBox::Ok);
+		message.exec();
 		return;
 	}
+	qint64 written = out.write(QJsonDocument(result).toJson());
+	out.close();
 
-	gamestateLoadFinishing();
-	delete result;
-	emit modelChanged(state);
-	statusLabel->setText(state->getDate());
-	statusBar()->showMessage(tr("Loaded ") + which, 5000);
-	gamestateLoadDone();
+	if (written == -1) {
+		QMessageBox message(this);
+		message.setText(tr("Unable to write export file"));
+		message.setInformativeText(tr("I can think of several potential reasons for this, "
+		                              "but perhaps the most likely one is that your system has run out of disk space."));
+		message.setIcon(QMessageBox::Critical);
+		message.setStandardButtons(QMessageBox::Ok);
+		message.exec();
+		return;
+	}
+	statusBar()->showMessage(tr("Wrote %1").arg(saveTo), 5000);
+}
+#endif
+
+void MainWindow::quitSelected() {
+	QApplication::exit();
 }
 
 void MainWindow::settingsSelected() {
@@ -171,8 +208,8 @@ void MainWindow::techTreeSelected() {
 	QSettings settings;
 	if (settings.value("game/folder", QString()).toString() == "") {
 		QMessageBox messageBox;
-		messageBox.setText("Game folder not set");
-		messageBox.setInformativeText("Would you like to open settings and set the game folder now?");
+		messageBox.setText(tr("Game folder not set"));
+		messageBox.setInformativeText(tr("Would you like to open settings and set the game folder now?"));
 		messageBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
 		messageBox.setDefaultButton(QMessageBox::Yes);
 		messageBox.setIcon(QMessageBox::Warning);
@@ -182,10 +219,10 @@ void MainWindow::techTreeSelected() {
 	}
 	if (settings.value("tools/dot", QString()).toString() == "") {
 		QMessageBox messageBox;
-		messageBox.setText("Dot utility not found");
-		messageBox.setInformativeText("The tech tree functionality relies on the <code>dot</code> utility "
-			"from the GraphViz suite, but I was unable to locate it on your system. Would you like to open "
-			"settings and look for it manually right now?");
+		messageBox.setText(tr("Dot utility not found"));
+		messageBox.setInformativeText(tr("The tech tree functionality relies on the <code>dot</code> utility "
+		                                 "from the GraphViz suite, but I was unable to locate it on your system. Would you like to open "
+		                                 "settings and look for it manually right now?"));
 		messageBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
 		messageBox.setDefaultButton(QMessageBox::Yes);
 		messageBox.setIcon(QMessageBox::Warning);
@@ -195,6 +232,98 @@ void MainWindow::techTreeSelected() {
 	}
 	TechTreeDialog ttd(translator, this);
 	ttd.exec();
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent *event) {
+	if (event->mimeData()->hasUrls()) event->accept();
+}
+
+void MainWindow::dropEvent(QDropEvent *event) {
+	const QMimeData *mimeData = event->mimeData();
+	if (mimeData->hasUrls()) {
+		auto file = QFileInfo(mimeData->urls()[0].toLocalFile());
+		if (file.fileName() != "gamestate" && !file.fileName().endsWith(QStringLiteral(".sav"))) {
+			QMessageBox box;
+			box.setText(tr("Peculiar file. Load anyways?"));
+			box.setInformativeText(tr("The file '%1' doesn't look like a Stellaris save file to me. "
+							 "Load anyways?").arg(file.fileName()));
+			box.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+			box.setDefaultButton(QMessageBox::No);
+			box.setIcon(QMessageBox::Question);
+			int selected = box.exec();
+			if (selected == QMessageBox::No) return;
+		}
+		loadFromFile(file);
+	} else event->ignore();
+}
+
+void MainWindow::loadFromFile(const QFileInfo& file) {
+	delete state;
+	gamestateLoadBegin();
+	Parsing::Parser *parser;
+	bool isCompressedFile = file.fileName().endsWith(QStringLiteral(".sav"));
+	unsigned char *dest;  // where the extracted gamestate file will go, if necessary
+	QTextStream *stream;
+	if (isCompressedFile) {
+		unsigned long destsize;
+		QFile f(file.absoluteFilePath());
+		f.open(QIODevice::ReadOnly);
+		int result = extractGamestate(f, &dest, &destsize);
+		f.close();
+		if (result != 0) {
+			QMessageBox::critical(this, tr("Compression Error"), tr("An error occurred while inflating the selected "
+			                                                        "file:\n%1\nPlease make sure that you have selected a valid save file. If the selected file loads fine "
+			                                                        "in the game, please report this issue "
+			                                                        "to the developer.").arg(getInflateErrmsg(result)));
+
+			if (result <= 2) free(dest);
+			return;
+		}
+		stream = new QTextStream(QByteArray((char *) dest, destsize));
+		parser = new Parsing::Parser(stream, file.filePath(), Parsing::FileType::SaveFile, this);
+	} else {
+		stream = nullptr;
+		dest = nullptr;
+		parser = new Parsing::Parser(file, Parsing::FileType::SaveFile, this);
+	}
+	connect(parser, &Parsing::Parser::progress, this, &MainWindow::parserProgressUpdate);
+	Parsing::AstNode *result = parser->parse();
+	if (isCompressedFile) {
+		delete stream;
+		free(dest);
+	}
+	if (!result) {
+		gamestateLoadDone();
+		Parsing::ParserError error(parser->getLatestParserError());
+		if (error.etype != Parsing::PE_CANCELLED)
+			QMessageBox::critical(this, tr("Parse Error"),
+			                      tr("%1:%2:%3: %4 (error #%5)").arg(file.absoluteFilePath()).arg(error.erroredToken.line)
+					                      .arg(error.erroredToken.firstChar).arg(
+							                      Parsing::getErrorDescription(error.etype)).arg(error.etype));
+		delete parser;
+		return;
+	}
+
+	gamestateLoadSwitch();
+	Galaxy::StateFactory stateFactory;
+	connect(&stateFactory, &Galaxy::StateFactory::progress, this, &MainWindow::galaxyProgressUpdate);
+	state = stateFactory.createFromAst(result, this);
+	if (!state) {
+		gamestateLoadDone();
+		QMessageBox::critical(this, tr("Galaxy Creation Error"), tr("An error occurred while trying to extract "
+		                                                            "information from %1. Perhaps something isn't right with the input file.").arg(file.absoluteFilePath()));
+		return;
+	}
+
+	gamestateLoadFinishing();
+	delete parser;
+	emit modelChanged(state);
+	statusLabel->setText(state->getDate());
+	statusBar()->showMessage(tr("Loaded %1").arg(file.absoluteFilePath()), 5000);
+#ifdef SSV_BUILD_JSON
+	exportStatsAction->setEnabled(true);
+#endif
+	gamestateLoadDone();
 }
 
 void MainWindow::parserProgressUpdate(Parsing::Parser *parser, qint64 current, qint64 max) {

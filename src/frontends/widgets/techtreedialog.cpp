@@ -27,61 +27,20 @@
 #include <QtWidgets/QBoxLayout>
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QFileDialog>
-#include <QtWidgets/QGridLayout>
 #include <QtWidgets/QGroupBox>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QRadioButton>
 
+#include "../../core/gametranslator.h"
 #include "../../core/galaxy_model.h"
-#include "../../core/technology.h"
 #include "../../core/parser.h"
-#include "gametranslator.h"
+#include "../../core/technology.h"
+#include "../../core/techtree.h"
 
-using Galaxy::Technology;
 using Parsing::AstNode;
 using Parsing::Parser;
-
-static void writeTechTreeNodes(QFile *out, const QMap<QString, Technology *> &techs, GameTranslator *translator) {
-	for (auto it = techs.cbegin(); it != techs.cend(); it++) {
-		Technology *tech = it.value();
-		out->write(it.key().toUtf8());
-		switch(tech->getArea()) {
-			case Galaxy::TechArea::Physics:
-				out->write("[color=blue");
-				break;
-			case Galaxy::TechArea::Society:
-				out->write("[color=forestgreen");
-				break;
-			case Galaxy::TechArea::Engineering:
-				out->write("[color=orange");
-				break;
-		}
-		out->write(",label=\"");
-		out->write(translator->getTranslationOf(it.key()).toUtf8());
-		out->write("\"");
-		if (tech->getIsRare()) {
-			out->write(",style=filled,fillcolor=darkorchid");
-		} else if (tech->getIsStartingTech()) {
-			out->write(",style=filled,fillcolor=green");
-		}
-		out->write("];\n");
-	}
-}
-
-static void writeTechTreePrerequisites(QFile *out, const QMap<QString, Technology *> &techs) {
-	for (auto it = techs.cbegin(); it != techs.cend(); it++) {
-		const QStringList &reqs = it.value()->getRequirements();
-		const QString &tech = it.key();
-		for (const auto &aReq: reqs) {
-			out->write(aReq.toUtf8().data());
-			out->write("->");
-			out->write(tech.toUtf8().data());
-			out->write(";\n");
-		}
-	}
-}
 
 TechTreeDialog::TechTreeDialog(GameTranslator *translator, QWidget *parent)
 		: QDialog(parent), translator(translator) {
@@ -91,10 +50,10 @@ TechTreeDialog::TechTreeDialog(GameTranslator *translator, QWidget *parent)
 	treeTypeBox = new QGroupBox(tr("Tree type"));
 	treeTypeBoxLayout = new QHBoxLayout;
 	treeTypeBox->setLayout(treeTypeBoxLayout);
-	treeCompleteRadio = new QRadioButton(tr("Full"));
-	treeReducedRadio = new QRadioButton(tr("Reduced"));
-	treeCompleteRadio->setEnabled(false);
-	treeCompleteRadio->setToolTip(tr("Not yet available."));
+	treeCompleteRadio = new QRadioButton(tr("Advanced"));
+	treeReducedRadio = new QRadioButton(tr("Standard"));
+	// treeCompleteRadio->setEnabled(false);
+	treeCompleteRadio->setToolTip(tr("Attempt to draw how technologies in more detail. Experimental."));
 	treeReducedRadio->setToolTip(tr("Only render the prerequisite relation."));
 	treeReducedRadio->setChecked(true);
 	treeTypeBoxLayout->addWidget(treeReducedRadio);
@@ -153,13 +112,10 @@ void TechTreeDialog::goClicked() {
 	while (it.hasNext()) {
 		QFileInfo f(it.next());
 		UPDATE_STATUS(tr("Reading %1").arg(f.fileName()));
-		Parser parser(f, Parsing::FileType::GameFile, this);
-		AstNode *tree = parser.parse();
-		if (tree) model.addTechnologies(tree);
-		delete tree;
+		readAnotherTechFile(f, model);
 	}
 	UPDATE_STATUS(tr("Writing nodes"));
-	const QMap<QString, Technology *> &techs = model.getTechnologies();
+	const QMap<QString, Galaxy::Technology *> &techs = model.getTechnologies();
 	QFile outfile(dir.filePath("techs.dot"));
 	if (!outfile.open(QIODevice::WriteOnly | QIODevice::Text)) {
 		QMessageBox message(this);
@@ -171,17 +127,17 @@ void TechTreeDialog::goClicked() {
 		message.exec();
 		return;
 	}
-	outfile.write("strict digraph techs {\nnode[shape=box];ranksep=1.5;concentrate=true;rankdir=LR;\n");
+	writeTechTreePreamble(&outfile);
 	writeTechTreeNodes(&outfile, techs, translator);
 	UPDATE_STATUS(tr("Writing connections"));
-	writeTechTreePrerequisites(&outfile, techs);
-	outfile.write("}\n");
+	writeTechTreeRelations(&outfile, techs, treeCompleteRadio->isChecked());
+	writeTechTreeClosing(&outfile);
 	outfile.close();
 	UPDATE_STATUS(tr("Running dot"));
 	QProcess dot(this);
 	dot.setWorkingDirectory(dir.path());
 	QStringList args;
-	args << "techs.dot" << "-Tsvg" << "-otechs.svg";
+	args << "techs.dot" << "-Tpdf" << "-otechs.pdf";
 	dot.start(settings.value("tools/dot").toString(), args);
 	dot.waitForFinished();
 	if (dot.exitStatus() == QProcess::CrashExit || dot.exitCode() != 0) {
@@ -194,12 +150,15 @@ void TechTreeDialog::goClicked() {
 		return;
 	} else {
 		QString saveTo = QFileDialog::getSaveFileName(this, tr("Select target location"), QString(),
-				tr("Scalable Vector Graphics (*.svg)"));
+				tr("Portable Document Format (*.pdf)"));
 		if (saveTo == "") {
 			UPDATE_STATUS(tr("Cancelled"));
 			return;
 		}
-		QFile::copy(dir.filePath("techs.svg"), saveTo);
+		// Allow overwriting exisiting files -- a "file exists" query should be provided
+		// by the OS's "save file" dialog.
+		if (QFile::exists(saveTo)) QFile::remove(saveTo);
+		QFile::copy(dir.filePath("techs.pdf"), saveTo);
 		QDesktopServices::openUrl(QUrl::fromLocalFile(saveTo));
 	}
 	UPDATE_STATUS(tr("Ready."));

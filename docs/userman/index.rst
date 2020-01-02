@@ -19,4 +19,4 @@ User Manual
 
    Getting Started <gettingstarted>
    techtree
-
+   settings

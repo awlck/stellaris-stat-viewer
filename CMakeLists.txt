@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0.2)
 
-project(stellaris_stat_viewer VERSION 0.2.1 LANGUAGES CXX)
+project(stellaris_stat_viewer VERSION 0.3.99 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
@@ -37,65 +37,67 @@ else()
 endif()
 endif()
 
-add_library(ssv_core SHARED
-        src/core/parser.cpp src/core/parser.h
+if(SSV_BUILD_WIDGETS)
+    add_library(ssv_frontend_widgets STATIC
+            src/frontends/widgets/widgets_main.cpp
+            src/frontends/widgets/mainwindow.cpp src/frontends/widgets/mainwindow.h
+            src/frontends/widgets/numerictableitem.cpp src/frontends/widgets/numerictableitem.h
+            src/frontends/widgets/settingsdialog.cpp src/frontends/widgets/settingsdialog.h
+            src/frontends/widgets/techtreedialog.cpp src/frontends/widgets/techtreedialog.h
+            src/frontends/widgets/views/economy_view.cpp src/frontends/widgets/views/economy_view.h
+            src/frontends/widgets/views/fleets_view.cpp src/frontends/widgets/views/fleets_view.h
+            src/frontends/widgets/views/overview_view.cpp src/frontends/widgets/views/overview_view.h
+            src/frontends/widgets/views/techs_view.cpp src/frontends/widgets/views/techs_view.h
+        )
+    target_compile_definitions(ssv_frontend_widgets PRIVATE SSV_VERSION="${SSV_BUILD_VERSION}")
+    target_link_libraries(ssv_frontend_widgets Qt5::Widgets)
+    target_include_directories(ssv_frontend_widgets PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+    set(SOME_FRONTEND_FOUND ON)
+endif()
+
+if(SSV_BUILD_JSON)
+    add_library(ssv_frontend_json STATIC
+            src/frontends/json/json_main.cpp
+            src/frontends/json/dataextraction.cpp src/frontends/json/dataextraction.h)
+    target_link_libraries(ssv_frontend_json Qt5::Core)
+    set(SOME_FRONTEND_FOUND ON)
+endif()
+
+configure_file(src/frontends.h.in frontends.h)
+
+# for testing
+add_library(ssv_parser STATIC
+        src/core/parser.cpp src/core/parser.h)
+target_link_libraries(ssv_parser Qt5::Core)
+
+add_executable(stellaris_stat_viewer WIN32 MACOSX_BUNDLE
+        src/main.cpp src/frontends.h.in
         src/core/galaxy_model.cpp src/core/galaxy_model.h
         src/core/galaxy_state.cpp src/core/galaxy_state.h
+        src/core/gametranslator.cpp src/core/gametranslator.h
         src/core/empire.cpp src/core/empire.h
         src/core/fleet.cpp src/core/fleet.h
         src/core/ship.cpp src/core/ship.h
         src/core/ship_design.cpp src/core/ship_design.h
         src/core/technology.cpp src/core/technology.h
-        src/core/ssv_core.h)
-target_link_libraries(ssv_core Qt5::Core)
-target_compile_definitions(ssv_core PRIVATE LIBRARY_BUILD)
+        src/core/puff/puff.c src/core/puff/puff.h
+        src/core/extract_gamestate.cpp src/core/extract_gamestate.h src/core/techtree.cpp src/core/techtree.h)
+target_compile_definitions(stellaris_stat_viewer PRIVATE SSV_VERSION="${SSV_BUILD_VERSION}")
+target_link_libraries(stellaris_stat_viewer ssv_parser Qt5::Core)
+target_include_directories(stellaris_stat_viewer PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 if(SSV_BUILD_WIDGETS)
-add_library(ssv_frontend_widgets SHARED
-        src/frontends/widgets/widgets_main.cpp
-        src/frontends/widgets/gametranslator.cpp src/frontends/widgets/gametranslator.h
-        src/frontends/widgets/mainwindow.cpp src/frontends/widgets/mainwindow.h
-        src/frontends/widgets/numerictableitem.cpp src/frontends/widgets/numerictableitem.h
-        src/frontends/widgets/settingsdialog.cpp src/frontends/widgets/settingsdialog.h
-        src/frontends/widgets/techtreedialog.cpp src/frontends/widgets/techtreedialog.h
-        src/frontends/widgets/views/economy_view.cpp src/frontends/widgets/views/economy_view.h
-        src/frontends/widgets/views/fleets_view.cpp src/frontends/widgets/views/fleets_view.h
-        src/frontends/widgets/views/overview_view.cpp src/frontends/widgets/views/overview_view.h
-        src/frontends/widgets/views/techs_view.cpp src/frontends/widgets/views/techs_view.h
-    )
-target_link_libraries(ssv_frontend_widgets Qt5::Widgets ssv_core)
-set(SOME_FRONTEND_FOUND ON)
+    target_link_libraries(stellaris_stat_viewer ssv_frontend_widgets)
 endif()
-
 if(SSV_BUILD_JSON)
-add_library(ssv_frontend_json SHARED
-        src/frontends/json/json_main.cpp
-        src/frontends/json/dataextraction.cpp src/frontends/json/dataextraction.h)
-target_link_libraries(ssv_frontend_json Qt5::Core ssv_core)
-set(SOME_FRONTEND_FOUND ON)
-endif()
-
-add_executable(stellaris_stat_viewer WIN32 MACOSX_BUNDLE
-        src/main.cpp)
-target_compile_definitions(stellaris_stat_viewer PRIVATE SSV_VERSION="${SSV_BUILD_VERSION}")
-target_link_libraries(stellaris_stat_viewer Qt5::Core)
-if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
-    target_link_libraries(stellaris_stat_viewer dl)
-	set(CMAKE_EXE_LINKER_FLAGS "-Wl,-rpath,'$ORIGIN'")
-endif()
-
-if("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
-    target_link_options(stellaris_stat_viewer PRIVATE -rpath @executable_path/.)
-	if(SSV_BUILD_WIDGETS)
-	    target_link_options(ssv_frontend_widgets PRIVATE -rpath @executable_path/.)
-	endif()
+    target_link_libraries(stellaris_stat_viewer ssv_frontend_json)
 endif()
 
 if(SSV_BUILD_TESTS)
     find_package(Qt5Test CONFIG REQUIRED)
     enable_testing()
     add_executable(test_parser tests/test_parser.cpp)
-    target_link_libraries(test_parser ssv_core Qt5::Test)
+    target_link_libraries(test_parser ssv_parser Qt5::Test)
     add_test(NAME parser COMMAND test_parser)
 endif()
 

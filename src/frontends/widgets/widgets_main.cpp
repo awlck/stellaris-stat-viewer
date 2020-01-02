@@ -113,11 +113,7 @@ void setupStellarisStyle(QApplication *app) {
 	);
 }
 
-extern "C"
-#ifdef _MSC_VER
-__declspec(dllexport)
-#endif
-int frontend_begin(int argc, char **argv) {
+int frontend_widgets_begin(int argc, char **argv) {
 	QApplication app(argc, argv);
 
 		QSettings settings;

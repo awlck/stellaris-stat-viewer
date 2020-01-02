@@ -1,4 +1,5 @@
-/* frontends/json/dataextraction.h: Header file for JSON data extraction
+/* extract_gamestate.h: rudimentarily interpret ZIP files to get at
+ *                      the gamestate file inside (header file)
  *
  * Copyright 2019 Adrian "ArdiMaster" Welcker
  *
@@ -15,19 +16,13 @@
  * limitations under the License.
  */
 
-#ifndef STELLARIS_STAT_VIEWER_DATAEXTRACTION_H
-#define STELLARIS_STAT_VIEWER_DATAEXTRACTION_H
+#ifndef STELLARIS_STAT_VIEWER_EXTRACT_GAMESTATE_H
+#define STELLARIS_STAT_VIEWER_EXTRACT_GAMESTATE_H
 
-#include <QtCore/QJsonObject>
-#include <QtCore/QLinkedList>
+#include <QtCore/QFile>
 
-namespace Galaxy {
-	class Empire;
-	class Ship;
-	class State;
-}
+int extractGamestate(QFile &f, unsigned char **dest, unsigned long *destsize);
 
-QJsonObject createDataForEmpire(const Galaxy::Empire *e, const QLinkedList<Galaxy::Ship *> &ships);
-QJsonObject createJsonFromState(const Galaxy::State *state);
+QString getInflateErrmsg(int result);
 
-#endif //STELLARIS_STAT_VIEWER_DATAEXTRACTION_H
+#endif //STELLARIS_STAT_VIEWER_EXTRACT_GAMESTATE_H

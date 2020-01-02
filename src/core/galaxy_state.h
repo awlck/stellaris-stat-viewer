@@ -20,8 +20,6 @@
 #ifndef STELLARIS_STAT_VIEWER_GALAXY_STATE_H
 #define STELLARIS_STAT_VIEWER_GALAXY_STATE_H
 
-#include "ssv_core.h"
-
 #include <QtCore/QObject>
 #include <QtCore/QMap>
 
@@ -33,7 +31,7 @@ namespace Galaxy {
 	class Ship;
 	class ShipDesign;
 
-	class DLLEXPORT State : public QObject {
+	class State : public QObject {
 		Q_OBJECT
 		/* No destructor necessary: Empire, etc. all inherit from QObject, and their
 		 * instances will be created with the State instance as their parent, so
@@ -56,7 +54,7 @@ namespace Galaxy {
 		friend class StateFactory;
 	};
 
-	class DLLEXPORT StateFactory : public QObject {
+	class StateFactory : public QObject {
 		Q_OBJECT
 	public:
 		State *createFromAst(Parsing::AstNode *tree, QObject *parent = nullptr);

@@ -20,7 +20,7 @@
 #ifndef STELLARIS_STAT_VIEWER_PARSER_H
 #define STELLARIS_STAT_VIEWER_PARSER_H
 
-#include "ssv_core.h"
+#include <forward_list>
 
 #include <QtCore/QFileInfo>
 #include <QtCore/QObject>
@@ -91,12 +91,10 @@ namespace Parsing {
 		RT_LE
 	};
 
-	struct DLLEXPORT AstNode {
-		~AstNode();
+	struct AstNode {
 		/** Merge 'other' into this tree
 		 *
 		 * All children of 'other' will become children of this.
-		 * 'other' will be deleted.
 		 *
 		 * If this and other are not of the same type, nothing will happen.
 		 * Also works if 'this' and/or 'other' does not have any children.
@@ -125,7 +123,7 @@ namespace Parsing {
 		} val = {{'\0'}};
 	};
 
-	DLLEXPORT void printParseTree(const AstNode *tree, int indent = 0, bool toplevel = true);
+	void printParseTree(const AstNode *tree, int indent = 0, bool toplevel = true);
 
 	enum ParseErr {
 		PE_NONE,
@@ -147,17 +145,19 @@ namespace Parsing {
 		PE_CANCELLED
 	};
 
+	QString getErrorDescription(ParseErr etype);
+
 	struct ParserError {
 		ParseErr etype;
 		Token erroredToken;
 	};
 
-	class DLLEXPORT Parser : public QObject {
+	class Parser : public QObject {
 		Q_OBJECT
 	public:
 		explicit Parser(QString *text, QObject *parent = nullptr);
 		Parser(const QFileInfo &fileInfo, FileType ftype, QObject *parent = nullptr);
-		Parser(QTextStream *stream, const QString &filename, FileType ftype, QObject *parent = nullptr);
+		Parser(QTextStream *stream, QString filename, FileType ftype, QObject *parent = nullptr);
 		~Parser() override;
 		AstNode *parse();
 		void cancel();
@@ -170,6 +170,7 @@ namespace Parsing {
 		Token getNextToken();
 		int lex(int atLeast = 0);
 		TokenType lookahead(int n);
+		AstNode *createNode();
 
 		bool lexerDone = false;
 		bool shouldCancel = false;
@@ -182,6 +183,7 @@ namespace Parsing {
 		QTextStream *stream;
 		qint64 totalProgress = 0;
 		qint64 totalSize;
+		std::forward_list<AstNode> allCreatedNodes;
 
 		const int queueCapacity = 50;
 		unsigned long line = 1;

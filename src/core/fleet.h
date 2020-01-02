@@ -20,8 +20,6 @@
 #ifndef STELLARIS_STAT_VIEWER_FLEET_H
 #define STELLARIS_STAT_VIEWER_FLEET_H
 
-#include "ssv_core.h"
-
 #include <QtCore/QObject>
 
 namespace Parsing { struct AstNode; }
@@ -41,7 +39,7 @@ namespace Galaxy {
 		unsigned long fallen;
 	};
 
-	class DLLEXPORT Fleet : public QObject {
+	class Fleet : public QObject {
 		Q_OBJECT
 	public:
 		Fleet(State *parent);

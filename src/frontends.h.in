@@ -1,4 +1,8 @@
-/* core/ssv_core.h: Macro definitions to handle DLL import/export.
+/* frontends.h.in: Figuring out available frontends.
+ *
+ * This file will be turned into a 'frontends.h' file using CMake's
+ * configure_file function. '#cmakedefine' directives will be
+ * replaced as appropriate.
  *
  * Copyright 2019 Adrian "ArdiMaster" Welcker
  *
@@ -15,17 +19,23 @@
  * limitations under the License.
  */
 
-#ifndef STELLARIS_STAT_VIEWER_SSV_CORE_H
-#define STELLARIS_STAT_VIEWER_SSV_CORE_H
+#cmakedefine SSV_BUILD_WIDGETS
+#cmakedefine SSV_BUILD_JSON
 
-#ifdef _MSC_VER
-#ifdef LIBRARY_BUILD
-#define DLLEXPORT __declspec(dllexport)
-#else
-#define DLLEXPORT __declspec(dllimport)
-#endif
-#else
-#define DLLEXPORT
+#ifdef SSV_BUILD_WIDGETS
+int frontend_widgets_begin(int, char **);
 #endif
 
-#endif //STELLARIS_STAT_VIEWER_SSV_CORE_H
+#ifdef SSV_BUILD_JSON
+int frontend_json_begin(int, char **);
+#endif
+
+enum Frontend {
+	#ifdef SSV_BUILD_WIDGETS
+	FRONTEND_WIDGETS,
+	#endif
+	#ifdef SSV_BUILD_JSON
+	FRONTEND_JSON,
+	#endif
+	FRONTEND_NONE
+};

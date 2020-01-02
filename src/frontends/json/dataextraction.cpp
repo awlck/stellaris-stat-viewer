@@ -115,3 +115,25 @@ QJsonObject createDataForEmpire(const Galaxy::Empire *empire, const QLinkedList<
 
 	return result;
 }
+
+QJsonObject createJsonFromState(const Galaxy::State *state) {
+	QJsonObject toplevelObj;
+	toplevelObj["date"] = state->getDate();
+	QJsonObject dataObj;
+
+	const QMap<qint64, Galaxy::Empire *> &empires = state->getEmpires();
+	const QMap<qint64, Galaxy::Ship *> &ships = state->getShips();
+	QMap<Galaxy::Empire *, QLinkedList<Galaxy::Ship *>> shipsPerEmpire;
+
+	for (auto it = ships.cbegin(); it != ships.cend(); it++) {
+		shipsPerEmpire[it.value()->getFleet()->getOwner()].append(it.value());
+	}
+
+	for (auto it = empires.cbegin(); it != empires.cend(); it++) {
+		dataObj[it.value()->getName()] = createDataForEmpire(it.value(), shipsPerEmpire[it.value()]);
+	}
+	fprintf(stderr, "done.\n");
+
+	toplevelObj["content"] = dataObj;
+	return toplevelObj;
+}
