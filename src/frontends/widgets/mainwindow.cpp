@@ -21,8 +21,6 @@
 #define SSV_VERSION "<unknown>"
 #endif
 
-#include <iostream>
-
 #include <QtCore/QJsonArray>
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
