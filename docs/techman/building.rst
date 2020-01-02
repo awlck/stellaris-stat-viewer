@@ -104,6 +104,16 @@ the build process. They must all be specified in the form ``-DVARIABLE=VALUE``
   (reasonably many optimizations, with debug info). The official builds published on GitHub
   currently use the ``RelWithDebInfo`` setting.
 
+``CMAKE_C_COMPILER``
+  Explicitly set the compiler to be used for C code. Useful if you have several compilers
+  installed and don't want to use the default one (e.g. ``/usr/bin/cc`` on Linux).
+
+``CMAKE_CXX_COMPILER``
+  Explicitly set the compiler to be used for C++ code (default on Linux: ``/usr/bin/c++``).
+  Not   required to be the same as the chosen C compiler. It is however recommended to
+  choose   compilers from the same family (e.g. ``gcc`` and ``g++`` or ``clang`` and
+  ``clang++``) to prevent any ABI issues.
+  
 ``SSV_BUILD_TESTS``
   Set ``ON`` to build unit tests for the parser, ``OFF`` to skip this.
 
