@@ -137,8 +137,14 @@ void MainWindow::checkForUpdatesSelected() {
 }
 
 void MainWindow::openFileSelected() {
-	QString which = QFileDialog::getOpenFileName(this, tr("Select save file"), QString(),
+#if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
+	QString which = QFileDialog::getOpenFileName(this, tr("Select save file"),
+			QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
 			tr("Stellaris Compressed Save Files (*.sav);;Stellaris Game State Files (gamestate)"));
+#else
+	QString which = QFileDialog::getOpenFileName(this, tr("Select save file"), QDir::homePath(),
+			tr("Stellaris Compressed Save Files (*.sav);;Stellaris Game State Files (gamestate)"));
+#endif
 	if (which == "") return;  // Cancel was clicked
 	loadFromFile(QFileInfo(which));
 }
