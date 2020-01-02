@@ -12,3 +12,4 @@ of notes that shows the internal workings of the program.
    :caption: Contents:
 
    building
+   structure
