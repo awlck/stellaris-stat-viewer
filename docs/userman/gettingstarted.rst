@@ -27,7 +27,7 @@ version! You have a choice between a traditional installer `exe`, and a simple `
 
 .. _GitHub releases page: https://github.com/ArdiMaster/stellaris-stat-viewer/releases
 
-If you are using a 64-bit version of **macOS** Mavericks (10.12) or newer, we finally got
+If you are using a 64-bit version of **macOS** 10.12 "Sierra" or newer, we finally got
 you covered: starting with version 0.3.1, macOS builds are also provided at the
 `GitHub releases page`_. Note that macOS's *Gatekeeper* feature will likely stop you from
 running Stellaris Stat Viewer the first time with every new release. To get around this,
