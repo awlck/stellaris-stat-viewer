@@ -161,7 +161,7 @@ namespace Parsing {
 		~Parser() override;
 		AstNode *parse();
 		void cancel();
-		ParserError getLatestParserError();
+		ParserError getLatestParserError() const;
 
 	signals:
 		void progress(Parser *parser, qint64 current, qint64 total);

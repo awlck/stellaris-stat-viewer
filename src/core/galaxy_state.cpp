@@ -53,7 +53,7 @@ namespace Galaxy {
 		return shipDesigns;
 	}
 
-	State *StateFactory::createFromAst(Parsing::AstNode *tree, QObject *parent) {
+	State *StateFactory::createFromAst(const Parsing::AstNode *tree, QObject *parent) {
 		// figure out how many objects we need to create so we can display a proper progress bar
 		int done = 0;
 		int toDo = 1;

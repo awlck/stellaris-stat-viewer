@@ -38,7 +38,7 @@ namespace Galaxy {
 		const QString &getName() const;
 		Fleet *getFleet() const;
 		ShipDesign *getDesign() const;
-		static Ship *createFromAst(Parsing::AstNode *tree, State *parent);
+		static Ship *createFromAst(const Parsing::AstNode *tree, State *parent);
 	private:
 		qint64 index;
 		QString name;

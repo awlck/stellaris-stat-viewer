@@ -627,7 +627,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 		shouldCancel = true;
 	}
 
-	ParserError Parser::getLatestParserError() {
+	ParserError Parser::getLatestParserError() const {
 		return latestParserError;
 	}
 

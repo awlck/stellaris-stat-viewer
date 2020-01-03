@@ -61,7 +61,7 @@ private slots:
 	void aboutSsvSelected();
 	void checkForUpdatesSelected();
 	void openFileSelected();
-	void quitSelected();
+	void quitSelected() const;
 	void settingsSelected();
 	void techTreeSelected();
 
@@ -69,13 +69,13 @@ private slots:
 	void exportStatsSelected();
 #endif
 
-	void parserProgressUpdate(Parsing::Parser *parser, qint64 current, qint64 max);
-	void galaxyProgressUpdate(Galaxy::StateFactory *factory, int current, int max);
+	void parserProgressUpdate(Parsing::Parser *parser, qint64 current, qint64 max) const;
+	void galaxyProgressUpdate(Galaxy::StateFactory *factory, int current, int max) const;
 
 private:
 	void gamestateLoadBegin();
-	void gamestateLoadSwitch();
-	void gamestateLoadFinishing();
+	void gamestateLoadSwitch() const;
+	void gamestateLoadFinishing() const;
 	void gamestateLoadDone();
 	void loadFromFile(const QFileInfo& file);
 

@@ -41,7 +41,7 @@ namespace Galaxy {
 		quint32 getOwnedSystemsCount() const;
 		const QMap<QString, double> &getIncomes() const;
 		const QStringList &getTechnologies() const;
-		static Empire *createFromAst(Parsing::AstNode *tree, State *parent);
+		static Empire *createFromAst(const Parsing::AstNode *tree, State *parent);
 	private:
 		qint64 index;
 		QString name;

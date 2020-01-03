@@ -190,7 +190,7 @@ void MainWindow::exportStatsSelected() {
 }
 #endif
 
-void MainWindow::quitSelected() {
+void MainWindow::quitSelected() const {
 	QApplication::exit();
 }
 
@@ -330,7 +330,7 @@ void MainWindow::loadFromFile(const QFileInfo& file) {
 	gamestateLoadDone();
 }
 
-void MainWindow::parserProgressUpdate(Parsing::Parser *parser, qint64 current, qint64 max) {
+void MainWindow::parserProgressUpdate(Parsing::Parser *parser, qint64 current, qint64 max) const {
 	if (currentProgressDialog->wasCanceled()) {
 		parser->cancel();
 		return;
@@ -339,7 +339,7 @@ void MainWindow::parserProgressUpdate(Parsing::Parser *parser, qint64 current, q
 	currentProgressDialog->setValue(current);
 }
 
-void MainWindow::galaxyProgressUpdate(Galaxy::StateFactory *factory, int current, int max) {
+void MainWindow::galaxyProgressUpdate(Galaxy::StateFactory *factory, int current, int max) const {
 	if (currentProgressDialog->wasCanceled()) {
 		factory->cancel();
 		return;
@@ -354,13 +354,13 @@ void MainWindow::gamestateLoadBegin() {
 	currentProgressDialog->setMinimumDuration(500);
 }
 
-void MainWindow::gamestateLoadSwitch() {
+void MainWindow::gamestateLoadSwitch() const {
 	currentProgressDialog->setLabelText(tr("(2/3) Building Galaxy..."));
 	currentProgressDialog->setValue(0);
 	currentProgressDialog->setMaximum(0);
 }
 
-void MainWindow::gamestateLoadFinishing() {
+void MainWindow::gamestateLoadFinishing() const {
 	currentProgressDialog->setLabelText(tr("(3/3) Finishing work..."));
 }
 

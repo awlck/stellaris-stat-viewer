@@ -46,7 +46,7 @@ namespace Galaxy {
 		return militaryPower;
 	}
 
-	Fleet *Fleet::createFromAst(Parsing::AstNode *tree, State *parent) {
+	Fleet *Fleet::createFromAst(const Parsing::AstNode *tree, State *parent) {
 		if (tree->type == Parsing::NT_STRING && qstrcmp(tree->val.Str, "none") == 0) return nullptr;
 
 		Fleet *state = new Fleet(parent);

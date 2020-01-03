@@ -31,7 +31,7 @@ void writeTechTreeClosing(QFile *out) {
 	out->write("}\n");
 }
 
-void writeTechTreeNodes(QFile *out, const QMap<QString, Galaxy::Technology *> &techs, GameTranslator *translator) {
+void writeTechTreeNodes(QFile *out, const QMap<QString, Galaxy::Technology *> &techs, const GameTranslator *translator) {
 	for (auto it = techs.cbegin(); it != techs.cend(); it++) {
 		Galaxy::Technology *tech = it.value();
 		out->write(it.key().toUtf8());

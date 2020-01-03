@@ -69,7 +69,7 @@ namespace Galaxy {
 		const QString &getName() const;
 		ShipSize getSize() const;
 		bool getIsAutogen() const;
-		static ShipDesign *createFromAst(Parsing::AstNode *tree, State *parent);
+		static ShipDesign *createFromAst(const Parsing::AstNode *tree, State *parent);
 	private:
 		qint64 index;
 		QString name;

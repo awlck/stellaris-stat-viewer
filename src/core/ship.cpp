@@ -44,7 +44,7 @@ namespace Galaxy {
 		return design;
 	}
 
-	Ship *Ship::createFromAst(AstNode *tree, State *parent) {
+	Ship *Ship::createFromAst(const AstNode *tree, State *parent) {
 		Ship *state = new Ship(parent);
 		state->index = static_cast<qint64>(QString(tree->myName).toLongLong());
 		

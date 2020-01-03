@@ -74,7 +74,7 @@ namespace Galaxy {
 		return isAutogen;
 	}
 
-	ShipDesign *ShipDesign::createFromAst(AstNode *tree, Galaxy::State *parent) {
+	ShipDesign *ShipDesign::createFromAst(const AstNode *tree, Galaxy::State *parent) {
 		ShipDesign *state = new ShipDesign(parent);
 		state->index = static_cast<qint64>(QString(tree->myName).toLongLong());
 

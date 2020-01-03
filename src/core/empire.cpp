@@ -58,7 +58,7 @@ namespace Galaxy {
 		return technologies;
 	}
 
-	Empire *Empire::createFromAst(AstNode *tree, State *parent) {
+	Empire *Empire::createFromAst(const AstNode *tree, State *parent) {
 		Empire *state = new Empire(parent);
 		state->index = static_cast<qint64>(QString(tree->myName).toLongLong());
 		AstNode *nameNode = tree->findChildWithName("name");

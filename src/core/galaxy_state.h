@@ -57,7 +57,7 @@ namespace Galaxy {
 	class StateFactory : public QObject {
 		Q_OBJECT
 	public:
-		State *createFromAst(Parsing::AstNode *tree, QObject *parent = nullptr);
+		State *createFromAst(const Parsing::AstNode *tree, QObject *parent = nullptr);
 		void cancel();
 	signals:
 		void progress(StateFactory *factory, int current, int max);
