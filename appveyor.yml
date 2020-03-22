@@ -26,18 +26,14 @@ before_test:
   - cmd: copy C:\Qt\5.12\msvc2017_64\bin\Qt5Test.dll .
 
 test_script:
-  - cmd: test_parser.exe -o test_result_parser.xml -xunitxml
-  - sh: ./test_parser -o test_result_parser.xml -xunitxml
+  - cmd: test_parser.exe
+  - sh: ./test_parser
 
 after_test:
   - mkdir artifact
   - cmd: C:\Qt\5.12\msvc2017_64\bin\windeployqt.exe --dir artifact --release --no-quick-import --no-system-d3d-compiler --compiler-runtime --no-webkit2 --no-opengl-sw stellaris_stat_viewer.exe
   - cmd: copy stellaris_stat_viewer.exe artifact
   - sh: cp stellaris_stat_viewer artifact
-
-on_finish:
-  - ps: if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2017") {$wc = New-Object 'System.Net.WebClient'; $wc.UploadFile("https://ci.appveyor.com/api/testresults/xunit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\test_result_parser.xml))}
-  - sh:  curl -F 'file=test_result_parser.xml' "https://ci.appveyor.com/api/testresults/xunit/$APPVEYOR_JOB_ID"
-
+  
 artifacts:
   - path: cmake-build-av\artifact

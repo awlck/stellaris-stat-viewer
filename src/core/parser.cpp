@@ -586,6 +586,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 					AstNode *member = createNode();
 					member->type = NT_DOUBLELIST_MEMBER;
 					member->val.Double = static_cast<double>(currentToken.tok.Int);
+					ADD_AS_CHILD(member);
 				} else PARSE_ERROR(PE_INVALID_IN_DOUBLE_LIST);
 				break;
 			case State::BegunCompoundList:

@@ -334,6 +334,8 @@ private slots:
 		QTest::newRow("negative and positive 1") << "stuff = { -197.5 30.5 -176.5 }\n" << -197.5 << 30.5 << -176.5;
 		QTest::newRow("negative and positive 2") << "stuff = { 107.5 -30.5 276.5 }\n" << 107.5 << -30.5 << 276.5;
 		QTest::newRow("more than three") << "stuff = { 1.5 2.5 3.5 4.5 5.5 6.5 }\n" << 1.5 << 2.5 << 3.5;
+		QTest::newRow("mixed doubles and integers") << "stuff = { 1.75 2.5 3 4.25 }\n" << 1.75 << 2.5 << 3.0;
+		QTest::newRow("mixed doubles and integers 2") << "stuff = { 3 1.75 2.5 4.25 }\n" << 3.0 << 1.75 << 2.5;
 	}
 	void doublelists_three() {
 		using namespace Parsing;
@@ -612,13 +614,13 @@ private slots:
 		QTest::newRow("invalid after equals") << "stuff = }" << Parsing::PE_INVALID_AFTER_EQUALS;
 		QTest::newRow("invalid after relation") << "stuff < }" << Parsing::PE_INVALID_AFTER_RELATION;
 		QTest::newRow("invalid after open") << "stuff = { =" << Parsing::PE_INVALID_AFTER_OPEN;
-		QTest::newRow("invalid combo after open") << "stuff = { 2 3.75 yes }" << Parsing::PE_INVALID_COMBO_AFTER_OPEN;
+		QTest::newRow("invalid combo after open") << "stuff = { 2 yes 3.75 }" << Parsing::PE_INVALID_COMBO_AFTER_OPEN;
 		QTest::newRow("invalid combo after open string") << "stuff = { \"hello\" 2 }" << Parsing::PE_INVALID_COMBO_AFTER_OPEN;
-		QTest::newRow("double in int list") << "stuff = { 3 4 3.75 }" << Parsing::PE_INVALID_IN_INT_LIST;
+		// QTest::newRow("double in int list") << "stuff = { 3 4 3.75 }" << Parsing::PE_INVALID_IN_INT_LIST;
 		QTest::newRow("bool in int list") << "stuff = { 3 4 yes }" << Parsing::PE_INVALID_IN_INT_LIST;
 		QTest::newRow("string in int list") << "stuff = { 3 4 \"hello there\" }" << Parsing::PE_INVALID_IN_INT_LIST;
 		QTest::newRow("compound in int list") << "stuff = { 3 4 { uh = ok } }" << Parsing::PE_INVALID_IN_INT_LIST;
-		QTest::newRow("int in double list") << "stuff = { 3.75 4.625 1 }" << Parsing::PE_INVALID_IN_DOUBLE_LIST;
+		// QTest::newRow("int in double list") << "stuff = { 3.75 4.625 1 }" << Parsing::PE_INVALID_IN_DOUBLE_LIST;
 		QTest::newRow("bool in double list") << "stuff = { 3.75 4.625 yes }" << Parsing::PE_INVALID_IN_DOUBLE_LIST;
 		QTest::newRow("string in double list") << "stuff = { 3.75 4.625 \"hello there\" }" << Parsing::PE_INVALID_IN_DOUBLE_LIST;
 		QTest::newRow("compound in double list") << "stuff = { 3.75 4.625 { uh = ok } }" << Parsing::PE_INVALID_IN_DOUBLE_LIST;
