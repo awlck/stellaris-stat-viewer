@@ -21,6 +21,8 @@
 #include "galaxy_state.h"
 #include "parser.h"
 
+#include <QtCore/QDebug>
+
 using Parsing::AstNode;
 
 namespace Galaxy {
@@ -104,7 +106,8 @@ namespace Galaxy {
 					ITERATE_CHILDREN(balanceNode, anItem) {
 						if (anItem->type == Parsing::NT_COMPOUND) {
 							ITERATE_CHILDREN(anItem, aResource) {
-								state->incomes[QString(aResource->myName)] += aResource->val.Double;
+								// For some reason, game version 2.6 stopped writing integers as e.g. '17.0'
+								state->incomes[QString(aResource->myName)] += aResource->type == Parsing::NT_DOUBLE ? aResource->val.Double : (double) aResource->val.Int;
 							}
 						}
 					}

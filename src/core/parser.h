@@ -172,6 +172,8 @@ namespace Parsing {
 		TokenType lookahead(int n);
 		AstNode *createNode();
 
+		static void fixListType(AstNode *list);
+
 		bool lexerDone = false;
 		bool shouldCancel = false;
 		bool shouldDeleteStream;
@@ -185,7 +187,7 @@ namespace Parsing {
 		qint64 totalSize;
 		std::forward_list<AstNode> allCreatedNodes;
 
-		const int queueCapacity = 50;
+		static constexpr int queueCapacity = 50;
 		unsigned long line = 1;
 		unsigned long charPos = 0;
 

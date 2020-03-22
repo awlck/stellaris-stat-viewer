@@ -491,7 +491,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 					break;
 				case TT_INT: 
 					try {
-						if (lookahead(1) == TT_INT || lookahead(1) == TT_CBRACE) {
+						if (lookahead(1) == TT_INT || lookahead(1) == TT_DOUBLE || lookahead(1) == TT_CBRACE) {
 							state = State::BegunIntList;
 							things.top()->type = NT_INTLIST;
 							AstNode *member = createNode();
@@ -559,6 +559,17 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 					member->type = NT_INTLIST_MEMBER;
 					member->val.Int = currentToken.tok.Int;
 					ADD_AS_CHILD(member);
+				} else if (currentToken.type == TT_DOUBLE) {
+					// perhaps this should have been a double list all along, but all entries
+					// so far were integer numbers for some reason written without a decimal point
+					fixListType(things.top());
+					AstNode *member = createNode();
+					member->type = NT_DOUBLELIST_MEMBER;
+					member->val.Double = currentToken.tok.Double;
+					state = State::BegunDoubleList;
+					// member->type = NT_INTLIST_MEMBER;
+					// member->val.Int = static_cast<qint64>(member->val.Double);
+					ADD_AS_CHILD(member);
 				} else PARSE_ERROR(PE_INVALID_IN_INT_LIST);
 				break;
 			case State::BegunDoubleList:
@@ -570,6 +581,11 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 					member->type = NT_DOUBLELIST_MEMBER;
 					member->val.Double = currentToken.tok.Double;
 					ADD_AS_CHILD(member);
+				} else if (currentToken.type == TT_INT) {
+					// sometimes the game writes integers (especially '0') into a double list...
+					AstNode *member = createNode();
+					member->type = NT_DOUBLELIST_MEMBER;
+					member->val.Double = static_cast<double>(currentToken.tok.Int);
 				} else PARSE_ERROR(PE_INVALID_IN_DOUBLE_LIST);
 				break;
 			case State::BegunCompoundList:
@@ -702,7 +718,12 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 					if (c.isDigit()) assumption = TT_INT;
 					else if (c == '-') assumption = TT_INT;
 					else assumption = TT_STRING;
-				} else if (assumption == TT_INT && c == '.') assumption = TT_DOUBLE;
+				} else if (assumption == TT_INT && c == '.') {
+					assumption = TT_DOUBLE;
+				} else if (assumption == TT_DOUBLE && c == '.') {
+					// most likely a date, but we don't really use those so we treat it as a string.
+					assumption = TT_STRING;
+				}
 			} else { finish_off_token:
 				Token token{};
 				token.line = line;
@@ -811,5 +832,14 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 	AstNode *Parser::createNode() {
 		allCreatedNodes.emplace_front();
 		return &allCreatedNodes.front();
+	}
+
+	void Parser::fixListType(Parsing::AstNode *list) {
+		Q_ASSERT_X(list->type == NT_INTLIST, "Parser::fixListType", "Attempted to transform non-integer list.");
+		for (AstNode *node = list->val.firstChild; node; node = node->nextSibling) {
+			node->val.Double = (double) node->val.Int;
+			node->type = NT_DOUBLELIST_MEMBER;
+		}
+		list->type = NT_DOUBLELIST;
 	}
 }
