@@ -21,8 +21,6 @@
 #include "galaxy_state.h"
 #include "parser.h"
 
-#include <QtCore/QDebug>
-
 using Parsing::AstNode;
 
 namespace Galaxy {
