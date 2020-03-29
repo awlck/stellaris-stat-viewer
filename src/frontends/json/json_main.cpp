@@ -40,37 +40,36 @@ int frontend_json_begin(int argc, char **argv) {
 		return 1;
 	}
 	QString filename(argv[2]);
-	Parser *parser;
+	MemBuf *buf;
 	bool isCompressed = filename.endsWith(QStringLiteral(".sav"));
-	unsigned char *dest;
-	QTextStream *stream;
+	QFile f(filename);
+
+	f.open(QIODevice::ReadOnly);
 	if (isCompressed) {
+		unsigned char *content;
+		unsigned long contentSize;
 		fprintf(stderr, "Inflating file ...\n");
-		unsigned long destsize;
-		QFile f(filename);
-		f.open(QIODevice::ReadOnly);
-		int result = extractGamestate(f, &dest, &destsize);
+		int result = extractGamestate(f, &content, &contentSize);
 		f.close();
 
 		if (result != 0) {
 			fprintf(stderr, "%s:\n%s\n\nPlease make sure you have selected a valid save file. If the selected file "
 				   "loads fine in the game, please report this issue to the developer.\n",
 				   argv[2], getInflateErrmsg(result).toLocal8Bit().data());
-			if (result <= 2) free(dest);
+			if (result <= 2) free(content);
 			return 3;
 		}
 
-		stream = new QTextStream(QByteArray((char *) dest, destsize));
-		parser = new Parser(stream, filename, Parsing::FileType::SaveFile);
+		buf = new MemBuf((char *) content, contentSize);
 	} else {
-		dest = nullptr;
-		stream = nullptr;
-		parser = new Parser(QFileInfo(argv[2]), FileType::SaveFile);
+		buf = new MemBuf(f);
 	}
+
+	Parser parser(*buf, FileType::SaveFile, filename);
 	fprintf(stderr, "Parsing file ...\n");
-	AstNode *node = parser->parse();
+	AstNode *node = parser.parse();
 	if (node == nullptr) {
-		ParserError err = parser->getLatestParserError();
+		ParserError err = parser.getLatestParserError();
 		fprintf(stderr, "Parser Error on %s:%lu:%lu: Error#%d\n",
 				argv[2], err.erroredToken.line, err.erroredToken.firstChar, err.etype);
 		return 2;
@@ -78,10 +77,7 @@ int frontend_json_begin(int argc, char **argv) {
 		fprintf(stderr, "%s: Unknown parse error.\n", argv[2]);
 		return 2;
 	}
-	if (isCompressed) {
-		delete stream;
-		free(dest);
-	}
+
 	fprintf(stderr, "Building galaxy ...\n");
 	Galaxy::StateFactory sf;
 	Galaxy::State *state = sf.createFromAst(node, nullptr);
@@ -89,7 +85,7 @@ int frontend_json_begin(int argc, char **argv) {
 		fprintf(stderr, "Error extracting data from the save file.\n");
 		return 3;
 	}
-	delete parser;
+	delete buf;
 
 	fprintf(stderr, "Extracting data ... ");
 	QJsonObject toplevelObj(createJsonFromState(state));

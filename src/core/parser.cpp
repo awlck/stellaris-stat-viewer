@@ -252,38 +252,25 @@ namespace Parsing {
 		return QStringLiteral("??? (BUG: unknown error type.)");
 	}
 
-	Parser::Parser(QString *text, QObject *parent) : QObject::QObject(parent),
-			shouldDeleteStream(true), fileType(FileType::NoFile),
-			file(nullptr), filename(tr("<string>")) {
-		filename = tr("<string>");
-		stream = new QTextStream(text, QIODevice::ReadOnly);
-		totalSize = text->toUtf8().size();
+	MemBuf::MemBuf(char *area, size_t size) : buf(area), location(0), _size(size) {}
+	MemBuf::MemBuf(const QByteArray &arr) {
+		_size = arr.size();
+		buf = static_cast<char *>(malloc(_size));
+		memcpy(buf, arr.data(), _size);
+		location = 0;
+	}
+	MemBuf::MemBuf(QFile &file) {
+		_size = file.size();
+		buf = static_cast<char *>(malloc(_size));
+		file.read(buf, _size);
+		location = 0;
+	}
+	MemBuf::~MemBuf() {
+		free(buf);
 	}
 
-	Parser::Parser(const QFileInfo &fileInfo, FileType ftype, QObject *parent) : QObject::QObject(parent),
-			shouldDeleteStream(true), fileType(ftype) {
-		filename = fileInfo.absoluteFilePath();
-		file = new QFile(filename);
-		file->open(QIODevice::ReadOnly);
-		stream = new QTextStream(file);
-		totalSize = file->size();
-	}
-
-	Parser::Parser(QTextStream *stream, QString filename, FileType ftype, QObject *parent) :
-			QObject::QObject(parent), shouldDeleteStream(false), fileType(ftype),
-			file(nullptr), filename(std::move(filename)), stream(stream) {
-		// Get the total size of stuff to be processed, if possible.
-		QIODevice *device = stream->device();
-		totalSize = device ? device->size() : 0;
-	}
-
-	Parser::~Parser() {
-		if (shouldDeleteStream) delete stream;
-		if (file) {
-			file->close();
-			delete file;
-		}
-	}
+	Parser::Parser(Parsing::MemBuf &data, Parsing::FileType ftype, QString filename, QObject *parent)
+		: QObject(parent), data(data), fileType(ftype), filename(std::move(filename)), totalSize(data.size()) {}
 
 	enum class State {
 		CompoundRoot,
@@ -567,8 +554,6 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 					member->type = NT_DOUBLELIST_MEMBER;
 					member->val.Double = currentToken.tok.Double;
 					state = State::BegunDoubleList;
-					// member->type = NT_INTLIST_MEMBER;
-					// member->val.Int = static_cast<qint64>(member->val.Double);
 					ADD_AS_CHILD(member);
 				} else PARSE_ERROR(PE_INVALID_IN_INT_LIST);
 				break;
@@ -661,17 +646,17 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 
 	int Parser::lex(int atLeast) {
 		if (atLeast == 0) atLeast = queueCapacity;
-		QString current;
-		QChar c;
+		char buf[64];
+		char c;
 		TokenType assumption = TT_NONE;
 		int tokensRead = 0;
 		unsigned int len = 0;
 		bool haveOpenQuote = false;
 		bool comment = false;
 		bool haveEscape = false;
-		while (!stream->atEnd() && tokensRead < atLeast && lexQueue.count() < queueCapacity-1) {
-			c = stream->read(1)[0];
 
+		while (!data.eof() && tokensRead < atLeast && lexQueue.count() < queueCapacity-1) {
+			c = data.getc();
 			// keep track of where we are in the file so we can report our progress and the locations of errors
 			charPos++;
 			totalProgress++;
@@ -684,23 +669,23 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 				}
 				continue;
 			}
-
 			// According to the wiki, the game uses only unix-style line endings (LF), so ignore CR characters.
 			if (c == '\r') continue;
-			if (haveOpenQuote || (!c.isSpace() && c != '{' && c != '}' && c != '=' && c != '<' && c != '>' && c != '#')) {
+
+			if (haveOpenQuote || (!isspace(c) && c != '{' && c != '}' && c != '=' && c != '<' && c != '>' && c != '#')) {
 				if (haveOpenQuote) {
 					if (!haveEscape) {
 						haveEscape = (c == '\\');
 					} else {
-						if (c == '"' || c == '\\') {
-							current += c;
-							len++;
+						if ((c == '"' || c == '\\') && len < 63) {
+							buf[len] = c;
+							buf[++len] = '\0';
 						}
 						haveEscape = false;
 						continue;
 					}
 				}
- 				if (c == '"') {
+				if (c == '"') {
 					if (haveOpenQuote) {  // This ends a quoted string
 						haveOpenQuote = false;
 						goto finish_off_token;  // Immediately finish this token, don't add the quotation mark to the result.
@@ -711,58 +696,57 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 						continue;  // Don't add the quotation mark to the result
 					}
 				}
-				current += c;
-				len++;
+				if (len < 63) {
+					buf[len] = c;
+					buf[++len] = '\0';
 
-				// update our assumption of what the currently-read token is, if necessary.
-				if (assumption == TT_NONE) {
-					if (c.isDigit()) assumption = TT_INT;
-					else if (c == '-') assumption = TT_INT;
-					else assumption = TT_STRING;
-				} else if (assumption == TT_INT && c == '.') {
-					assumption = TT_DOUBLE;
-				} else if (assumption == TT_DOUBLE && c == '.') {
-					// most likely a date, but we don't really use those so we treat it as a string.
-					assumption = TT_STRING;
+					// update our assumption of what the currently-read token is, if necessary.
+					if (assumption == TT_NONE) {
+						if (isdigit(c) || c == '-') assumption = TT_INT;
+						else assumption = TT_STRING;
+					} else if (assumption == TT_INT && c == '.') {
+						assumption = TT_DOUBLE;
+					} else if (assumption == TT_DOUBLE && c == '.') {
+						// most likely a date, but we don't really use those so we treat it as a string.
+						assumption = TT_STRING;
+					}
 				}
 			} else { finish_off_token:
 				Token token{};
 				token.line = line;
 				token.firstChar = charPos - len;
+				char *eptr;
 				switch (assumption) {
 				case TT_STRING:
 					// Check if our "string" might be a bool after all
-					if (current.compare("yes", Qt::CaseInsensitive) == 0) {
+					if (qstrcmp(buf, "yes") == 0 || qstrcmp(buf, "YES") == 0) {
 						token.type = TT_BOOL;
 						token.tok.Bool = true;
 					}
-					else if (current.compare("no", Qt::CaseInsensitive) == 0) {
+					else if (qstrcmp(buf, "no") == 0 || qstrcmp(buf, "NO") == 0) {
 						token.type = TT_BOOL;
 						token.tok.Bool = false;
 					} else {  // nope, it really is a string
 						token.type = TT_STRING;
-						QByteArray next = current.toUtf8();
 						// string length is currently limited to 64 bytes
-						qstrncpy(token.tok.String, next.data(), 64);
+						memcpy(token.tok.String, buf, 64);
 					}
 					break;
 				case TT_INT:
 					token.type = TT_INT;
-					bool int_ok;
-					token.tok.Int = static_cast<qint64>(current.toLongLong(&int_ok));
-					if (!int_ok) {
+					token.tok.Int = strtoll(buf, &eptr, 10);
+					if (token.tok.Int == 0 && eptr == buf) {
 						token.type = TT_NONE;
-						qstrncpy(token.tok.String, current.toUtf8().data(), 64);
+						memcpy(token.tok.String, buf, 64);
 						throw ParserError{ LE_INVALID_INT, token };
 					}
 					break;
 				case TT_DOUBLE:
 					token.type = TT_DOUBLE;
-					bool double_ok;
-					token.tok.Double = current.toDouble(&double_ok);
-					if (!double_ok) {
+					token.tok.Double = strtod(buf, &eptr);
+					if (eptr == buf) {
 						token.type = TT_NONE;
-						qstrncpy(token.tok.String, current.toUtf8().data(), 64);
+						memcpy(token.tok.String, buf, 64);
 						throw ParserError{ LE_INVALID_DOUBLE, token };
 					}
 					break;
@@ -802,7 +786,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 					tokensRead++;
 				}
 				assumption = TT_NONE;
-				current = "";
+				buf[0] = '\0';
 				len = 0;
 			}
 			if (c == '\n') {
@@ -811,21 +795,23 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 			}
 		}
 
-		if (stream->atEnd()) {
+		if (data.eof()) {
 			lexerDone = true;
 			if (assumption != TT_NONE) {
 				Token currentToken{ line, charPos - len, TT_NONE, {{0}} };
-				qstrncpy(currentToken.tok.String, current.toUtf8().data(), 64);
-				throw ParserError{ PE_UNEXPECTED_END, currentToken };
+				memcpy(currentToken.tok.String, buf, 64);
+				throw ParserError{PE_UNEXPECTED_END, currentToken};
 			}
 		}
-		everyNth(lexCalls2, 1000, totalProgress = totalSize != 0 ? stream->pos() : 0);
+		totalProgress = data.tell();
 		return tokensRead;
 	}
 
 	TokenType Parser::lookahead(int n) {
-		Q_ASSERT_X(n >= 1, "Parser::lookahead", "invalid lookahead");
+		Q_ASSERT_X(n >= 1 && n < queueCapacity, "Parser::lookahead", "invalid lookahead");
+		// Refill queue if necessary
 		if (lexQueue.size() < n) lex(n);
+		// Requested token beyond end of file
 		if (lexQueue.size() < n) return TT_NONE;
 		return lexQueue[n-1].type;
 	}

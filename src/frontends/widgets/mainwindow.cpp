@@ -264,15 +264,14 @@ void MainWindow::dropEvent(QDropEvent *event) {
 void MainWindow::loadFromFile(const QFileInfo& file) {
 	delete state;
 	gamestateLoadBegin();
-	Parsing::Parser *parser;
+	Parsing::MemBuf *buf;
 	bool isCompressedFile = file.fileName().endsWith(QStringLiteral(".sav"));
-	unsigned char *dest;  // where the extracted gamestate file will go, if necessary
-	QTextStream *stream;
+	QFile f(file.absoluteFilePath());
+	f.open(QIODevice::ReadOnly);
 	if (isCompressedFile) {
-		unsigned long destsize;
-		QFile f(file.absoluteFilePath());
-		f.open(QIODevice::ReadOnly);
-		int result = extractGamestate(f, &dest, &destsize);
+		unsigned char *content;  // where the extracted gamestate file will go, if necessary
+		unsigned long contentSize;
+		int result = extractGamestate(f, &content, &contentSize);
 		f.close();
 		if (result != 0) {
 			QMessageBox::critical(this, tr("Compression Error"), tr("An error occurred while inflating the selected "
@@ -280,31 +279,27 @@ void MainWindow::loadFromFile(const QFileInfo& file) {
 			                                                        "in the game, please report this issue "
 			                                                        "to the developer.").arg(getInflateErrmsg(result)));
 
-			if (result <= 2) free(dest);
+			if (result <= 2) free(content);
 			return;
 		}
-		stream = new QTextStream(QByteArray((char *) dest, destsize));
-		parser = new Parsing::Parser(stream, file.filePath(), Parsing::FileType::SaveFile, this);
+		buf = new Parsing::MemBuf((char *) content, contentSize);
 	} else {
-		stream = nullptr;
-		dest = nullptr;
-		parser = new Parsing::Parser(file, Parsing::FileType::SaveFile, this);
+		buf = new Parsing::MemBuf(f);
 	}
-	connect(parser, &Parsing::Parser::progress, this, &MainWindow::parserProgressUpdate);
-	Parsing::AstNode *result = parser->parse();
-	if (isCompressedFile) {
-		delete stream;
-		free(dest);
-	}
+
+	Parsing::Parser parser(*buf, Parsing::FileType::SaveFile, file.absoluteFilePath(), this);
+	connect(&parser, &Parsing::Parser::progress, this, &MainWindow::parserProgressUpdate);
+	Parsing::AstNode *result = parser.parse();
+
 	if (!result) {
 		gamestateLoadDone();
-		Parsing::ParserError error(parser->getLatestParserError());
+		Parsing::ParserError error(parser.getLatestParserError());
 		if (error.etype != Parsing::PE_CANCELLED)
 			QMessageBox::critical(this, tr("Parse Error"),
 			                      tr("%1:%2:%3: %4 (error #%5)").arg(file.absoluteFilePath()).arg(error.erroredToken.line)
 					                      .arg(error.erroredToken.firstChar).arg(
 							                      Parsing::getErrorDescription(error.etype)).arg(error.etype));
-		delete parser;
+		delete buf;
 		return;
 	}
 
@@ -320,7 +315,7 @@ void MainWindow::loadFromFile(const QFileInfo& file) {
 	}
 
 	gamestateLoadFinishing();
-	delete parser;
+	delete buf;
 	emit modelChanged(state);
 	statusLabel->setText(state->getDate());
 	statusBar()->showMessage(tr("Loaded %1").arg(file.absoluteFilePath()), 5000);

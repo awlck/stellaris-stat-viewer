@@ -44,7 +44,10 @@ namespace Galaxy {
 }
 
 void readAnotherTechFile(const QFileInfo &in, Galaxy::Model &model) {
-	Parsing::Parser parser(in, Parsing::FileType::GameFile);
+	QFile f(in.absoluteFilePath());
+	f.open(QIODevice::ReadOnly);
+	Parsing::MemBuf buf(f);
+	Parsing::Parser parser(buf, Parsing::FileType::GameFile);
 	Parsing::AstNode *tree = parser.parse();
 	if (tree) model.addTechnologies(tree);
 }

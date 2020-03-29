@@ -152,13 +152,40 @@ namespace Parsing {
 		Token erroredToken;
 	};
 
+	class MemBuf {
+		Q_DISABLE_COPY(MemBuf)
+	public:
+		MemBuf(char *area, size_t size);
+		explicit MemBuf(const QByteArray &arr);
+		explicit MemBuf(QFile &file);
+		~MemBuf();
+
+		inline char getc() {
+			if (Q_UNLIKELY(location == _size)) return EOF;
+			return buf[location++];
+		}
+		inline bool eof() {
+			return location == _size;
+		}
+		inline void rewind() {
+			location = 0;
+		}
+		inline size_t tell() {
+			return location;
+		}
+		inline size_t size() {
+			return _size;
+		}
+	private:
+		char *buf;
+		size_t location;
+		size_t _size;
+	};
+
 	class Parser : public QObject {
 		Q_OBJECT
 	public:
-		explicit Parser(QString *text, QObject *parent = nullptr);
-		Parser(const QFileInfo &fileInfo, FileType ftype, QObject *parent = nullptr);
-		Parser(QTextStream *stream, QString filename, FileType ftype, QObject *parent = nullptr);
-		~Parser() override;
+		Parser(MemBuf &data, FileType ftype, QString filename = QString(), QObject *parent = nullptr);
 		AstNode *parse();
 		void cancel();
 		ParserError getLatestParserError() const;
@@ -176,13 +203,11 @@ namespace Parsing {
 
 		bool lexerDone = false;
 		bool shouldCancel = false;
-		bool shouldDeleteStream;
 
+		MemBuf &data;
 		FileType fileType;
-		QFile *file;
 		QString filename;
 		QQueue<Token> lexQueue;
-		QTextStream *stream;
 		qint64 totalProgress = 0;
 		qint64 totalSize;
 		std::forward_list<AstNode> allCreatedNodes;
@@ -194,7 +219,6 @@ namespace Parsing {
 		ParserError latestParserError{PE_NONE, {0, 0, TT_NONE, {{0}}}};
 
 		unsigned int lexCalls1 = 1;
-		unsigned int lexCalls2 = 1;
 	};
 }
 
