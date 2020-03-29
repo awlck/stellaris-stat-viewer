@@ -22,7 +22,7 @@
 #include <QtCore/QTextStream>
 #include <utility>
 
-#include <stdio.h>  // TODO: Not use stdlib
+#include <stdio.h>
 
 #define everyNth(which, n, what) do { if ((((which)++) % (n)) == 0) {(what); (which) = 1;} } while (0)
 
@@ -324,7 +324,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 				if (currentToken.type == TT_STRING) {
 					state = State::HaveName;
 					AstNode *nextNode = createNode();
-					qstrcpy(nextNode->myName, currentToken.tok.String);
+					memcpy(nextNode->myName, currentToken.tok.String, 64);
 					ADD_AS_CHILD(nextNode);
 					things.push(nextNode);
 				} else if (currentToken.type == TT_INT) {
@@ -378,7 +378,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 				case TT_STRING:
 					state = State::CompoundRoot;
 					things.top()->type = NT_STRING;
-					qstrcpy(things.top()->val.Str, currentToken.tok.String);
+					memcpy(things.top()->val.Str, currentToken.tok.String, 64);
 					// again, kinda redundant, but...
 					things.top()->relation = RT_EQ;
 					things.pop();
@@ -464,7 +464,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 						AstNode *nextNode = createNode();
 						nextNode->type = NT_INDETERMINATE;
 						state = State::HaveName;
-						qstrcpy(nextNode->myName, currentToken.tok.String);
+						memcpy(nextNode->myName, currentToken.tok.String, 64);
 						ADD_AS_CHILD(nextNode);
 						things.push(nextNode);
 					} else if (lookahead(1) == TT_STRING || lookahead(1) == TT_CBRACE) {
@@ -472,7 +472,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 						things.top()->type = NT_STRINGLIST;
 						AstNode *member = createNode();
 						member->type = NT_STRINGLIST_MEMBER;
-						qstrcpy(member->val.Str, currentToken.tok.String);
+						memcpy(member->val.Str, currentToken.tok.String, 64);
 						ADD_AS_CHILD(member);
 					} else PARSE_ERROR(PE_INVALID_COMBO_AFTER_OPEN);
 					break;
@@ -591,7 +591,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 				if (currentToken.type == TT_STRING) {
 					AstNode *member = createNode();
 					member->type = NT_STRINGLIST_MEMBER;
-					qstrcpy(member->val.Str, currentToken.tok.String);
+					memcpy(member->val.Str, currentToken.tok.String, 64);
 					ADD_AS_CHILD(member);
 				} else if (currentToken.type == TT_CBRACE) {
 					state = State::CompoundRoot;
@@ -735,7 +735,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 				case TT_INT:
 					token.type = TT_INT;
 					token.tok.Int = strtoll(buf, &eptr, 10);
-					if (token.tok.Int == 0 && eptr == buf) {
+					if (Q_UNLIKELY(token.tok.Int == 0 && eptr == buf)) {
 						token.type = TT_NONE;
 						memcpy(token.tok.String, buf, 64);
 						throw ParserError{ LE_INVALID_INT, token };
@@ -744,7 +744,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 				case TT_DOUBLE:
 					token.type = TT_DOUBLE;
 					token.tok.Double = strtod(buf, &eptr);
-					if (eptr == buf) {
+					if (Q_UNLIKELY(eptr == buf)) {
 						token.type = TT_NONE;
 						memcpy(token.tok.String, buf, 64);
 						throw ParserError{ LE_INVALID_DOUBLE, token };
