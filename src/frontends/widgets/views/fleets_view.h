@@ -20,17 +20,30 @@
 #ifndef STELLARIS_STAT_VIEWER_MILITARY_VIEW_H
 #define STELLARIS_STAT_VIEWER_MILITARY_VIEW_H
 
-#include <QtWidgets/QTableWidget>
+#include <QtWidgets/QWidget>
+
+class QCheckBox;
+class QVBoxLayout;
+class FleetsViewInternal;
 
 namespace Galaxy { class State; }
 
-class FleetsView : public QTableWidget {
-	Q_OBJECT
+class FleetsView : public QWidget {
+	Q_OBJECT;
+
 public:
 	FleetsView(QWidget *parent = nullptr);
 
 public slots:
 	void modelChanged(const Galaxy::State *newState);
+	void onCheckboxChanged(int newState);
+
+private:
+	FleetsViewInternal *view;
+	QCheckBox *includeStations;
+	QVBoxLayout *layout;
+
+	const Galaxy::State *currentState;
 };
 
 #endif

@@ -17,6 +17,10 @@
 
 #include "fleets_view.h"
 
+#include <QtWidgets/QCheckBox>
+#include <QtWidgets/QTableWidget>
+#include <QtWidgets/QVBoxLayout>
+
 #include "../../../core/empire.h"
 #include "../../../core/fleet.h"
 #include "../../../core/galaxy_state.h"
@@ -24,7 +28,32 @@
 #include "../../../core/ship_design.h"
 #include "../numerictableitem.h"
 
-FleetsView::FleetsView(QWidget *parent) : QTableWidget(parent) {
+class FleetsViewInternal : public QTableWidget {
+	Q_OBJECT
+public:
+	FleetsViewInternal(QWidget *parent = nullptr);
+	void recalculate(const Galaxy::State *state, bool includeStations);
+};
+
+FleetsView::FleetsView(QWidget *parent) {
+	layout = new QVBoxLayout(this);
+	view = new FleetsViewInternal;
+	includeStations = new QCheckBox(tr("Include stations in fleet power"));
+	layout->addWidget(includeStations);
+	layout->addWidget(view);
+	connect(includeStations, &QCheckBox::stateChanged, this, &FleetsView::onCheckboxChanged);
+}
+
+void FleetsView::modelChanged(const Galaxy::State *newState) {
+	currentState = newState;
+	view->recalculate(currentState, includeStations->checkState() == Qt::Checked);
+}
+
+void FleetsView::onCheckboxChanged(int newState) {
+	view->recalculate(currentState, includeStations->checkState() == Qt::Checked);
+}
+
+FleetsViewInternal::FleetsViewInternal(QWidget *parent) : QTableWidget(parent) {
 	setColumnCount(9);
 	QStringList headers;
 	headers << tr("Name") << tr("Total Fleet Power") << tr("# Corvettes") << tr("# Destroyers")
@@ -32,20 +61,20 @@ FleetsView::FleetsView(QWidget *parent) : QTableWidget(parent) {
 	setHorizontalHeaderLabels(headers);
 }
 
-void FleetsView::modelChanged(const Galaxy::State *newState) {
+void FleetsViewInternal::recalculate(const Galaxy::State *state, bool includeStations) {
 	using Galaxy::ShipSize;
 	using Galaxy::FleetData;
 	setSortingEnabled(false);
-	const QMap<qint64, Galaxy::Fleet*> &fleets = newState->getFleets();
-	const QMap<qint64, Galaxy::Ship *> &ships = newState->getShips();
-	
-	// QMap<Galaxy::Empire *, double> empireTotalMilitary;
+	const QMap<qint64, Galaxy::Fleet*> &fleets = state->getFleets();
+	const QMap<qint64, Galaxy::Ship *> &ships = state->getShips();
 
 	QMap<Galaxy::Empire *, FleetData> empireTotals;
 	for (auto fit = fleets.cbegin(); fit != fleets.cend(); fit++) {
 		Galaxy::Empire *owner = fit.value()->getOwner();
 		FleetData data = empireTotals.value(owner, { 0, 0, 0, 0, 0, 0, 0, 0 });
-		data.power += fit.value()->getMilitaryPower();
+		if (includeStations || !fit.value()->getIsStation()) {
+			data.power += fit.value()->getMilitaryPower();
+		}
 		empireTotals[owner] = data;
 	}
 	setRowCount(empireTotals.size());
@@ -107,3 +136,5 @@ void FleetsView::modelChanged(const Galaxy::State *newState) {
 	}
 	setSortingEnabled(true);
 }
+
+#include "fleets_view.moc"
