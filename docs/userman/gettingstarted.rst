@@ -57,8 +57,13 @@ Stellaris Stat Viewer primarily consists of four tabs showing various statistics
 empire: the **Overview** simply lists the Military, Economy, and Technology power ratings
 for each empire. These are the numbers used by the game to produce the *Equivalent*,
 *Inferior*, etc. ratings on the Contacts screen. The **Fleets** tab shows how many ships of
-each type an empire posesses, together with the empire's total fleet power. (Note that this
-figure includes starbases.) The **Economy** tab lists each empire's  last month's incomes in
+each type an empire posesses, together with the empire's total fleet power.
+
+.. note::
+   In the **Fleets** tab, check *Include stations in fleet power* to include starbases in
+   the total fleet power figure. Leave it unchecked to include only mobile fleets.
+
+The **Economy** tab lists each empire's  last month's incomes in
 the various basic resources. Finally, the **Technologies** tab allows you to view the
 technologies researched by each empire.
 
