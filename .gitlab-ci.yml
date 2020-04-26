@@ -1,7 +1,7 @@
 image: ubuntu:focal
 
 variables:
-  DEBIAN_FORNTEND: "noninteractive"
+  DEBIAN_FRONTEND: "noninteractive"
 
 build:
   stage: build
