@@ -17,6 +17,7 @@
 
 #include "ship.h"
 
+#include "empire.h"
 #include "fleet.h"
 #include "galaxy_state.h"
 #include "model_private_macros.h"
@@ -67,6 +68,9 @@ namespace Galaxy {
 		}
 		state->design = parent->getShipDesigns().value(designNode->val.Int);
 		CHECK_PTR(state->design);
+		if (state->design->getSize() <= ShipSize::StarbaseCitadel) {  // this is a starbase of some description, implying system ownership
+			state->fleet->getOwner()->ownedSystems += 1;
+		}
 
 		return state;
 	}

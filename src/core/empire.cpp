@@ -24,7 +24,7 @@
 using Parsing::AstNode;
 
 namespace Galaxy {
-	Empire::Empire(State *parent) : QObject(parent) {}
+	Empire::Empire(State *parent) : QObject(parent), ownedSystems(0) {}
 
 	qint64 Empire::getIndex() const {
 		return index;
@@ -91,9 +91,6 @@ namespace Galaxy {
 			CHECK_PTR(powerNode);
 		}
 		state->techPower = powerNode->val.Double;
-
-		AstNode *planetsNode = tree->findChildWithName("controlled_planets");
-		state->ownedSystems = planetsNode ? static_cast<quint32>(planetsNode->countChildren()) : 0;
 
 		AstNode *budgetNode = tree->findChildWithName("budget");
 		if (budgetNode && budgetNode->type == Parsing::NT_COMPOUND) {

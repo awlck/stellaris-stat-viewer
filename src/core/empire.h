@@ -27,6 +27,7 @@
 namespace Parsing { struct AstNode; }
 
 namespace Galaxy {
+	class Ship;
 	class State;
 
 	class Empire : public QObject {
@@ -51,6 +52,7 @@ namespace Galaxy {
 		quint32 ownedSystems;
 		QMap<QString, double> incomes;
 		QStringList technologies;
+		friend class Ship;
 	};
 }
 
