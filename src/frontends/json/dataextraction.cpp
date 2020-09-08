@@ -96,6 +96,14 @@ QJsonObject getEconomyForEmpire(const Galaxy::Empire *empire) {
 	return economy;
 }
 
+QJsonObject getResearchForEmpire(const Galaxy::Empire* empire) {
+	QJsonObject research;
+	const QMap<QString, double>& incomes = empire->getIncomes();
+	research["physics"] = incomes["physics_research"];
+	research["society"] = incomes["society"];
+	research["engineering"] = incomes["engineering"];
+}
+
 QJsonArray getTechsForEmpire(const Galaxy::Empire *empire) {
 	QJsonArray arr;
 	// No direct conversion from QStringList to QJsonArray either, so ...
@@ -111,6 +119,7 @@ QJsonObject createDataForEmpire(const Galaxy::Empire *empire, const QLinkedList<
 	result["overview"] = getOverviewForEmpire(empire);
 	result["military"] = getFleetsForEmpire(shipsOfEmpire);
 	result["economy"] = getEconomyForEmpire(empire);
+	result["research"] = getResearchForEmpire(empire);
 	result["technologies"] = getTechsForEmpire(empire);
 
 	return result;

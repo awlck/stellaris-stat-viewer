@@ -48,7 +48,7 @@ if(SSV_BUILD_WIDGETS)
             src/frontends/widgets/views/fleets_view.cpp src/frontends/widgets/views/fleets_view.h
             src/frontends/widgets/views/overview_view.cpp src/frontends/widgets/views/overview_view.h
             src/frontends/widgets/views/techs_view.cpp src/frontends/widgets/views/techs_view.h
-        )
+            src/frontends/widgets/views/research_view.h src/frontends/widgets/views/research_view.cpp)
     target_compile_definitions(ssv_frontend_widgets PRIVATE SSV_VERSION="${SSV_BUILD_VERSION}")
     target_link_libraries(ssv_frontend_widgets Qt5::Widgets)
     target_include_directories(ssv_frontend_widgets PRIVATE ${CMAKE_CURRENT_BINARY_DIR})

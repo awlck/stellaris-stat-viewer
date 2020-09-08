@@ -37,6 +37,7 @@ class EconomyView;
 class FleetsView;
 class GameTranslator;
 class OverviewView;
+class ResearchView;
 class TechView;
 namespace Galaxy {
 	class State;
@@ -102,6 +103,7 @@ private:
 	EconomyView *economyView;
 	FleetsView *militaryView;
 	OverviewView *powerRatingView;
+	ResearchView* researchView;
 	TechView *techView;
 };
 
