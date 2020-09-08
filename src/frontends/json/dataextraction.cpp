@@ -102,6 +102,7 @@ QJsonObject getResearchForEmpire(const Galaxy::Empire* empire) {
 	research["physics"] = incomes["physics_research"];
 	research["society"] = incomes["society"];
 	research["engineering"] = incomes["engineering"];
+	return research;
 }
 
 QJsonArray getTechsForEmpire(const Galaxy::Empire *empire) {
