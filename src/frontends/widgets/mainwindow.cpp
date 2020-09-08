@@ -49,6 +49,7 @@
 #include "views/fleets_view.h"
 #include "views/overview_view.h"
 #include "views/research_view.h"
+#include "views/strategic_resources_view.h"
 #include "views/techs_view.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
@@ -107,6 +108,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	economyView = new EconomyView(this);
 	connect(this, &MainWindow::modelChanged, economyView, &EconomyView::modelChanged);
 	tabs->addTab(economyView, tr("Economy"));
+
+	strategicResourcesView = new StrategicResourcesView(this);
+	connect(this, &MainWindow::modelChanged, strategicResourcesView, &StrategicResourcesView::modelChanged);
+	tabs->addTab(strategicResourcesView, tr("Strategic Resources"));
 
 	researchView = new ResearchView(this);
 	connect(this, &MainWindow::modelChanged, researchView, &ResearchView::modelChanged);

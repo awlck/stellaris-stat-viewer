@@ -93,6 +93,13 @@ QJsonObject getEconomyForEmpire(const Galaxy::Empire *empire) {
 	economy["unity"] = incomes["unity"];
 	economy["alloys"] = incomes["alloys"];
 	economy["consumer_goods"] = incomes["consumer_goods"];
+	economy["volatile_motes"] = incomes["volatile_motes"];
+	economy["rare_crystals"] = incomes["rare_crystals"];
+	economy["exotic_gases"] = incomes["exotic_gases"];
+	economy["zro"] = incomes["sr_zro"];
+	economy["dark_matter"] = incomes["sr_dark_matter"];
+	economy["living_metal"] = incomes["sr_living_metal"];
+	economy["nanites"] = incomes["nanites"];
 	return economy;
 }
 
