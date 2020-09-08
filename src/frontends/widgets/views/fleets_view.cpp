@@ -50,7 +50,7 @@ void FleetsView::modelChanged(const Galaxy::State *newState) {
 }
 
 void FleetsView::onCheckboxChanged(int newState) {
-	view->recalculate(currentState, includeStations->checkState() == Qt::Checked);
+	if (currentState) view->recalculate(currentState, includeStations->checkState() == Qt::Checked);
 }
 
 FleetsViewInternal::FleetsViewInternal(QWidget *parent) : QTableWidget(parent) {
