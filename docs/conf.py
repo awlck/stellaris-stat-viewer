@@ -20,13 +20,13 @@
 # -- Project information -----------------------------------------------------
 
 project = 'Stellaris Stat Viewer'
-copyright = '2019, Adrian Welcker'
+copyright = '2020, Adrian Welcker'
 author = 'Adrian Welcker'
 
 # The short X.Y version
-version = '0.4'
+version = '0.5'
 # The full version, including alpha/beta/rc tags
-release = '0.4.2'
+release = '0.5.0'
 
 applehelp_bundle_id = 'de.diepixelecke.Stellaris-Stat-Viewer'
 
