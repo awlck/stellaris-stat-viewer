@@ -81,7 +81,7 @@ void GameTranslator::readSingleTranslationFile(QFile *f) {
 	 * not aware of comments appearing on the end of useful lines: they seem to always
 	 * reside in lines of their own.
 	 */
-	QRegularExpression matchexpr("^ ([a-zA-Z0-9._]+):[01]? \"(.+)\"$", QRegularExpression::MultilineOption);
+	QRegularExpression matchexpr("^[ \\t]+([a-zA-Z0-9._]+):[01]?[ \\t]+\"(.+)\"\\r?$", QRegularExpression::MultilineOption);
 	QRegularExpressionMatchIterator it = matchexpr.globalMatch(stream.readAll());
 	while (it.hasNext()) {
 		QRegularExpressionMatch line = it.next();
