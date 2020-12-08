@@ -56,6 +56,20 @@ int GameTranslator::setFolderAndLanguage(const QString &newFolder, const QString
 	return translations.count();
 }
 
+void GameTranslator::fixupStrings() {
+	QRegularExpression matchexpr("\\$([a-zA-Z0-9._]+)\\$");
+	for (auto it = translations.begin(); it != translations.end(); it++) {
+		QString backup(it.value());
+		QRegularExpressionMatchIterator matchit = matchexpr.globalMatch(backup);
+		while (matchit.hasNext()) {
+			QRegularExpressionMatch match = matchit.next();
+			if (translations.contains(match.captured(1))) {
+				it.value().replace(match.captured(0), translations[match.captured(1)]);
+			}
+		}
+	}
+}
+
 void GameTranslator::readTranslationFilesForLanguage() {
 	QDir localizationDir(gameDirectory.absoluteFilePath("localisation/") + language);
 
@@ -64,13 +78,12 @@ void GameTranslator::readTranslationFilesForLanguage() {
 		QFile currentFile(it.next());
 		readSingleTranslationFile(&currentFile);
 	}
+	fixupStrings();
 }
 
 void GameTranslator::readSingleTranslationFile(QFile *f) {
 	if (!(f->exists())) return;
-	if (!(f->open(QIODevice::ReadOnly))) return;
-	QTextStream stream(f);
-	stream.setCodec("utf-8");
+	if (!(f->open(QIODevice::ReadOnly | QIODevice::Text))) return;
 
 	/* @p Reading YML localization files with Regular Expressions.
 	 * Fortunately, the game's localization files use only the simplest form of YML, so
@@ -82,7 +95,7 @@ void GameTranslator::readSingleTranslationFile(QFile *f) {
 	 * reside in lines of their own.
 	 */
 	QRegularExpression matchexpr("^ ([a-zA-Z0-9._]+):[01]? \"(.+)\"$", QRegularExpression::MultilineOption);
-	QRegularExpressionMatchIterator it = matchexpr.globalMatch(stream.readAll());
+	QRegularExpressionMatchIterator it = matchexpr.globalMatch(f->readAll());
 	while (it.hasNext()) {
 		QRegularExpressionMatch line = it.next();
 		translations[line.captured(1)] = line.captured(2);

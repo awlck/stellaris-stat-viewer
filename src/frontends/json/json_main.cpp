@@ -20,7 +20,6 @@
 #include <QtCore/QJsonArray>
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
-#include <QtCore/QLinkedList>
 #include <QtCore/QTextStream>
 #include "../../core/empire.h"
 #include "../../core/fleet.h"
