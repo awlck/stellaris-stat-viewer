@@ -61,7 +61,7 @@ TechTreeDialog::TechTreeDialog(GameTranslator *translator, QWidget *parent)
 	mainLayout->addWidget(treeTypeBox, 0, 0);
 
 	statusLabel = new QLabel(tr("Ready."));
-	statusLabel->setMinimumWidth(statusLabel->fontMetrics().width(tr("Reading 00_strategic_resources_tech.txt")));
+	statusLabel->setMinimumWidth(statusLabel->fontMetrics().horizontalAdvance(tr("Reading 00_strategic_resources_tech.txt")));
 	statusLabel->setAlignment(Qt::AlignCenter);
 	mainLayout->addWidget(statusLabel, 1, 0, Qt::AlignCenter);
 

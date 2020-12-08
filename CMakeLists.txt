@@ -14,9 +14,9 @@ set(SSV_BUILD_VERSION "${PROJECT_VERSION}-git-custom" CACHE STRING "For release 
 set(SOME_FRONTEND_FOUND OFF)
 
 if(SSV_BUILD_WIDGETS)
-	find_package(Qt5 COMPONENTS Core Widgets CONFIG REQUIRED)
+	find_package(Qt6 COMPONENTS Core Widgets CONFIG REQUIRED)
 else()
-	find_package(Qt5 COMPONENTS Core CONFIG REQUIRED)
+	find_package(Qt6 COMPONENTS Core CONFIG REQUIRED)
 endif()
 set(CMAKE_AUTOMOC ON)
 
@@ -51,7 +51,7 @@ if(SSV_BUILD_WIDGETS)
             src/frontends/widgets/views/research_view.h src/frontends/widgets/views/research_view.cpp
             src/frontends/widgets/views/strategic_resources_view.h src/frontends/widgets/views/strategic_resources_view.cpp)
     target_compile_definitions(ssv_frontend_widgets PRIVATE SSV_VERSION="${SSV_BUILD_VERSION}")
-    target_link_libraries(ssv_frontend_widgets Qt5::Widgets)
+    target_link_libraries(ssv_frontend_widgets Qt6::Widgets)
     target_include_directories(ssv_frontend_widgets PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
     set(SOME_FRONTEND_FOUND ON)
 endif()
@@ -60,7 +60,7 @@ if(SSV_BUILD_JSON)
     add_library(ssv_frontend_json STATIC
             src/frontends/json/json_main.cpp
             src/frontends/json/dataextraction.cpp src/frontends/json/dataextraction.h)
-    target_link_libraries(ssv_frontend_json Qt5::Core)
+    target_link_libraries(ssv_frontend_json Qt6::Core)
     set(SOME_FRONTEND_FOUND ON)
 endif()
 
@@ -69,7 +69,7 @@ configure_file(src/frontends.h.in frontends.h)
 # for testing
 add_library(ssv_parser STATIC
         src/core/parser.cpp src/core/parser.h)
-target_link_libraries(ssv_parser Qt5::Core)
+target_link_libraries(ssv_parser Qt6::Core)
 
 add_executable(stellaris_stat_viewer WIN32 MACOSX_BUNDLE
         src/main.cpp src/frontends.h.in
@@ -84,7 +84,7 @@ add_executable(stellaris_stat_viewer WIN32 MACOSX_BUNDLE
         src/core/puff/puff.c src/core/puff/puff.h
         src/core/extract_gamestate.cpp src/core/extract_gamestate.h src/core/techtree.cpp src/core/techtree.h)
 target_compile_definitions(stellaris_stat_viewer PRIVATE SSV_VERSION="${SSV_BUILD_VERSION}")
-target_link_libraries(stellaris_stat_viewer ssv_parser Qt5::Core)
+target_link_libraries(stellaris_stat_viewer ssv_parser Qt6::Core)
 target_include_directories(stellaris_stat_viewer PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 if(SSV_BUILD_WIDGETS)
@@ -95,10 +95,10 @@ if(SSV_BUILD_JSON)
 endif()
 
 if(SSV_BUILD_TESTS)
-    find_package(Qt5Test CONFIG REQUIRED)
+    find_package(Qt6Test CONFIG REQUIRED)
     enable_testing()
     add_executable(test_parser tests/test_parser.cpp)
-    target_link_libraries(test_parser ssv_parser Qt5::Test)
+    target_link_libraries(test_parser ssv_parser Qt6::Test)
     add_test(NAME parser COMMAND test_parser)
 endif()
 

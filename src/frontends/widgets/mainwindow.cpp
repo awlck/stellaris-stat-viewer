@@ -26,6 +26,7 @@
 #include <QtCore/QJsonObject>
 #include <QtCore/QMimeData>
 #include <QtCore/QSettings>
+#include <QtCore/QStandardPaths>
 #include <QtCore/QTextStream>
 #include <QtGui/QDesktopServices>
 #include <QtGui/QDragEnterEvent>

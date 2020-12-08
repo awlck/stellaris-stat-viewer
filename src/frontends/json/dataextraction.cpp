@@ -33,7 +33,7 @@ QJsonObject getOverviewForEmpire(const Galaxy::Empire *empire) {
 	return overview;
 }
 
-QJsonObject getFleetsForEmpire(const QLinkedList<Galaxy::Ship *> &shipsOfEmpire) {
+QJsonObject getFleetsForEmpire(const std::forward_list<Galaxy::Ship *> &shipsOfEmpire) {
 	QJsonObject fleetObj;
 	using Galaxy::ShipSize;
 	using Galaxy::FleetData;
@@ -121,7 +121,7 @@ QJsonArray getTechsForEmpire(const Galaxy::Empire *empire) {
 	return arr;
 }
 
-QJsonObject createDataForEmpire(const Galaxy::Empire *empire, const QLinkedList<Galaxy::Ship *> &shipsOfEmpire) {
+QJsonObject createDataForEmpire(const Galaxy::Empire *empire, const std::forward_list<Galaxy::Ship *> &shipsOfEmpire) {
 	QJsonObject result;
 
 	result["overview"] = getOverviewForEmpire(empire);
@@ -140,10 +140,10 @@ QJsonObject createJsonFromState(const Galaxy::State *state) {
 
 	const QMap<qint64, Galaxy::Empire *> &empires = state->getEmpires();
 	const QMap<qint64, Galaxy::Ship *> &ships = state->getShips();
-	QMap<Galaxy::Empire *, QLinkedList<Galaxy::Ship *>> shipsPerEmpire;
+	QMap<Galaxy::Empire *, std::forward_list<Galaxy::Ship *>> shipsPerEmpire;
 
 	for (auto it = ships.cbegin(); it != ships.cend(); it++) {
-		shipsPerEmpire[it.value()->getFleet()->getOwner()].append(it.value());
+		shipsPerEmpire[it.value()->getFleet()->getOwner()].push_front(it.value());
 	}
 
 	for (auto it = empires.cbegin(); it != empires.cend(); it++) {

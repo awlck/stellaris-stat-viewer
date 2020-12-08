@@ -35,6 +35,7 @@ public:
 	int setLanguage(const QString &newLanguage);
 	int setFolderAndLanguage(const QString &newFolder, const QString &newLanguage);
 private:
+	void fixupStrings();
 	void readTranslationFilesForLanguage();
 	void readSingleTranslationFile(QFile *f);
 

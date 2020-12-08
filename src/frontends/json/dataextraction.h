@@ -18,8 +18,8 @@
 #ifndef STELLARIS_STAT_VIEWER_DATAEXTRACTION_H
 #define STELLARIS_STAT_VIEWER_DATAEXTRACTION_H
 
+#include <forward_list>
 #include <QtCore/QJsonObject>
-#include <QtCore/QLinkedList>
 
 namespace Galaxy {
 	class Empire;
@@ -27,7 +27,7 @@ namespace Galaxy {
 	class State;
 }
 
-QJsonObject createDataForEmpire(const Galaxy::Empire *e, const QLinkedList<Galaxy::Ship *> &ships);
+QJsonObject createDataForEmpire(const Galaxy::Empire *e, const std::forward_list<Galaxy::Ship *> &ships);
 QJsonObject createJsonFromState(const Galaxy::State *state);
 
 #endif //STELLARIS_STAT_VIEWER_DATAEXTRACTION_H
