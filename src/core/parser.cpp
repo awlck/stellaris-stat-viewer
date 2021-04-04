@@ -1,6 +1,6 @@
 /* parser.cpp: A parser for PDS script/declaration files.
  *
- * Copyright 2019 Adrian "ArdiMaster" Welcker
+ * Copyright 2019-2021 Adrian "ArdiMaster" Welcker
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@
 #include "parser.h"
 
 #include <stack>
-
-#include <QtCore/QTextStream>
 #include <utility>
 
 #include <stdio.h>
@@ -27,6 +25,7 @@
 #define everyNth(which, n, what) do { if ((((which)++) % (n)) == 0) {(what); (which) = 1;} } while (0)
 
 namespace Parsing {
+	// Indicates whether this AST node type can have children.
 	static inline bool typeHasChildren(NodeType t) {
 		switch (t) {
 			case NT_COMPOUND:
@@ -41,6 +40,8 @@ namespace Parsing {
 		}
 	}
 
+	// Merges the given AstNode into this by appending all its children to our list of children.
+	// This is not a copy operation: the other node is left childless.
 	void AstNode::merge(Parsing::AstNode *other) {
 		if (type != other->type || !typeHasChildren(type)) return;
 		if (other->val.firstChild != nullptr) {
@@ -55,6 +56,7 @@ namespace Parsing {
 		}
 	}
 
+	// Iterates through our children to find the one called `name', if any.
 	AstNode* AstNode::findChildWithName(const char *name) const {
 		if (type != NT_COMPOUND) return nullptr;
 		if (this->val.firstChild == nullptr) return nullptr;
@@ -66,6 +68,7 @@ namespace Parsing {
 		return nullptr;
 	}
 
+	// Counts the children of this node.
 	qint64 AstNode::countChildren() const {
 		if (!typeHasChildren(type)) return -1;
 		if (this->val.firstChild == nullptr) return 0;
@@ -78,7 +81,7 @@ namespace Parsing {
 		return childCount;
 	}
 
-	// TODO: Not use stdlib
+	// For debugging: print the parse tree starting at this node.
 	void printParseTree(const AstNode *tree, int indent, bool toplevel) {
 		comeagain:
 		if (!tree) return;
@@ -212,6 +215,7 @@ namespace Parsing {
 		}
 	}
 
+	// Returns a textual description for the given `ParseErr' enum entry.
 	QString getErrorDescription(ParseErr etype) {
 		switch(etype) {
 			case PE_NONE:
@@ -272,6 +276,7 @@ namespace Parsing {
 	Parser::Parser(Parsing::MemBuf &data, Parsing::FileType ftype, QString filename, QObject *parent)
 		: QObject(parent), data(data), fileType(ftype), filename(std::move(filename)), totalSize(data.size()) {}
 
+	// Represents the parser's internal state.
 	enum class State {
 		CompoundRoot,
 		HaveName,
@@ -295,6 +300,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 
 #define PARSE_ERROR(error) do { latestParserError = { (error), currentToken }; return nullptr; } while (0)
 
+	// This somewhat elephantine function is responsible for constructing the parse tree from the lexer output.
 	AstNode* Parser::parse() {
 		try {
 			lex();  // Initially fill token queue
@@ -625,14 +631,19 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 		return root;
 	}
 
+	// Called by the GUI frontend when the user clicks the Cancel button.
+	// Sets a flag indicating the parse function to quit at the next possible moment.
 	void Parser::cancel() {
 		shouldCancel = true;
 	}
 
+	// Gets the stored parser error.
 	ParserError Parser::getLatestParserError() const {
 		return latestParserError;
 	}
 
+	// Gets the next token from the queue, calling the lexer if necessary.
+	// Throws an "unexpected end" parser error if at end of file.
 	Token Parser::getNextToken() {
 		if (lexQueue.isEmpty()) {
 			lex();
@@ -644,6 +655,9 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 		return lexQueue.dequeue();
 	}
 
+	// Lex into the queue. Attempt to provide `atLeast' many tokens: can be more if the last
+	// token ends in a special character, can be less if end of file is reached.
+	// Returns the number of tokens lexed.
 	int Parser::lex(int atLeast) {
 		if (atLeast == 0) atLeast = queueCapacity;
 		char buf[64];
@@ -797,6 +811,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 
 		if (data.eof()) {
 			lexerDone = true;
+			// produce an error if the file ended in the middle of a token.
 			if (assumption != TT_NONE) {
 				Token currentToken{ line, charPos - len, TT_NONE, {{0}} };
 				memcpy(currentToken.tok.String, buf, 64);
@@ -807,6 +822,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 		return tokensRead;
 	}
 
+	// Attempt to look ahead by `n' tokens.
 	TokenType Parser::lookahead(int n) {
 		Q_ASSERT_X(n >= 1 && n < queueCapacity, "Parser::lookahead", "invalid lookahead");
 		// Refill queue if necessary
@@ -816,11 +832,13 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 		return lexQueue[n-1].type;
 	}
 
+	// create a new AstNode, adding it to the list of all nodes.
 	AstNode *Parser::createNode() {
 		allCreatedNodes.emplace_front();
 		return &allCreatedNodes.front();
 	}
 
+	// Fixup list types: when a double appears in an int list, transform the entire thing into a double list.
 	void Parser::fixListType(Parsing::AstNode *list) {
 		Q_ASSERT_X(list->type == NT_INTLIST, "Parser::fixListType", "Attempted to transform non-integer list.");
 		for (AstNode *node = list->val.firstChild; node; node = node->nextSibling) {
