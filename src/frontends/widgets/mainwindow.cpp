@@ -386,43 +386,52 @@ void MainWindow::gamestateLoadDone() {
 	currentProgressDialog = nullptr;
 }
 
-static void hackilyWaitOnFile(const QString &file) {
-    QFile theFile(file);
-    unsigned char *tmp;
-    unsigned long size;
-    int result;
-    // Wait until we can open the file
-    // Using ReadWrite here in hope of being denied until Stellaris is done writing.
-    while (!theFile.open(QIODevice::ReadWrite | QIODevice::Append | QIODevice::ExistingOnly))
-        QApplication::processEvents();
-    do {
-        QApplication::processEvents();
-        theFile.reset();
-        // Assume that the game has written the save file in full when extraction succeeds.
-        result = extractGamestate(theFile, &tmp, &size);
-        if (result > 2) continue;
-        free(tmp);
-    } while (result != 0);
-    theFile.close();
+bool MainWindow::hackilyWaitOnFile(const QString &file) {
+	QFile theFile(file);
+	unsigned char *tmp;
+	unsigned long size;
+	int result;
+	// Wait until we can open the file
+	// Using ReadWrite here in hope of being denied until Stellaris is done writing.
+	while (!theFile.open(QIODevice::ReadWrite | QIODevice::Append | QIODevice::ExistingOnly)) {
+		QApplication::processEvents();
+		if (QDateTime::currentSecsSinceEpoch() - autoOpeningBegun > 15) return false;
+	}
+	do {
+		QApplication::processEvents();
+		theFile.reset();
+		// Assume that the game has written the save file in full when extraction succeeds.
+		result = extractGamestate(theFile, &tmp, &size);
+		if (result > 2) continue;
+		free(tmp);
+		if (QDateTime::currentSecsSinceEpoch() - autoOpeningBegun > 15) {
+			theFile.close();
+			return false;
+		}
+	} while (result != 0);
+	theFile.close();
+	return true;
 }
 
 void MainWindow::saveDirModified(const QString &dir) {
-    if (isOpeningFile) return;
-    isOpeningFile = true;
+	if (isOpeningFile) return;
+	isOpeningFile = true;
+	autoOpeningBegun = QDateTime::currentSecsSinceEpoch();
 	QDir theDir(dir);
 	QStringList newSaveFiles(theDir.entryList(QStringList("*.sav"), QDir::Files, QDir::Time));
 	for (auto i: knownSaveFiles) {
 		if (knownSaveFiles.contains(i)) newSaveFiles.removeAll(i);
 	}
-    if (newSaveFiles.empty()) {
-        isOpeningFile = false;
-        return;
-    }
-    QString theFile(theDir.absoluteFilePath(newSaveFiles.last()));
-    QLabel label(tr("Waiting on %1").arg(newSaveFiles.last()));
-    statusBar()->addWidget(&label);
-    hackilyWaitOnFile(theFile);
-    statusBar()->removeWidget(&label);
-    loadFromFile(QFileInfo(theFile));
-    isOpeningFile = false;
+	if (newSaveFiles.empty()) {
+		isOpeningFile = false;
+		return;
+	}
+	QString theFile(theDir.absoluteFilePath(newSaveFiles.last()));
+	QLabel label(tr("Waiting on %1").arg(newSaveFiles.last()));
+	statusBar()->addWidget(&label);
+	bool success = hackilyWaitOnFile(theFile);
+	statusBar()->removeWidget(&label);
+	if (success) loadFromFile(QFileInfo(theFile));
+	else statusBar()->showMessage(tr("Timed out -- giving up on %1.").arg(newSaveFiles.last()));
+	isOpeningFile = false;
 }

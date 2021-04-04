@@ -83,6 +83,7 @@ private:
 	void gamestateLoadFinishing() const;
 	void gamestateLoadDone();
 	void loadFromFile(const QFileInfo& file);
+	bool hackilyWaitOnFile(const QString &file);
 
 	QAction *aboutQtAction;
 	QAction *aboutSsvAction;
@@ -113,7 +114,8 @@ private:
 
 	QFileSystemWatcher *newSaveWatcher;
 	QStringList knownSaveFiles;
-    bool isOpeningFile = false;
+	bool isOpeningFile = false;
+	qint64 autoOpeningBegun;
 };
 
 #endif //STELLARIS_STAT_VIEWER_MAINWINDOW_H
