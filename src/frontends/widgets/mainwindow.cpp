@@ -21,6 +21,9 @@
 #define SSV_VERSION "<unknown>"
 #endif
 
+#include <QtCore/QDir>
+#include <QtCore/QFileInfo>
+#include <QtCore/QFileSystemWatcher>
 #include <QtCore/QJsonArray>
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
@@ -124,6 +127,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
 	statusLabel = new QLabel(tr("No file loaded."));
 	statusBar()->addPermanentWidget(statusLabel);
+
+	newSaveWatcher = new QFileSystemWatcher(this);
+	connect(newSaveWatcher, &QFileSystemWatcher::directoryChanged, this, &MainWindow::saveDirModified);
 }
 
 void MainWindow::aboutQtSelected() {
@@ -333,6 +339,10 @@ void MainWindow::loadFromFile(const QFileInfo& file) {
 #ifdef SSV_BUILD_JSON
 	exportStatsAction->setEnabled(true);
 #endif
+	QDir theDir(file.absoluteDir());
+	knownSaveFiles = theDir.entryList(QStringList("*.sav"), QDir::Files);
+    newSaveWatcher->removePaths(newSaveWatcher->directories());
+	newSaveWatcher->addPath(theDir.canonicalPath());
 	gamestateLoadDone();
 }
 
@@ -374,4 +384,45 @@ void MainWindow::gamestateLoadDone() {
 	currentProgressDialog->close();
 	delete currentProgressDialog;
 	currentProgressDialog = nullptr;
+}
+
+static void hackilyWaitOnFile(const QString &file) {
+    QFile theFile(file);
+    unsigned char *tmp;
+    unsigned long size;
+    int result;
+    // Wait until we can open the file
+    // Using ReadWrite here in hope of being denied until Stellaris is done writing.
+    while (!theFile.open(QIODevice::ReadWrite | QIODevice::Append | QIODevice::ExistingOnly))
+        QApplication::processEvents();
+    do {
+        QApplication::processEvents();
+        theFile.reset();
+        // Assume that the game has written the save file in full when extraction succeeds.
+        result = extractGamestate(theFile, &tmp, &size);
+        if (result > 2) continue;
+        free(tmp);
+    } while (result != 0);
+    theFile.close();
+}
+
+void MainWindow::saveDirModified(const QString &dir) {
+    if (isOpeningFile) return;
+    isOpeningFile = true;
+	QDir theDir(dir);
+	QStringList newSaveFiles(theDir.entryList(QStringList("*.sav"), QDir::Files, QDir::Time));
+	for (auto i: knownSaveFiles) {
+		if (knownSaveFiles.contains(i)) newSaveFiles.removeAll(i);
+	}
+    if (newSaveFiles.empty()) {
+        isOpeningFile = false;
+        return;
+    }
+    QString theFile(theDir.absoluteFilePath(newSaveFiles.last()));
+    QLabel label(tr("Waiting on %1").arg(newSaveFiles.last()));
+    statusBar()->addWidget(&label);
+    hackilyWaitOnFile(theFile);
+    statusBar()->removeWidget(&label);
+    loadFromFile(QFileInfo(theFile));
+    isOpeningFile = false;
 }
