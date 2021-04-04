@@ -26,6 +26,7 @@
 #include "frontends.h"
 
 class QAction;
+class QFileSystemWatcher;
 class QLabel;
 class QMenu;
 class QMenuBar;
@@ -74,12 +75,15 @@ private slots:
 	void parserProgressUpdate(Parsing::Parser *parser, qint64 current, qint64 max) const;
 	void galaxyProgressUpdate(Galaxy::StateFactory *factory, int current, int max) const;
 
+	void saveDirModified(const QString &dir);
+
 private:
 	void gamestateLoadBegin();
 	void gamestateLoadSwitch() const;
 	void gamestateLoadFinishing() const;
 	void gamestateLoadDone();
 	void loadFromFile(const QFileInfo& file);
+	bool hackilyWaitOnFile(const QString &file);
 
 	QAction *aboutQtAction;
 	QAction *aboutSsvAction;
@@ -107,6 +111,11 @@ private:
 	ResearchView* researchView;
 	StrategicResourcesView* strategicResourcesView;
 	TechView *techView;
+
+	QFileSystemWatcher *newSaveWatcher;
+	QStringList knownSaveFiles;
+	bool isOpeningFile = false;
+	qint64 autoOpeningBegun;
 };
 
 #endif //STELLARIS_STAT_VIEWER_MAINWINDOW_H

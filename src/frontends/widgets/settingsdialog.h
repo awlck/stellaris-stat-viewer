@@ -19,6 +19,7 @@
 
 #include <QtCore/QStringList>
 #include <QtWidgets/QDialog>
+class QCheckBox;
 class QComboBox;
 class QDialogButtonBox;
 class QGridLayout;
@@ -36,6 +37,7 @@ public slots:
 	void selectDotClicked();
 	void selectGameClicked();
 private:
+	QCheckBox *autoLoad;
 	QComboBox *gameLanguage;
 	QDialogButtonBox *buttonBox;
 	QGridLayout *mainLayout;

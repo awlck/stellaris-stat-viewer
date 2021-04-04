@@ -20,6 +20,7 @@
 
 #include <QtCore/QDir>
 #include <QtCore/QSettings>
+#include <QtWidgets/QCheckBox>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QFileDialog>
@@ -56,6 +57,10 @@ SettingsDialog::SettingsDialog(QWidget *parent) : QDialog(parent) {
 	gameLanguage = new QComboBox;
 	gameLanguageLabel = new QLabel(tr("Game Language:"));
 	gameLanguageLabel->setBuddy(gameLanguage);
+	
+	autoLoad = new QCheckBox(tr("Automatically load new saves"));
+	autoLoad->setToolTip(tr("Once a save file has been loaded, automatically attempt to load "
+							"new save files for the same game as they are created."));
 
 	mainLayout->addWidget(gameFolderLabel, 0, 0, 1, 1);
 	mainLayout->addWidget(gameFolderEdit, 0, 1, 1, 3);
@@ -65,13 +70,15 @@ SettingsDialog::SettingsDialog(QWidget *parent) : QDialog(parent) {
 	mainLayout->addWidget(dotProgramSelect, 1, 4, 1, 1);
 	mainLayout->addWidget(gameLanguageLabel, 2, 0, 1, 1);
 	mainLayout->addWidget(gameLanguage, 2, 1, 1, 4);
-	mainLayout->addWidget(buttonBox, 3, 2, 1, 2);
+	mainLayout->addWidget(autoLoad, 3, 0, 1, 5);
+	mainLayout->addWidget(buttonBox, 4, 2, 1, 2);
 
 	QSettings settings;
 	gameFolderEdit->setText(settings.value("game/folder", QString()).toString());
 	dotProgramEdit->setText(settings.value("tools/dot", QString()).toString());
 	gameDirChanged();
 	gameLanguage->setCurrentText(settings.value("game/language", tr("(None)")).toString());
+	autoLoad->setChecked(settings.value("autoLoadEnabled", true).toBool());
 
 	okButton->setFocus();
 }
@@ -88,6 +95,7 @@ void SettingsDialog::okClicked() {
 	settings.setValue("game/folder", gameFolderEdit->text());
 	settings.setValue("tools/dot", dotProgramEdit->text());
 	settings.setValue("game/language", gameLanguage->currentText());
+	settings.setValue("autoLoadEnabled", autoLoad->isChecked());
 	accept();
 }
 
