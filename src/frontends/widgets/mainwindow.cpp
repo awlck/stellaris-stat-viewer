@@ -415,6 +415,8 @@ bool MainWindow::hackilyWaitOnFile(const QString &file) {
 
 void MainWindow::saveDirModified(const QString &dir) {
 	if (isOpeningFile) return;
+	QSettings settings;
+	if (!settings.value("autoLoadEnabled", true).toBool()) return;
 	isOpeningFile = true;
 	autoOpeningBegun = QDateTime::currentSecsSinceEpoch();
 	QDir theDir(dir);
