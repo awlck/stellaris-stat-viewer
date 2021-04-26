@@ -199,14 +199,10 @@ AST Nodes
 		A (named) integer list node. Example: ``hello = { 1 2 3 }``
 		
 		.. note::
-			In game version 2.6 "Verne" (and probably all versions since then),
-			floating-point numbers that happen to be "round" integers (like ``3.0``)
-			are stored as integers, so a list beginning ``hello = { 1 2`` might initially
-			be created as an integer list. It is legal for a floating-point number to
-			appear in an integer list: this converts the into a floating-point number list
-			(and all members read so far are converted to floating-point numbers).
-			Subsequent integers are converted as well. See :func:`Parser::fixListType`.
-	
+			If a floating-point number is encountered within an integer list, it is assumed
+			that the list should have been a floating-point list all along -- see
+			:func:`Parser::fixListType`.
+			
 	.. enumerator:: NT_INTLIST_MEMBER
 	
 		A (nameless) integer as a member of an integer list.
@@ -214,6 +210,10 @@ AST Nodes
 	.. enumerator:: NT_DOUBLELIST
 	
 		A (named) floating-point number list node. Example: ``hello = { 1.5 2.5 3.5 }``
+
+		.. note::
+			It is legal for integers to appear within a list of floating-point numbers:
+			when constructing such a list, ``3`` is simply read as ``3.0``.
 		
 	.. enumerator:: NT_DOUBLELIST_MEMBER
 	
@@ -526,7 +526,19 @@ The parsing action takes place within the following parser class.
 	.. function:: private AstNode *createNode()
 	
 		Allocates a new AstNode and adds it to :member:`the list of nodes <allCreatedNodes>`.
-	
+
+	.. function:: static void fixListType(AstNode *list)
+
+		If the given node is an integer list, change its type to a floating-point
+		list and convert all its list members as well.
+
+		This is necessary because game version 2.6. "Verne" (and presumably newer
+		ones as well), floating-point numbers that happen to be "round" integers
+		(like ``3.0``) are stored as integers (``3``), so the list ```l = { 1 2 3.5 }``
+		would initially be created as an integer list. Upon reading ``3.5``, the parser
+		calls this function to convert the list, and all subsequently read integers
+		will be automatically converted to floating-point numbers as well.
+		
 	.. member:: private bool lexerDone = false
 	
 		Whether or not the lexer has reached the end of the file.
