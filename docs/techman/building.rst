@@ -8,8 +8,7 @@ As such, all these components need to be present in order to build SSV yourself.
 The following configurations are used by the developer and should thus work properly:
 
 * Windows 10 x64, Visual Studio 2019
-* macOS 10.15 x64, clang
-* Ubuntu 19.10 x64, gcc
+* macOS 11 x64, clang
 
 It is assumed that the reader has a passing knowledge of how to compile a program, so the
 general setup will be gone over quickly.
@@ -19,7 +18,7 @@ Windows
 
 Install Visual Studio, if you haven't already. Be sure to enable the relevant C++ desktop and
 CMake features in the installer. Alternatively, MinGW should also be possible, but that has not
-been tested. Next, install Qt (at least version 5.9 is required). Be sure to select the
+been tested. Next, install Qt (at least version 6.0.0 is required). Be sure to select the
 appropriate (Visual Studio/ MinGW) variant for your development system.
 
 To build, open the *Native Tools Command Prompt* (preferably x64, if your system supports it).
@@ -76,7 +75,7 @@ Again, you will need a C++11-compatible compiler (recommended: ``gcc``/ ``g++`` 
 the Qt development files, and CMake. The exact process for installing these will depend on the
 distribution you are using, but on Ubuntu, the process would look something like this::
 
-  sudo apt install g++ cmake make qtbase5-dev
+  sudo apt install g++ cmake make qtbase6-dev
 
 To build, open a terminal and navigate to the folder in which you have downloaded the source
 code. It is generally recommended to build in a subfolder::
@@ -133,4 +132,4 @@ Troubleshooting
 
 If CMake complains about being unable to find Qt, you may need to specify its path manually::
 
-  -DCMAKE_PREFIX_PATH="D:/path/to/Qt/5.14.0/msvc2017_64"
+  -DCMAKE_PREFIX_PATH="D:/path/to/Qt/6.0.3/msvc2019_64"

@@ -22,3 +22,7 @@ Game Language
   The language chosen here will be used to display the names of technologies both in
   the tech tree output and the Technologies view. Choosing *(None)* causes SSV to display
   the internal identifiers used within the save files and the game's code.
+
+Automatically load new saves
+  When checked (the default), SSV will automatically attempt to load new save files in
+  the same folder as they are created.
