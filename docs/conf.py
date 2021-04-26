@@ -20,13 +20,13 @@
 # -- Project information -----------------------------------------------------
 
 project = 'Stellaris Stat Viewer'
-copyright = '2020, Adrian Welcker'
+copyright = '2020-21, Adrian Welcker'
 author = 'Adrian Welcker'
 
 # The short X.Y version
-version = '0.5'
+version = '0.6'
 # The full version, including alpha/beta/rc tags
-release = '0.5.0'
+release = '0.6.0'
 
 applehelp_bundle_id = 'de.diepixelecke.Stellaris-Stat-Viewer'
 
@@ -72,6 +72,7 @@ pygments_style = 'manni'
 # The short name of the Pygments lexer to use for highlighting literal blocks,
 # if no other is given.
 highlight_language = 'cpp'
+primary_domain = 'cpp'
 
 # -- Options for HTML output -------------------------------------------------
 

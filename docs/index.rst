@@ -15,7 +15,7 @@ Welcome to Stellaris Stat Viewer's documentation!
     savegame file and gives you copious statistics and rankings.
     
     What you are looking at now is an ongoing effort to provide a user's manual,
-    as well as to document the inner workings of the program, for the benefit o
+    as well as to document the inner workings of the program, for the benefit of
     future maintenance.
 
 .. include:: contents.rst

@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.0.2)
 
-project(stellaris_stat_viewer VERSION 0.5 LANGUAGES C CXX)
-set(CMAKE_CXX_STANDARD 11)
+project(stellaris_stat_viewer VERSION 0.6 LANGUAGES C CXX)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
 set(MACOSX_BUNDLE_BUNDLE_NAME "Stellaris Stat Viewer")

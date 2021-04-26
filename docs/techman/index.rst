@@ -13,3 +13,4 @@ of notes that shows the internal workings of the program.
 
    building
    structure
+   classref/parser
