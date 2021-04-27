@@ -1,4 +1,4 @@
-/* tests/test_parser.cpp: Unit testing for src/parser.cpp
+/* tests/test_parser.cpp: Unit testing for src/core/parser.cpp
  *
  * Copyright 2019 Adrian "ArdiMaster" Welcker
  *
@@ -633,11 +633,9 @@ private slots:
 		QTest::newRow("invalid after open") << "stuff = { =" << Parsing::PE_INVALID_AFTER_OPEN;
 		QTest::newRow("invalid combo after open") << "stuff = { 2 yes 3.75 }" << Parsing::PE_INVALID_COMBO_AFTER_OPEN;
 		QTest::newRow("invalid combo after open string") << "stuff = { \"hello\" 2 }" << Parsing::PE_INVALID_COMBO_AFTER_OPEN;
-		// QTest::newRow("double in int list") << "stuff = { 3 4 3.75 }" << Parsing::PE_INVALID_IN_INT_LIST;
 		QTest::newRow("bool in int list") << "stuff = { 3 4 yes }" << Parsing::PE_INVALID_IN_INT_LIST;
 		QTest::newRow("string in int list") << "stuff = { 3 4 \"hello there\" }" << Parsing::PE_INVALID_IN_INT_LIST;
 		QTest::newRow("compound in int list") << "stuff = { 3 4 { uh = ok } }" << Parsing::PE_INVALID_IN_INT_LIST;
-		// QTest::newRow("int in double list") << "stuff = { 3.75 4.625 1 }" << Parsing::PE_INVALID_IN_DOUBLE_LIST;
 		QTest::newRow("bool in double list") << "stuff = { 3.75 4.625 yes }" << Parsing::PE_INVALID_IN_DOUBLE_LIST;
 		QTest::newRow("string in double list") << "stuff = { 3.75 4.625 \"hello there\" }" << Parsing::PE_INVALID_IN_DOUBLE_LIST;
 		QTest::newRow("compound in double list") << "stuff = { 3.75 4.625 { uh = ok } }" << Parsing::PE_INVALID_IN_DOUBLE_LIST;
@@ -655,6 +653,7 @@ private slots:
 		QTest::newRow("compound in bool list") << "stuff = { yes no { uh = ok } }" << Parsing::PE_INVALID_IN_BOOL_LIST;
 		QTest::newRow("unexpected end of input") << "stuff = {" << Parsing::PE_UNEXPECTED_END;
 		QTest::newRow("too many closing braces") << "stuff = { } }" << Parsing::PE_TOO_MANY_CLOSE_BRACES;
+		QTest::newRow("3.0 hack doesn't apply") << "not_intel = { { 56 { intel = 50 stale_intel = { } } } }" << Parsing::PE_INVALID_AFTER_NAME;
 	}
 	void invalid() {
 		using namespace Parsing;
@@ -669,6 +668,25 @@ private slots:
 
 		ParserError latestError = parser.getLatestParserError();
 		QCOMPARE(latestError.etype, error);
+	}
+	
+	void hack_for_3_0_data() {
+		QTest::addColumn<QString>("string");
+		
+		QTest::newRow("3.0 intel") << R"(intel = { { 56 { intel = 50 stale_intel = { } } } })";
+		QTest::newRow("3.0 federation_intel") << R"(federation_intel = { { 56 { intel = 50 stale_intel = { } } } })";
+	}
+	void hack_for_3_0() {
+		using namespace Parsing;
+		
+		QFETCH(QString, string);
+		MemBuf buf(string.toUtf8());
+		Parser parser(buf, FileType::NoFile);
+		AstNode *tree = parser.parse();
+		QVERIFY(tree != nullptr);
+		QCOMPARE(tree->val.firstChild->type, NT_COMPOUNDLIST);
+		QCOMPARE(tree->val.firstChild->val.firstChild->type, NT_COMPOUNDLIST_MEMBER);
+		QCOMPARE(tree->val.firstChild->val.firstChild->val.firstChild->type, NT_COMPOUND);
 	}
 };
 
