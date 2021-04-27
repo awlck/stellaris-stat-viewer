@@ -21,6 +21,7 @@ for:
       - image: macos
   init:
     - export PATH="$HOME/Qt/6.0/clang_64/bin:$PATH"
+    - export MYVERSION=$APPVEYOR_BUILD_VERSION-$(echo $APPVEYOR_REPO_COMMIT | cut -c1-8)
   build_script:
     - cmake -DCMAKE_PREFIX_PATH="$HOME/Qt/6.0/clang_64" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DSSV_BUILD_VERSION="$APPVEYOR_BUILD_VERSION" ..
     - make -j
@@ -28,7 +29,7 @@ for:
     - ./test_parser
   after_test:
     - mkdir artifact
-    - macdeployqt -verbose=2 stellaris_stat_viewer.app
+    - macdeployqt stellaris_stat_viewer.app -verbose=2
     - cp -r stellaris_stat_viewer.app artifact
 # - 
 #   matrix:
@@ -45,8 +46,9 @@ for:
       - image: Visual Studio 2019
   init:
     - cmd: call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
+    - cmd: set MYVERSION=%APPVEYOR_BUILD_VERSION%-%APPVEYOR_REPO_COMMIT:~0,8%
   build_script:
-    - cmake -DCMAKE_PREFIX_PATH="C:/Qt/6.0/msvc2019_64" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DSSV_BUILD_VERSION="%APPVEYOR_BUILD_VERSION%" -GNinja ..
+    - cmake -DCMAKE_PREFIX_PATH="C:/Qt/6.0/msvc2019_64" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DSSV_BUILD_VERSION="%MYVERSION%" -GNinja ..
     - ninja
   before_test:
     - cp C:\Qt\6.0\msvc2019_64\bin\Qt6Core.dll .
