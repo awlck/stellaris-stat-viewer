@@ -108,8 +108,8 @@ if(NOT SOME_FRONTEND_FOUND AND NOT SSV_BUILD_TESTS)
 endif()
 
 # install SSV binary
-install(
-        TARGETS stellaris_stat_viewer
-        RUNTIME DESTINATION bin
-)
+# install(
+#         TARGETS stellaris_stat_viewer
+#         RUNTIME DESTINATION bin
+# )
 

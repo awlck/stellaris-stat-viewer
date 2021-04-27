@@ -12,7 +12,7 @@ install:
   - cd cmake-build-av
 
 build_script:
-  - cmake -DCMAKE_PREFIX_PATH="$HOME/Qt/6.0/clang_64" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DSSV_BUILD_VERSION="$APPVEYOR_BUILD_VERSION" ..
+  - cmake -DCMAKE_PREFIX_PATH="$HOME/Qt/6.0/gcc_64" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DSSV_BUILD_VERSION="$APPVEYOR_BUILD_VERSION" ..
   - make -j
 
 test_script:
@@ -47,8 +47,8 @@ for:
     - cmake -DCMAKE_PREFIX_PATH="C:/Qt/6.0/msvc2019_64" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DSSV_BUILD_VERSION="%APPVEYOR_BUILD_VERSION%" -GNinja ..
     - ninja
   before_test:
-    - cp $QT_HOME/bin/Qt6Core.dll .
-    - cp $QT_HOME/bin/QT6Test.dll .
+    - cp C:\Qt\6.0\msvc2019_64\bin\Qt6Core.dll .
+    - cp C:\Qt\6.0\msvc2019_64\bin\QT6Test.dll .
   after_test:
     - mkdir artifact
     - cmd: C:\Qt\6.0\msvc2019_64\bin\windeployqt.exe --dir artifact --release --no-quick-import --no-system-d3d-compiler --no-opengl-sw stellaris_stat_viewer.exe
