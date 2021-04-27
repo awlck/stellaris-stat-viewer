@@ -184,7 +184,7 @@ namespace Parsing {
 				printf(" (Compound List)\n");
 				printParseTree(tree->val.firstChild, indent + 1);
 				break;
-			case NT_COMPUNDLIST_MEMBER:
+			case NT_COMPOUNDLIST_MEMBER:
 				printf("(Compound List Member)\n");
 				printParseTree(tree->val.firstChild, indent + 1);
 				break;
@@ -557,7 +557,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 					state = State::CompoundRoot;
 					things.top()->type = NT_COMPOUNDLIST;
 					AstNode *member = createNode();
-					member->type = NT_COMPUNDLIST_MEMBER;
+					member->type = NT_COMPOUNDLIST_MEMBER;
 					ADD_AS_CHILD(member);
 					things.push(member);
 				}
@@ -613,7 +613,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 				if (currentToken.type == TT_OBRACE) {
 					state = State::CompoundRoot;
 					AstNode *member = createNode();
-					member->type = NT_COMPUNDLIST_MEMBER;
+					member->type = NT_COMPOUNDLIST_MEMBER;
 					ADD_AS_CHILD(member);
 					things.push(member);
 				} else if (currentToken.type == TT_CBRACE) {

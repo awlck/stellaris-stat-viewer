@@ -82,7 +82,7 @@ namespace Parsing {
 		NT_DOUBLELIST,  // a list of doubles, e.g. test = { 3.5 4.97 7.6 }
 		NT_DOUBLELIST_MEMBER,  // a single element within a list of doubles
 		NT_COMPOUNDLIST,  // a list of compunds, e.g. test = { { hello = there } { general = kenobi } }
-		NT_COMPUNDLIST_MEMBER,  // a single element within a list of compunds
+		NT_COMPOUNDLIST_MEMBER,  // a single element within a list of compunds
 		NT_STRINGLIST,  // a list of strings, e.g. test = { "hello" "there" "general" "kenobi" }
 		NT_STRINGLIST_MEMBER,  // a single element within a list of strings
 		NT_BOOLLIST,  // a list of booleans, e.g. test = { yes no yes }
