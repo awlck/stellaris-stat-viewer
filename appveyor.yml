@@ -2,31 +2,59 @@ version: ci{build}
 
 image:
 - Visual Studio 2019
+- macos
+- Ubuntu2004
 
 clone_depth: 5
-
-init:
-  - cmd: call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
 
 install:
   - mkdir cmake-build-av
   - cd cmake-build-av
 
 build_script:
-  - cmd: cmake -DCMAKE_PREFIX_PATH=C:/Qt/6.0/msvc2019_64 -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DSSV_BUILD_VERSION="%APPVEYOR_BUILD_VERSION%" ..
-  - cmd: ninja
-
-before_test:
-  - cmd: copy C:\Qt\6.0\msvc2019_64\bin\Qt6Core.dll .
-  - cmd: copy C:\Qt\6.0\msvc2019_64\bin\Qt6Test.dll .
+  - cmake -DCMAKE_PREFIX_PATH=$QT_HOME -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DSSV_BUILD_VERSION="$APPVEYOR_BUILD_VERSION" ..
+  - ninja
 
 test_script:
-  - cmd: test_parser.exe
-
-after_test:
-  - mkdir artifact
-  - cmd: C:\Qt\6.0\msvc2019_64\bin\windeployqt.exe --dir artifact --release --no-quick-import --no-system-d3d-compiler --compiler-runtime --no-webkit2 --no-opengl-sw stellaris_stat_viewer.exe
-  - cmd: copy stellaris_stat_viewer.exe artifact
+  - .\test_parser
   
 artifacts:
   - path: cmake-build-av\artifact
+
+for:
+- 
+  matrix:
+    only:
+      - image: macos
+  install:
+    - brew install ninja
+  environment:
+    QT_HOME: $HOME/Qt/6.0/clang_64
+  after_test:
+    - mkdir artifact
+    - $QT_HOME/bin/macdeployqt -verbose=2 stellaris_stat_viewer.app
+    - cp -r stellaris_stat_viewer.app artifact
+- 
+  matrix:
+    only:
+      - image: Ubuntu2004
+  environment:
+    QT_HOME: $HOME/Qt/6.0/gcc_64
+  after_test:
+    - mkdir artifact
+    - cp stellaris_stat_viewer artifact
+- 
+  matrix:
+    only:
+      - image: Visual Studio 2019
+  environment:
+    QT_HOME: C:/Qt/6.0/msvc2019_64
+  init:
+    - cmd: call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
+  before_test:
+    - cp $QT_HOME/bin/Qt6Core.dll .
+    - cp $QT_HOME/bin/QT6Test.dll .
+  after_test:
+    - mkdir artifact
+    - $QT_HOME/bin/windeployqt.exe --dir artifact --release --no-quick-import --no-system-d3d-compiler --no-opengl-sw stellaris_stat_viewer.exe
+    - cp stellaris_stat_viewer.exe artifact
