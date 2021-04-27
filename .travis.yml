@@ -1,0 +1,13 @@
+language: cpp
+os: osx
+addons:
+    homebrew:
+        packages:
+            - qt
+            - ninja
+        update: true
+
+script:
+    - mkdir cmake-build-ci && cd cmake-build-ci
+    - cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DSSV_BUILD_WIDGETS=ON -DSSV_BUILD_JSON=ON -DSSV_BUILD_TESTS=ON -DSSV_BUILD_VERSION=travis-$TRAVIS_BUILD_NUMBER -GNinja ..
+    - ninja
