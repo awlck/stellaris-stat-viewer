@@ -3,7 +3,7 @@ version: ci{build}
 image:
 - Visual Studio 2019
 - macos
-- Ubuntu2004
+# - Ubuntu2004
 
 clone_depth: 5
 
@@ -11,13 +11,6 @@ install:
   - mkdir cmake-build-av
   - cd cmake-build-av
 
-build_script:
-  - cmake -DCMAKE_PREFIX_PATH="$HOME/Qt/6.0/gcc_64" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DSSV_BUILD_VERSION="$APPVEYOR_BUILD_VERSION" ..
-  - make -j
-
-test_script:
-  - .\test_parser
-  
 artifacts:
   - path: cmake-build-av\artifact
 
@@ -28,19 +21,24 @@ for:
       - image: macos
   init:
     - export PATH="$HOME/Qt/6.0/clang_64/bin:$PATH"
+  build_script:
+    - cmake -DCMAKE_PREFIX_PATH="$HOME/Qt/6.0/clang_64" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DSSV_BUILD_VERSION="$APPVEYOR_BUILD_VERSION" ..
+    - make -j
+  test_script:
+    - ./test_parser
   after_test:
     - mkdir artifact
-    - $HOME/Qt/6.0/clang_64/bin/macdeployqt -verbose=2 stellaris_stat_viewer.app
+    - macdeployqt -verbose=2 stellaris_stat_viewer.app
     - cp -r stellaris_stat_viewer.app artifact
-- 
-  matrix:
-    only:
-      - image: Ubuntu2004
-  init:
-    - export PATH="$HOME/Qt/6.0/gcc_64/bin:$PATH"
-  after_test:
-    - mkdir artifact
-    - cp stellaris_stat_viewer artifact
+# - 
+#   matrix:
+#     only:
+#       - image: Ubuntu2004
+#   init:
+#     - export PATH="$HOME/Qt/6.0/gcc_64/bin:$PATH"
+#   after_test:
+#     - mkdir artifact
+#     - cp stellaris_stat_viewer artifact
 - 
   matrix:
     only:
@@ -53,6 +51,8 @@ for:
   before_test:
     - cp C:\Qt\6.0\msvc2019_64\bin\Qt6Core.dll .
     - cp C:\Qt\6.0\msvc2019_64\bin\QT6Test.dll .
+  test_script:
+    - .\test_parser.exe
   after_test:
     - mkdir artifact
     - cmd: C:\Qt\6.0\msvc2019_64\bin\windeployqt.exe --dir artifact --release --no-quick-import --no-system-d3d-compiler --no-opengl-sw stellaris_stat_viewer.exe
