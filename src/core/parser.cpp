@@ -352,6 +352,35 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 				if (currentToken.type == TT_EQUALS) state = State::HaveNameEquals;
 				else if (currentToken.type == TT_GT) state = State::HaveNameGt;
 				else if (currentToken.type == TT_LT) state = State::HaveNameLt;
+				else if (currentToken.type == TT_OBRACE) {
+					/*   HACKY FIX FOR 3.0 SAVE FILES
+					* In the intel section of the save file, the game generates weird structures like this:
+					* intel={  # type: funky pair list...?
+					* 	{  # type: funky pair...?
+					* 		56 {  # note the lack of an equals sign
+					* 			intel=30
+					* 			stale_intel={
+					* 			}
+					* 		}
+					* 	}
+					* 	# and so on
+					* }
+					* Since we aren't really interested in that part of the file and just want to read past it,
+					* act as if the equals sign was present, making `intel' a compound list.
+					*/
+					// (But only if our grandparent node is indeed called `intel' or `federation_intel'.)
+					AstNode *tmpSelf = things.top();
+					things.pop();
+					AstNode *tmpParent = things.top();
+					things.pop();
+					if (strncmp(things.top()->myName, "intel", 64) == 0 ||
+						strncmp(things.top()->myName, "federation_intel", 64) == 0) {  // hack applies
+						things.push(tmpParent);
+						things.push(tmpSelf);
+						// act as if we'd read an equals sign as well.
+						state = State::HaveNameOpen;
+					}
+				}
 				else PARSE_ERROR(PE_INVALID_AFTER_NAME);
 				break;
 			case State::HaveNameEquals:  // Having read a name immediately followed by an equals sign

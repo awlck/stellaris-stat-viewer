@@ -618,6 +618,41 @@ The parsing action takes place within the following parser class.
 	
 		No file at all. Currently used only for the unit tests.
 
+The 3.0 Hack
+^^^^^^^^^^^^
+
+The 3.0 update brought the revamped intel and espionage systems. While generally
+well-regarded by players, it has made parsing the save file somewhat more awkward,
+as the intel info is stored in a structure like this:
+
+.. code-block:: python
+
+	intel={  # [1]
+	    {  # [2]
+	        56 {  # [3] -- note the absence of an equals sign
+	            intel=30
+	            stale_intel={
+	            }
+	        }
+	    }
+		# ... and so on ...
+	}
+
+So... what is the type of the node that begins at ``[2]``? Some kind of *funky pair*,
+consisting of a (nameless) integer and a (nameless) compound? And I suppose that
+would then make ``intel`` (beginning at ``[1]``) a *funky pair list*.
+
+But since we're not currently interested in the intel data, we don't really need to
+worry about what that syntax actually means to the game -- we can simply fudge the
+syntax enough to read past these sections. The "fix", as it were, is relatively simple:
+when an open brace directly follows a name (in this case, ``56``), and the name of the
+grandparent node is either ``intel`` or ``federation_intel``, then continue parsing as
+if an equals sign were present. (If the grandparent node's name doesn't match either of
+the two, throw the error as per usual.) That way, the node at ``[3]`` is read as a
+compound, the node at ``[2]`` is a compound list member (with one entry), and the node
+at ``[1]`` (``intel`` or ``federation_intel``) is a compound list, which seems like a
+reasonable enough approximation.
+
 Internals
 *********
 
