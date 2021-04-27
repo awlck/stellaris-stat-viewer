@@ -21,6 +21,7 @@
 #include <utility>
 
 #include <stdio.h>
+#include <locale.h>
 
 #define everyNth(which, n, what) do { if ((((which)++) % (n)) == 0) {(what); (which) = 1;} } while (0)
 
@@ -684,6 +685,14 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 		return lexQueue.dequeue();
 	}
 
+#ifdef Q_OS_MAC
+#define LEXER_SETUP(locale) const auto locale = setlocale(LC_NUMERIC, nullptr); setlocale(LC_NUMERIC, "C")
+#define LEXER_TEARDOWN(locale) setlocale(LC_NUMERIC, (locale))
+#else
+#define LEXER_SETUP(locale)
+#define LEXER_TEARDOWN(locale)
+#endif
+
 	// Lex into the queue. Attempt to provide `atLeast' many tokens: can be more if the last
 	// token ends in a special character, can be less if end of file is reached.
 	// Returns the number of tokens lexed.
@@ -697,6 +706,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 		bool haveOpenQuote = false;
 		bool comment = false;
 		bool haveEscape = false;
+		LEXER_SETUP(oldLocale);
 
 		while (!data.eof() && tokensRead < atLeast && lexQueue.count() < queueCapacity-1) {
 			c = data.getc();
@@ -781,6 +791,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 					if (Q_UNLIKELY(token.tok.Int == 0 && eptr == buf)) {
 						token.type = TT_NONE;
 						memcpy(token.tok.String, buf, 64);
+						LEXER_TEARDOWN(oldLocale);
 						throw ParserError{ LE_INVALID_INT, token };
 					}
 					break;
@@ -790,6 +801,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 					if (Q_UNLIKELY(eptr == buf)) {
 						token.type = TT_NONE;
 						memcpy(token.tok.String, buf, 64);
+						LEXER_TEARDOWN(oldLocale);
 						throw ParserError{ LE_INVALID_DOUBLE, token };
 					}
 					break;
@@ -844,10 +856,12 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 			if (assumption != TT_NONE) {
 				Token currentToken{ line, charPos - len, TT_NONE, {{0}} };
 				memcpy(currentToken.tok.String, buf, 64);
+				LEXER_TEARDOWN(oldLocale);
 				throw ParserError{PE_UNEXPECTED_END, currentToken};
 			}
 		}
 		totalProgress = data.tell();
+		LEXER_TEARDOWN(oldLocale);
 		return tokensRead;
 	}
 
