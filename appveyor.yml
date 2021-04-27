@@ -11,8 +11,8 @@ install:
   - mkdir cmake-build-av
   - cd cmake-build-av
 
-artifacts:
-  - path: cmake-build-av\artifact
+# artifacts:
+#   - path: cmake-build-av\artifact
 
 for:
 - 
@@ -27,10 +27,10 @@ for:
     - make -j
   test_script:
     - ./test_parser
-  after_test:
-    - mkdir artifact
-    - macdeployqt stellaris_stat_viewer.app -verbose=2
-    - cp -r stellaris_stat_viewer.app artifact
+#   after_test:
+#     - mkdir artifact
+#     - macdeployqt stellaris_stat_viewer.app -verbose=2
+#     - cp -r stellaris_stat_viewer.app artifact
 # - 
 #   matrix:
 #     only:
@@ -59,3 +59,5 @@ for:
     - mkdir artifact
     - cmd: C:\Qt\6.0\msvc2019_64\bin\windeployqt.exe --dir artifact --release --no-quick-import --no-system-d3d-compiler --no-opengl-sw stellaris_stat_viewer.exe
     - cp stellaris_stat_viewer.exe artifact
+  artifacts:
+    - path: cmake-build-av\artifact
