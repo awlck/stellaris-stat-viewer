@@ -35,7 +35,7 @@ public:
 	void recalculate(const Galaxy::State *state, bool includeStations);
 };
 
-FleetsView::FleetsView(QWidget *parent) {
+FleetsView::FleetsView(QWidget *parent) : QWidget(parent) {
 	layout = new QVBoxLayout(this);
 	view = new FleetsViewInternal;
 	includeStations = new QCheckBox(tr("Include stations in fleet power"));
@@ -49,7 +49,7 @@ void FleetsView::modelChanged(const Galaxy::State *newState) {
 	view->recalculate(currentState, includeStations->checkState() == Qt::Checked);
 }
 
-void FleetsView::onCheckboxChanged(int newState) {
+void FleetsView::onCheckboxChanged([[maybe_unused]] int newState) {
 	if (currentState) view->recalculate(currentState, includeStations->checkState() == Qt::Checked);
 }
 
