@@ -26,6 +26,8 @@ for:
   matrix:
     only:
       - image: macos
+  init:
+    - export PATH="$HOME/Qt/6.0/clang_64/bin:$PATH"
   after_test:
     - mkdir artifact
     - $HOME/Qt/6.0/clang_64/bin/macdeployqt -verbose=2 stellaris_stat_viewer.app
@@ -34,6 +36,8 @@ for:
   matrix:
     only:
       - image: Ubuntu2004
+  init:
+    - export PATH="$HOME/Qt/6.0/gcc_64/bin:$PATH"
   after_test:
     - mkdir artifact
     - cp stellaris_stat_viewer artifact
