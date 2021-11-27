@@ -59,5 +59,6 @@ for:
     - mkdir artifact
     - cmd: C:\Qt\6.0\msvc2019_64\bin\windeployqt.exe --dir artifact --release --no-quick-import --no-system-d3d-compiler --no-opengl-sw stellaris_stat_viewer.exe
     - cp stellaris_stat_viewer.exe artifact
+    - cp ssv_json.exe artifact
   artifacts:
     - path: cmake-build-av\artifact
