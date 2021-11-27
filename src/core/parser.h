@@ -20,7 +20,7 @@
 #ifndef STELLARIS_STAT_VIEWER_PARSER_H
 #define STELLARIS_STAT_VIEWER_PARSER_H
 
-#include <forward_list>
+#include <vector>
 
 #include <QtCore/QFileInfo>
 #include <QtCore/QObject>
@@ -217,6 +217,7 @@ namespace Parsing {
 		Q_OBJECT
 	public:
 		Parser(MemBuf &data, FileType ftype, QString filename = QString(), QObject *parent = nullptr);
+		~Parser();
 		/** Parse the file and return a pointer to the root node */
 		AstNode *parse();
 		/** Cancel parsing at the next possible occasion */
@@ -245,7 +246,10 @@ namespace Parsing {
 		QQueue<Token> lexQueue;
 		qint64 totalProgress = 0;
 		qint64 totalSize;
-		std::forward_list<AstNode> allCreatedNodes;
+		static constexpr size_t nodesAtOnce = 1024;
+		std::vector<AstNode *> nodeStorageBlocks;
+		AstNode *nextNodeToUse = nullptr;
+		AstNode *lastNodeInBlock = nullptr;
 
 		static constexpr int queueCapacity = 50;
 		unsigned long line = 1;

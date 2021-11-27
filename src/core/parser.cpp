@@ -63,7 +63,7 @@ namespace Parsing {
 		if (this->val.firstChild == nullptr) return nullptr;
 		AstNode *child = this->val.firstChild;
 		do {
-			if (qstrcmp(child->myName, name) == 0) return child;
+			if (strcmp(child->myName, name) == 0) return child;
 			child = child->nextSibling;
 		} while (child);
 		return nullptr;
@@ -277,6 +277,22 @@ namespace Parsing {
 	Parser::Parser(Parsing::MemBuf &data, Parsing::FileType ftype, QString filename, QObject *parent)
 		: QObject(parent), data(data), fileType(ftype), filename(std::move(filename)), totalSize(data.size()) {}
 
+	Parser::~Parser() {
+		for (auto *block: nodeStorageBlocks) {
+			delete[] block;
+		}
+	}
+
+	// create a new AstNode, adding it to the list of all nodes.
+	inline AstNode* Parser::createNode() {
+		if (nextNodeToUse == nullptr || nextNodeToUse > lastNodeInBlock) {
+			nextNodeToUse = new AstNode[nodesAtOnce];
+			lastNodeInBlock = nextNodeToUse + nodesAtOnce - 1;
+			nodeStorageBlocks.push_back(nextNodeToUse);
+		}
+		return nextNodeToUse++;
+	}
+
 	// Represents the parser's internal state.
 	enum class State {
 		CompoundRoot,
@@ -312,7 +328,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 		// Create a root node that will encompass the entire file.
 		AstNode *root = createNode();
 		root->type = NT_COMPOUND;
-		qstrcpy(root->myName, "tree_root");
+		strcpy(root->myName, "tree_root");
 		std::stack<AstNode *> things;  // Explicitly use a stack instead of using recursion.
 		things.push(root);
 		State state = State::CompoundRoot;
@@ -338,7 +354,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 					state = State::HaveName;
 					AstNode *nextNode = createNode();
 					QString tmp = QString::number(currentToken.tok.Int);
-					qstrcpy(nextNode->myName, tmp.toUtf8().data());
+					strcpy(nextNode->myName, tmp.toUtf8().data());
 					ADD_AS_CHILD(nextNode);
 					things.push(nextNode);
 				} else if (currentToken.type == TT_CBRACE) {
@@ -527,7 +543,7 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 							nextNode->type = NT_INDETERMINATE;
 							state = State::HaveName;
 							QString tmp = QString::number(currentToken.tok.Int);
-							qstrcpy(nextNode->myName, tmp.toUtf8().data());
+							strcpy(nextNode->myName, tmp.toUtf8().data());
 							ADD_AS_CHILD(nextNode);
 							things.push(nextNode);
 						} else PARSE_ERROR(PE_INVALID_COMBO_AFTER_OPEN);
@@ -772,11 +788,11 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 				switch (assumption) {
 				case TT_STRING:
 					// Check if our "string" might be a bool after all
-					if (qstrcmp(buf, "yes") == 0 || qstrcmp(buf, "YES") == 0) {
+					if (strcmp(buf, "yes") == 0 || strcmp(buf, "YES") == 0) {
 						token.type = TT_BOOL;
 						token.tok.Bool = true;
 					}
-					else if (qstrcmp(buf, "no") == 0 || qstrcmp(buf, "NO") == 0) {
+					else if (strcmp(buf, "no") == 0 || strcmp(buf, "NO") == 0) {
 						token.type = TT_BOOL;
 						token.tok.Bool = false;
 					} else {  // nope, it really is a string
@@ -873,12 +889,6 @@ else { things.top()->val.firstChild = (node); things.top()->val.lastChild = (nod
 		// Requested token beyond end of file
 		if (lexQueue.size() < n) return TT_NONE;
 		return lexQueue[n-1].type;
-	}
-
-	// create a new AstNode, adding it to the list of all nodes.
-	AstNode *Parser::createNode() {
-		allCreatedNodes.emplace_front();
-		return &allCreatedNodes.front();
 	}
 
 	// Fixup list types: when a double appears in an int list, transform the entire thing into a double list.
