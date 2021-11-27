@@ -69,7 +69,7 @@ int frontend_json_begin(int argc, char **argv) {
 	AstNode *node = parser.parse();
 	if (node == nullptr) {
 		ParserError err = parser.getLatestParserError();
-		fprintf(stderr, "Parser Error on %s:%lu:%lu: Error#%d\n",
+		fprintf(stderr, "Parser Error on %s:%llu:%llu: Error#%d\n",
 				argv[2], err.erroredToken.line, err.erroredToken.firstChar, err.etype);
 		return 2;
 	} else if (node->countChildren() == 0) {
