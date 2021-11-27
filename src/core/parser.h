@@ -20,6 +20,7 @@
 #ifndef STELLARIS_STAT_VIEWER_PARSER_H
 #define STELLARIS_STAT_VIEWER_PARSER_H
 
+#include <stdint.h>
 #include <vector>
 
 #include <QtCore/QFileInfo>
@@ -46,9 +47,9 @@ namespace Parsing {
 	// Represents a token
 	struct Token {
 		// the line in which this token begun
-		unsigned long line;
+		uint64_t line;
 		// the character position whithin that line at which this token begun
-		unsigned long firstChar;
+		uint64_t firstChar;
 		// The type of this token (see above)
 		TokenType type;
 		// Potential values of this token. The active element is indicated by the `type'.
@@ -56,7 +57,7 @@ namespace Parsing {
 		union {
 			char String[64];
 			bool Bool;
-			qint64 Int;
+			int64_t Int;
 			double Double;
 		} tok;
 	};
@@ -118,7 +119,7 @@ namespace Parsing {
 		 * @return The child searched for, or nullptr if no child of that name exists.
 		 */
 		AstNode *findChildWithName(const char *name) const;
-		qint64 countChildren() const;
+		int64_t countChildren() const;
 
 		// the name of this node.
 		char myName[64] = {'\0'};
@@ -135,7 +136,7 @@ namespace Parsing {
 			// for boolean nodes
 			bool Bool;
 			// for integer nodes
-			qint64 Int;
+			int64_t Int;
 			// for double nodes
 			double Double;
 			// for compound and list nodes.
@@ -244,8 +245,8 @@ namespace Parsing {
 		FileType fileType;
 		QString filename;
 		QQueue<Token> lexQueue;
-		qint64 totalProgress = 0;
-		qint64 totalSize;
+		int64_t totalProgress = 0;
+		int64_t totalSize;
 		static constexpr size_t nodesAtOnce = 1024;
 		std::vector<AstNode *> nodeStorageBlocks;
 		AstNode *nextNodeToUse = nullptr;

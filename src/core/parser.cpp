@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+#define _CRT_SECURE_NO_WARNINGS
 #include "parser.h"
 
 #include <stack>
@@ -70,10 +71,10 @@ namespace Parsing {
 	}
 
 	// Counts the children of this node.
-	qint64 AstNode::countChildren() const {
+	int64_t AstNode::countChildren() const {
 		if (!typeHasChildren(type)) return -1;
 		if (this->val.firstChild == nullptr) return 0;
-		qint64 childCount = 0;
+		int64_t childCount = 0;
 		AstNode *child = this->val.firstChild;
 		do {
 			childCount++;
