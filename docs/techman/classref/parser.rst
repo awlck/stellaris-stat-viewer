@@ -572,7 +572,7 @@ The parsing action takes place within the following parser class.
 	
 		The total size of the file that needs to be read. Used in progress reporting.
 	
-	.. member:: private static contexpr size_t nodesAtOnce = 1024
+	.. member:: private static constexpr size_t nodesAtOnce = 1024
 
 		How many nodes should be allocated at a time.
 
