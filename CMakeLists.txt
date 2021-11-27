@@ -83,7 +83,8 @@ add_executable(stellaris_stat_viewer WIN32 MACOSX_BUNDLE
         src/core/ship_design.cpp src/core/ship_design.h
         src/core/technology.cpp src/core/technology.h
         src/core/puff/puff.c src/core/puff/puff.h
-        src/core/extract_gamestate.cpp src/core/extract_gamestate.h src/core/techtree.cpp src/core/techtree.h)
+        src/core/extract_gamestate.cpp src/core/extract_gamestate.h
+        src/core/techtree.cpp src/core/techtree.h)
 target_compile_definitions(stellaris_stat_viewer PRIVATE SSV_VERSION="${SSV_BUILD_VERSION}")
 target_link_libraries(stellaris_stat_viewer ssv_parser Qt6::Core)
 target_include_directories(stellaris_stat_viewer PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
@@ -93,6 +94,22 @@ if(SSV_BUILD_WIDGETS)
 endif()
 if(SSV_BUILD_JSON)
     target_link_libraries(stellaris_stat_viewer ssv_frontend_json)
+    if(MSVC)
+        add_executable(ssv_json src/win_json_main.cpp
+            src/core/galaxy_model.cpp src/core/galaxy_model.h
+            src/core/galaxy_state.cpp src/core/galaxy_state.h
+            src/core/gametranslator.cpp src/core/gametranslator.h
+            src/core/empire.cpp src/core/empire.h
+            src/core/fleet.cpp src/core/fleet.h
+            src/core/ship.cpp src/core/ship.h
+            src/core/ship_design.cpp src/core/ship_design.h
+            src/core/technology.cpp src/core/technology.h
+            src/core/puff/puff.c src/core/puff/puff.h
+            src/core/extract_gamestate.cpp src/core/extract_gamestate.h)
+        target_compile_definitions(ssv_json PRIVATE SSV_VERSION="${SSV_BUILD_VERSION}")
+        target_link_libraries(ssv_json ssv_parser ssv_frontend_json Qt6::Core)
+        target_include_directories(ssv_json PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+    endif()
 endif()
 
 if(SSV_BUILD_TESTS)
