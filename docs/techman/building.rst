@@ -41,12 +41,13 @@ available cores by default.
 
 In order for the resulting executable to run, you will need to either add the directory
 containing Qt's binaries to *PATH*, or manually copy the relevant `.dll` files from there to
-your build directory.
+your build directory. Before distributing your build, copy the executables to a blank
+directory and run ``windeployqt`` to ensure all dependencies are present.
 
 macOS
 -----
 
-If you haven't done so already, install XCode from the App Store. Next, install Qt (version 5.9
+If you haven't done so already, install XCode from the App Store. Next, install Qt (version 6.0
 or higher required). Also install CMake (available via Homebrew or from
 `here <https://cmake.org>`_).
 
@@ -132,4 +133,4 @@ Troubleshooting
 
 If CMake complains about being unable to find Qt, you may need to specify its path manually::
 
-  -DCMAKE_PREFIX_PATH="D:/path/to/Qt/6.0.3/msvc2019_64"
+  -DCMAKE_PREFIX_PATH="D:/path/to/Qt/6.2.1/msvc2019_64"
