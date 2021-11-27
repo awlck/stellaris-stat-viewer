@@ -20,11 +20,11 @@ Tokens
 
    A token as produced by the lexer.
 
-   .. member:: unsigned long line
+   .. member:: uint64_t line
 
 	       The line in which this token begun
 
-   .. member:: unsigned long firstChar
+   .. member:: uint64_t firstChar
 
 	       The character position within that line at which this token begun
 
@@ -42,7 +42,7 @@ Tokens
 	       
       .. var:: bool Bool
 
-      .. var:: qint64 Int
+      .. var:: int64_t Int
 
       .. var:: double Double
 
@@ -108,7 +108,7 @@ AST Nodes
 		:param name: The name of the child to search for
 		:return: pointer to the child searched for, or `nullptr` if no child of that name exists.
 	
-	.. function:: qint64 countChildren() const
+	.. function:: int64_t countChildren() const
 		
 		Count the children of this node.
 	
@@ -146,7 +146,7 @@ AST Nodes
 		
 		.. member:: bool Bool
 		
-		.. member:: qint64 Int
+		.. member:: int64_t Int
 		
 		.. member:: double Double
 		
@@ -524,8 +524,9 @@ The parsing action takes place within the following parser class.
 			can't be provided.
 	
 	.. function:: private AstNode *createNode()
-	
-		Allocates a new AstNode and adds it to :member:`the list of nodes <allCreatedNodes>`.
+
+		      Returns a pointer to the next :class:`AstNode` in the current block, advancing.
+		      :member:`nextNodeToUse` accordingly. Allocates new blocks as necessary.
 
 	.. function:: static void fixListType(AstNode *list)
 
@@ -563,17 +564,31 @@ The parsing action takes place within the following parser class.
 	
 		The queue in which the lexer puts the tokens it reads
 	
-	.. member:: private qint64 totalProgress = 0
+	.. member:: private int64_t totalProgress = 0
 		
 		The number of characters that the lexer has processed. Used in progress reporting.
 	
-	.. member:: private qint64 totalSize
+	.. member:: private int64_t totalSize
 	
 		The total size of the file that needs to be read. Used in progress reporting.
 	
-	.. member:: private std::forward_list<AstNode> allCreatedNodes
-	
-		Stores all created nodes so we can deallocate them once the Parser object is deleted.
+	.. member:: private static contexpr size_t nodesAtOnce = 1024
+
+		How many nodes should be allocated at a time.
+
+	.. member:: private std::vector<AstNode *> nodeStorageBlocks;
+
+		Store pointers to allocated blocks of :class:`AstNode`. Each of these blocks holds
+		:member:`nodesAtOnce` nodes.
+
+	.. member:: private AstNode *nextNodeToUse = nullptr
+
+		The next :class:`AstNode` in the current block that isn't yet used.
+
+	.. member:: private AstNode *lastNodeInBlock = nullptr
+
+		The last valid :class:`AstNode` in the most recently allocated block. Used for
+		comparison purposes so we know when the current block is used up.
 	
 	.. member:: private static constexpr int queueCapacity = 50
 	
