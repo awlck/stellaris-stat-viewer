@@ -22,6 +22,7 @@
 #include "model_private_macros.h"
 #include "ship.h"
 #include "ship_design.h"
+#include "system.h"
 #include "parser.h"
 
 using Parsing::AstNode;
@@ -65,6 +66,10 @@ namespace Galaxy {
 		toDo += ast_fleets->countChildren();
 		toDo += ast_shipDesigns->countChildren();
 		toDo += ast_ships->countChildren();
+#ifdef SSV_WITH_GALAXY_MAP
+		AstNode* ast_systems = tree->findChildWithName("galactic_object");
+		toDo += ast_systems->countChildren();
+#endif
 
 		emit progress(this, done, toDo);
 		if (shouldCancel) return nullptr;
@@ -115,6 +120,19 @@ namespace Galaxy {
 			emit progress(this, ++done, toDo);
 			if (shouldCancel) { delete state; return nullptr; }
 		}
+
+#ifdef SSV_WITH_GALAXY_MAP
+		CHECK_COMPOUND(ast_systems);
+		ITERATE_CHILDREN(ast_systems, aSystem) {
+			System* created = System::createFromAst(aSystem, state);
+			if (created) {
+				state->systems.insert(created->getIndex(), created);
+			}
+			emit progress(this, ++done, toDo);
+			if (shouldCancel) { delete state; return nullptr; }
+		}
+#endif
+
 		return state;
 	}
 

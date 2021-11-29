@@ -30,6 +30,7 @@ namespace Galaxy {
 	class Fleet;
 	class Ship;
 	class ShipDesign;
+	class System;
 
 	class State : public QObject {
 		Q_OBJECT
@@ -44,12 +45,18 @@ namespace Galaxy {
 		const QMap<qint64, Fleet *> &getFleets() const;
 		const QMap<qint64, Ship *> &getShips() const;
 		const QMap<qint64, ShipDesign *> &getShipDesigns() const;
+#ifdef SSV_WITH_GALAXY_MAP
+		const QMap<qint64, System *> &getSystems() const;
+#endif
 	private:
 		QString date;
 		QMap<qint64, Empire *> empires;
 		QMap<qint64, Fleet *> fleets;
 		QMap<qint64, Ship *> ships;
 		QMap<qint64, ShipDesign *> shipDesigns;
+#ifdef SSV_WITH_GALAXY_MAP
+		QMap<qint64, System *> systems;
+#endif
 
 		friend class StateFactory;
 	};
