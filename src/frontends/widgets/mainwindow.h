@@ -36,6 +36,7 @@ class QTabWidget;
 enum class LoadStage;
 class EconomyView;
 class FleetsView;
+class GalaxyMapView;
 class GameTranslator;
 class OverviewView;
 class ResearchView;
@@ -111,6 +112,9 @@ private:
 	ResearchView* researchView;
 	StrategicResourcesView* strategicResourcesView;
 	TechView *techView;
+#ifdef SSV_WITH_GALAXY_MAP
+	GalaxyMapView* galaxyMapView;
+#endif
 
 	QFileSystemWatcher *newSaveWatcher;
 	QStringList knownSaveFiles;

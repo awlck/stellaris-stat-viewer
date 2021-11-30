@@ -97,7 +97,7 @@ if(SSV_BUILD_WIDGETS)
     if(SSV_BUILD_GALAXY_MAP)
         add_library(ssv_widgets_galaxy_map STATIC
             src/core/system.cpp src/core/system.h
-            )
+            src/frontends/widgets/views/galaxy_map_view.cpp src/frontends/widgets/views/galaxy_map_view.h)
         target_compile_definitions(ssv_widgets_galaxy_map PUBLIC SSV_WITH_GALAXY_MAP)
         target_link_libraries(ssv_widgets_galaxy_map Qt6::Core Qt6::Gui Qt6::OpenGLWidgets)
         target_link_libraries(ssv_frontend_widgets ssv_widgets_galaxy_map)

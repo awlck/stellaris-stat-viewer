@@ -54,6 +54,12 @@ namespace Galaxy {
 		return shipDesigns;
 	}
 
+#ifdef SSV_WITH_GALAXY_MAP
+	const QMap<qint64, System*>& State::getSystems() const {
+		return systems;
+	}
+#endif
+
 	State *StateFactory::createFromAst(const Parsing::AstNode *tree, QObject *parent) {
 		// figure out how many objects we need to create so we can display a proper progress bar
 		int done = 0;

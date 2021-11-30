@@ -56,6 +56,10 @@
 #include "views/strategic_resources_view.h"
 #include "views/techs_view.h"
 
+#ifdef SSV_WITH_GALAXY_MAP
+#include "views/galaxy_map_view.h"
+#endif
+
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	setWindowTitle(tr("Stellaris Stat Viewer"));
 	setAcceptDrops(true);
@@ -104,6 +108,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	powerRatingView = new OverviewView(this);
 	connect(this, &MainWindow::modelChanged, powerRatingView, &OverviewView::modelChanged);
 	tabs->addTab(powerRatingView, tr("Overview"));
+
+#ifdef SSV_WITH_GALAXY_MAP
+	galaxyMapView = new GalaxyMapView(this);
+	connect(this, &MainWindow::modelChanged, galaxyMapView, &GalaxyMapView::modelChanged);
+	tabs->addTab(galaxyMapView, tr("Galaxy"));
+#endif
 
 	militaryView = new FleetsView(this);
 	connect(this, &MainWindow::modelChanged, militaryView, &FleetsView::modelChanged);
