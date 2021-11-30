@@ -65,6 +65,24 @@ namespace Galaxy {
 		CHECK_PTR(nameNode);
 		state->name = nameNode->val.Str;
 
+#ifdef SSV_WITH_GALAXY_MAP
+		AstNode *flagNode = tree->findChildWithName("flag");
+		if (!flagNode || flagNode->type != Parsing::NT_COMPOUND) {
+			state->mapColorName = "null";
+		} else {
+			AstNode *colorsNode = flagNode->findChildWithName("colors");
+			if (!colorsNode || (colorsNode->type != Parsing::NT_STRINGLIST && colorsNode->type != Parsing::NT_STRING)) {
+				state->mapColorName = "null";
+			} else {
+				if (colorsNode->type == Parsing::NT_STRING) {
+					state->mapColorName = colorsNode->val.Str;
+				} else {  // stringlist
+					state->mapColorName = colorsNode->val.firstChild->val.Str;
+				}
+			}
+		}
+#endif
+
 		AstNode *techNode = nameNode->nextSibling->nextSibling->nextSibling;
 		if (qstrcmp(techNode->myName, "tech_status") != 0) {
 			techNode = tree->findChildWithName("tech_status");

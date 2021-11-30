@@ -29,20 +29,27 @@ namespace Parsing { struct AstNode; }
 
 namespace Galaxy {
 	class State;
+	class Starbase;
 
 	class System : public QObject {
 		Q_OBJECT
 	public:
 		System(State* parent);
-		int64_t getIndex() const;
+		inline int64_t getIndex() const {
+			return index;
+		};
 		const QString& getName() const;
 		const QVector2D& getPosition() const;
+		inline Starbase *getStarbase() const {
+			return starbase;
+		}
 		static System* createFromAst(const Parsing::AstNode* tree, State* parent);
 
 	private:
 		int64_t index;
 		QString name;
 		QVector2D position;
+		Starbase *starbase;
 	};
 }
 

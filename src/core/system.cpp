@@ -9,9 +9,9 @@ using Parsing::AstNode;
 namespace Galaxy {
 	System::System(State* parent) : QObject(parent) {}
 
-	int64_t System::getIndex() const {
+	/*int64_t System::getIndex() const {
 		return index;
-	}
+	}*/
 
 	const QString& System::getName() const {
 		return name;
@@ -64,6 +64,13 @@ namespace Galaxy {
 		} else {
 			delete state;
 			return nullptr;
+		}
+
+		const AstNode *starbaseNode = tree->findChildWithName("starbase");
+		if (!starbaseNode || starbaseNode->type != Parsing::NT_INT) {
+			state->starbase = nullptr;
+		} else {
+			state->starbase = parent->getStarbases()[starbaseNode->val.Int];
 		}
 
 		return state;

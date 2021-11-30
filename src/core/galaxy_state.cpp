@@ -22,6 +22,7 @@
 #include "model_private_macros.h"
 #include "ship.h"
 #include "ship_design.h"
+#include "starbase.h"
 #include "system.h"
 #include "parser.h"
 
@@ -73,7 +74,11 @@ namespace Galaxy {
 		toDo += ast_shipDesigns->countChildren();
 		toDo += ast_ships->countChildren();
 #ifdef SSV_WITH_GALAXY_MAP
-		AstNode* ast_systems = tree->findChildWithName("galactic_object");
+		AstNode *ast_starbases = tree->findChildWithName("starbase_mgr");
+		if (!ast_starbases) return nullptr;
+		ast_starbases = ast_starbases->findChildWithName("starbases");
+		toDo += ast_starbases->countChildren();
+		AstNode *ast_systems = tree->findChildWithName("galactic_object");
 		toDo += ast_systems->countChildren();
 #endif
 
@@ -128,6 +133,16 @@ namespace Galaxy {
 		}
 
 #ifdef SSV_WITH_GALAXY_MAP
+		CHECK_COMPOUND(ast_starbases);
+		ITERATE_CHILDREN(ast_starbases, aStarbase) {
+			Starbase *created = Starbase::createFromAst(aStarbase, state);
+			if (created) {
+				state->starbases.insert(created->getIndex(), created);
+			}
+			emit progress(this, ++done, toDo);
+			if (shouldCancel) { delete state; return nullptr; };
+		}
+
 		CHECK_COMPOUND(ast_systems);
 		ITERATE_CHILDREN(ast_systems, aSystem) {
 			System* created = System::createFromAst(aSystem, state);

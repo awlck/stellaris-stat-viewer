@@ -42,6 +42,11 @@ namespace Galaxy {
 		quint32 getOwnedSystemsCount() const;
 		const QMap<QString, double> &getIncomes() const;
 		const QStringList &getTechnologies() const;
+#ifdef SSV_WITH_GALAXY_MAP
+		inline const QString &getMapColor() const {
+			return mapColorName;
+		}
+#endif
 		static Empire *createFromAst(const Parsing::AstNode *tree, State *parent);
 	private:
 		qint64 index;
@@ -52,6 +57,9 @@ namespace Galaxy {
 		quint32 ownedSystems;
 		QMap<QString, double> incomes;
 		QStringList technologies;
+#ifdef SSV_WITH_GALAXY_MAP
+		QString mapColorName;
+#endif
 		friend class Ship;
 	};
 }
