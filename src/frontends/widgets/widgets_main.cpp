@@ -19,6 +19,9 @@
 #include "mainwindow.h"
 
 int frontend_widgets_begin(int argc, char **argv) {
+#ifdef SSV_WITH_GALAXY_MAP
+	QCoreApplication::setAttribute(Qt::AA_UseDesktopOpenGL);
+#endif
 	QApplication app(argc, argv);
 	MainWindow window;
 	window.show();

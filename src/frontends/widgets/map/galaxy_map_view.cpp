@@ -21,7 +21,7 @@ void GalaxyMapView::paintGL() {
 	painter.fillRect(rect(), Qt::black);
 	if (state == nullptr) {
 		QFont font = painter.font();
-		font.setPointSize(48);
+		font.setPointSize(32);
 		painter.setFont(font);
 		QPen pen = painter.pen();
 		pen.setColor(Qt::red);
@@ -41,9 +41,10 @@ void GalaxyMapView::paintGL() {
 	pen.setWidth(3);
 	painter.setPen(pen);
 
-	for (const auto *system : state->getSystems().values()) {
+	/*for (const auto *system : state->getSystems().values()) {
 		painter.drawPoint(QPointF(system->getPosition().x(), system->getPosition().y()));
-	}
+	}*/
+	painter.drawPoints(systemPoints.data(), systemPoints.size());
 }
 
 void GalaxyMapView::wheelEvent(QWheelEvent* event) {
@@ -53,8 +54,7 @@ void GalaxyMapView::wheelEvent(QWheelEvent* event) {
 		for (int i = 0; i < ysteps; i++) {
 			camera.zoomFactor *= 1.25;
 		}
-	}
-	else {
+	} else {
 		for (int i = 0; i > ysteps; i--) {
 			camera.zoomFactor *= 0.75;
 		}
@@ -91,10 +91,8 @@ void GalaxyMapView::mouseReleaseEvent(QMouseEvent* event) {
 
 void GalaxyMapView::modelChanged(const Galaxy::State* newState) {
 	state = newState;
-	/*pointCount = state->getSystems().count();
-	if (points) delete[] points;
-	points = new QPointF[pointCount];
-	for (const auto& system : state->getSystems().values()) {
-
-	}*/
+	systemPoints.clear();
+	for (const auto *system : state->getSystems().values()) {
+		systemPoints.emplace_back(system->getPosition().x(), system->getPosition().y());
+	}
 }

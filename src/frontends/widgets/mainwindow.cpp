@@ -57,7 +57,7 @@
 #include "views/techs_view.h"
 
 #ifdef SSV_WITH_GALAXY_MAP
-#include "views/galaxy_map_view.h"
+#include "map/galaxy_map_view.h"
 #endif
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {

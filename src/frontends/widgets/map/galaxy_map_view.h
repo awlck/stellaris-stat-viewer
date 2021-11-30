@@ -38,8 +38,7 @@ private:
 	QPoint previous;
 
 	const Galaxy::State* state = nullptr;
-	const QPointF* points = nullptr;
-	size_t pointCount = 0;
+	std::vector<QPointF> systemPoints;
 };
 
 #endif  // !STELLARIS_STAT_VIEWER_GALAXY_MAP_VIEW_H
