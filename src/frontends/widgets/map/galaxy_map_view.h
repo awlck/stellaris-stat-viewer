@@ -4,6 +4,7 @@
 #ifndef STELLARIS_STAT_VIEWER_GALAXY_MAP_VIEW_H
 #define STELLARIS_STAT_VIEWER_GALAXY_MAP_VIEW_H
 
+#include <unordered_map>
 #include <QtOpenGLWidgets/QOpenGLWidget>
 //#include <QtWidgets/QWidget>
 
