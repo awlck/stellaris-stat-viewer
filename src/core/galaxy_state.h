@@ -23,6 +23,8 @@
 #include <QtCore/QObject>
 #include <QtCore/QMap>
 
+class GameTranslator;
+
 namespace Parsing { struct AstNode; }
 
 namespace Galaxy {
@@ -57,7 +59,7 @@ namespace Galaxy {
 	class StateFactory : public QObject {
 		Q_OBJECT
 	public:
-		State *createFromAst(const Parsing::AstNode *tree, QObject *parent = nullptr);
+		State *createFromAst(const Parsing::AstNode *tree, const GameTranslator* translator, QObject *parent = nullptr);
 		void cancel();
 	signals:
 		void progress(StateFactory *factory, int current, int max);

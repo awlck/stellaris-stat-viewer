@@ -323,7 +323,7 @@ void MainWindow::loadFromFile(const QFileInfo& file) {
 	gamestateLoadSwitch();
 	Galaxy::StateFactory stateFactory;
 	connect(&stateFactory, &Galaxy::StateFactory::progress, this, &MainWindow::galaxyProgressUpdate);
-	state = stateFactory.createFromAst(result, this);
+	state = stateFactory.createFromAst(result, translator, this);
 	if (!state) {
 		gamestateLoadDone();
 		QMessageBox::critical(this, tr("Galaxy Creation Error"), tr("An error occurred while trying to extract "

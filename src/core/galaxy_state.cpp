@@ -19,6 +19,7 @@
 
 #include "empire.h"
 #include "fleet.h"
+#include "gametranslator.h"
 #include "model_private_macros.h"
 #include "ship.h"
 #include "ship_design.h"
@@ -53,7 +54,7 @@ namespace Galaxy {
 		return shipDesigns;
 	}
 
-	State *StateFactory::createFromAst(const Parsing::AstNode *tree, QObject *parent) {
+	State *StateFactory::createFromAst(const Parsing::AstNode *tree, const GameTranslator* translator, QObject *parent) {
 		// figure out how many objects we need to create so we can display a proper progress bar
 		int done = 0;
 		int toDo = 1;
@@ -77,7 +78,7 @@ namespace Galaxy {
 
 		CHECK_COMPOUND(ast_countries);
 		ITERATE_CHILDREN(ast_countries, aCountry) {
-			Empire *created = Empire::createFromAst(aCountry, state);
+			Empire *created = Empire::createFromAst(aCountry, state, translator);
 			if (created) {
 				// sometimes, the save file contains nonsensical lines such as "16777248=none"
 				state->empires.insert(created->getIndex(), created);
