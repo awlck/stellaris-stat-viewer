@@ -21,7 +21,7 @@
 
 #include <QtCore/QFile>
 
-int extractGamestate(QFile &f, unsigned char **dest, unsigned long *destsize);
+int extractGamestate(const QByteArray &f, unsigned char **dest, unsigned long *destsize);
 
 QString getInflateErrmsg(int result);
 

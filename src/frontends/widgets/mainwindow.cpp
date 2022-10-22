@@ -48,13 +48,16 @@
 #include "../../core/parser.h"
 #include "../../core/extract_gamestate.h"
 #include "settingsdialog.h"
-#include "techtreedialog.h"
 #include "views/economy_view.h"
 #include "views/fleets_view.h"
 #include "views/overview_view.h"
 #include "views/research_view.h"
 #include "views/strategic_resources_view.h"
 #include "views/techs_view.h"
+
+#ifndef EMSCRIPTEN
+#include "techtreedialog.h"
+#endif
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	setWindowTitle(tr("Stellaris Stat Viewer"));
@@ -79,11 +82,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(quitAction, &QAction::triggered, this, &MainWindow::quitSelected);
 
 	toolsMenu = theMenuBar->addMenu(tr("Tools"));
+#ifndef EMSCRIPTEN
 	techTreeAction = toolsMenu->addAction(tr("Draw Tech Tree..."));
+    connect(techTreeAction, &QAction::triggered, this, &MainWindow::techTreeSelected);
+#endif
 	settingsAction = toolsMenu->addAction(tr("Settings"));
 	settingsAction->setMenuRole(QAction::PreferencesRole);
 	settingsAction->setShortcut(QKeySequence::Preferences);
-	connect(techTreeAction, &QAction::triggered, this, &MainWindow::techTreeSelected);
 	connect(settingsAction, &QAction::triggered, this, &MainWindow::settingsSelected);
 
 	helpMenu = theMenuBar->addMenu(tr("Help"));
@@ -128,8 +133,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	statusLabel = new QLabel(tr("No file loaded."));
 	statusBar()->addPermanentWidget(statusLabel);
 
+#ifndef EMSCRIPTEN
 	newSaveWatcher = new QFileSystemWatcher(this);
 	connect(newSaveWatcher, &QFileSystemWatcher::directoryChanged, this, &MainWindow::saveDirModified);
+#endif  // !EMSCRIPTEN
 }
 
 void MainWindow::aboutQtSelected() {
@@ -152,6 +159,7 @@ void MainWindow::checkForUpdatesSelected() {
 }
 
 void MainWindow::openFileSelected() {
+#ifndef EMSCRIPTEN
 #if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
 	QString which = QFileDialog::getOpenFileName(this, tr("Select save file"),
 			QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
@@ -162,6 +170,11 @@ void MainWindow::openFileSelected() {
 #endif
 	if (which == "") return;  // Cancel was clicked
 	loadFromFile(QFileInfo(which));
+#else
+    QFileDialog::getOpenFileContent("Stellaris Save files (*.sav)", [this](const QString &name, const QByteArray &content) {
+       this->loadFromFile(name, content);
+    });
+#endif  // !EMSCRIPTEN
 }
 
 #ifdef SSV_BUILD_JSON
@@ -225,6 +238,7 @@ void MainWindow::settingsSelected() {
 	}
 }
 
+#ifndef EMSCRIPTEN
 void MainWindow::techTreeSelected() {
 	QSettings settings;
 	if (settings.value("game/folder", QString()).toString() == "") {
@@ -279,71 +293,76 @@ void MainWindow::dropEvent(QDropEvent *event) {
 }
 
 void MainWindow::loadFromFile(const QFileInfo& file) {
-	delete state;
-	gamestateLoadBegin();
-	Parsing::MemBuf *buf;
-	bool isCompressedFile = file.fileName().endsWith(QStringLiteral(".sav"));
-	QFile f(file.absoluteFilePath());
-	f.open(QIODevice::ReadOnly);
-	if (isCompressedFile) {
-		unsigned char *content;  // where the extracted gamestate file will go, if necessary
-		unsigned long contentSize;
-		int result = extractGamestate(f, &content, &contentSize);
-		f.close();
-		if (result != 0) {
-			QMessageBox::critical(this, tr("Compression Error"), tr("An error occurred while inflating the selected "
-			                                                        "file:\n%1\nPlease make sure that you have selected a valid save file. If the selected file loads fine "
-			                                                        "in the game, please report this issue "
-			                                                        "to the developer.").arg(getInflateErrmsg(result)));
-
-			if (result <= 2) free(content);
-			return;
-		}
-		buf = new Parsing::MemBuf((char *) content, contentSize);
-	} else {
-		buf = new Parsing::MemBuf(f);
-	}
-
-	Parsing::Parser parser(*buf, Parsing::FileType::SaveFile, file.absoluteFilePath(), this);
-	connect(&parser, &Parsing::Parser::progress, this, &MainWindow::parserProgressUpdate);
-	Parsing::AstNode *result = parser.parse();
-
-	if (!result) {
-		gamestateLoadDone();
-		Parsing::ParserError error(parser.getLatestParserError());
-		if (error.etype != Parsing::PE_CANCELLED)
-			QMessageBox::critical(this, tr("Parse Error"),
-			                      tr("%1:%2:%3: %4 (error #%5)").arg(file.absoluteFilePath()).arg(error.erroredToken.line)
-					                      .arg(error.erroredToken.firstChar).arg(
-							                      Parsing::getErrorDescription(error.etype)).arg(error.etype));
-		delete buf;
-		return;
-	}
-
-	gamestateLoadSwitch();
-	Galaxy::StateFactory stateFactory;
-	connect(&stateFactory, &Galaxy::StateFactory::progress, this, &MainWindow::galaxyProgressUpdate);
-	state = stateFactory.createFromAst(result, translator, this);
-	if (!state) {
-		gamestateLoadDone();
-		QMessageBox::critical(this, tr("Galaxy Creation Error"), tr("An error occurred while trying to extract "
-		                                                            "information from %1. Perhaps something isn't right with the input file.").arg(file.absoluteFilePath()));
-		return;
-	}
-
-	gamestateLoadFinishing();
-	delete buf;
-	emit modelChanged(state);
-	statusLabel->setText(state->getDate());
-	statusBar()->showMessage(tr("Loaded %1").arg(file.absoluteFilePath()), 5000);
-#ifdef SSV_BUILD_JSON
-	exportStatsAction->setEnabled(true);
-#endif
-	QDir theDir(file.absoluteDir());
-	knownSaveFiles = theDir.entryList(QStringList("*.sav"), QDir::Files);
+    QFile f(file.absoluteFilePath());
+    f.open(QIODevice::ReadOnly);
+    QByteArray arr(f.readAll());
+    loadFromFile(file.absoluteFilePath(), arr);
+    QDir theDir(file.absoluteDir());
+    knownSaveFiles = theDir.entryList(QStringList("*.sav"), QDir::Files);
     newSaveWatcher->removePaths(newSaveWatcher->directories());
-	newSaveWatcher->addPath(theDir.canonicalPath());
-	gamestateLoadDone();
+    newSaveWatcher->addPath(theDir.canonicalPath());
+
+}
+#endif  // !EMSCRIPTEN
+
+void MainWindow::loadFromFile(const QString &name, const QByteArray &content) {
+    delete state;
+    gamestateLoadBegin();
+    Parsing::MemBuf *buf;
+    bool isCompressedFile = name.endsWith(QStringLiteral(".sav"));
+    if (isCompressedFile) {
+        unsigned char *extracted;  // where the extracted gamestate file will go, if necessary
+        unsigned long contentSize;
+        int result = extractGamestate(content, &extracted, &contentSize);
+        if (result != 0) {
+            QMessageBox::critical(this, tr("Compression Error"), tr("An error occurred while inflating the selected "
+                                                                    "file:\n%1\nPlease make sure that you have selected a valid save file. If the selected file loads fine "
+                                                                    "in the game, please report this issue "
+                                                                    "to the developer.").arg(getInflateErrmsg(result)));
+
+            if (result <= 2) free(extracted);
+            return;
+        }
+        buf = new Parsing::MemBuf((char *) extracted, contentSize);
+    } else {
+        buf = new Parsing::MemBuf(content);
+    }
+    Parsing::Parser parser(*buf, Parsing::FileType::SaveFile, name, this);
+    connect(&parser, &Parsing::Parser::progress, this, &MainWindow::parserProgressUpdate);
+    Parsing::AstNode *result = parser.parse();
+
+    if (!result) {
+        gamestateLoadDone();
+        Parsing::ParserError error(parser.getLatestParserError());
+        if (error.etype != Parsing::PE_CANCELLED)
+            QMessageBox::critical(this, tr("Parse Error"),
+                                  tr("%1:%2:%3: %4 (error #%5)").arg(name).arg(error.erroredToken.line)
+                                          .arg(error.erroredToken.firstChar).arg(
+                                                  Parsing::getErrorDescription(error.etype)).arg(error.etype));
+        delete buf;
+        return;
+    }
+
+    gamestateLoadSwitch();
+    Galaxy::StateFactory stateFactory;
+    connect(&stateFactory, &Galaxy::StateFactory::progress, this, &MainWindow::galaxyProgressUpdate);
+    state = stateFactory.createFromAst(result, translator, this);
+    if (!state) {
+        gamestateLoadDone();
+        QMessageBox::critical(this, tr("Galaxy Creation Error"), tr("An error occurred while trying to extract "
+                                                                    "information from %1. Perhaps something isn't right with the input file.").arg(name));
+        return;
+    }
+
+    gamestateLoadFinishing();
+    delete buf;
+    emit modelChanged(state);
+    statusLabel->setText(state->getDate());
+    statusBar()->showMessage(tr("Loaded %1").arg(name), 5000);
+#ifdef SSV_BUILD_JSON
+    exportStatsAction->setEnabled(true);
+#endif
+    gamestateLoadDone();
 }
 
 void MainWindow::parserProgressUpdate(Parsing::Parser *parser, qint64 current, qint64 max) const {
@@ -386,6 +405,7 @@ void MainWindow::gamestateLoadDone() {
 	currentProgressDialog = nullptr;
 }
 
+#ifndef EMSCRIPTEN
 bool MainWindow::hackilyWaitOnFile(const QString &file) {
 	QFile theFile(file);
 	unsigned char *tmp;
@@ -401,7 +421,8 @@ bool MainWindow::hackilyWaitOnFile(const QString &file) {
 		QApplication::processEvents();
 		theFile.reset();
 		// Assume that the game has written the save file in full when extraction succeeds.
-		result = extractGamestate(theFile, &tmp, &size);
+        QByteArray arr(theFile.readAll());
+		result = extractGamestate(arr, &tmp, &size);
 		if (result > 2) continue;
 		free(tmp);
 		if (QDateTime::currentSecsSinceEpoch() - autoOpeningBegun > 15) {
@@ -437,3 +458,4 @@ void MainWindow::saveDirModified(const QString &dir) {
 	else statusBar()->showMessage(tr("Timed out -- giving up on %1.").arg(newSaveFiles.last()));
 	isOpeningFile = false;
 }
+#endif  // !EMSCRIPTEN

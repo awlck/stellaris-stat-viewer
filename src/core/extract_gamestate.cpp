@@ -50,8 +50,7 @@ inline T endianSwap(T in) {
  * 5: 'gamestate' is not first in ZIP file
  * 6: input file is too short
  */
-int extractGamestate(QFile &f, unsigned char **dest, unsigned long *destsize) {
-	QByteArray arr(f.readAll());
+int extractGamestate(const QByteArray &arr, unsigned char **dest, unsigned long *destsize) {
 	if (arr.size() < 39) return 6;
 	const char *data = arr.data();
 	quint32 fileHeader = LEtoSystem(*reinterpret_cast<const quint32 *>(&data[0]));

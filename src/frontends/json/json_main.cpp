@@ -48,7 +48,8 @@ int frontend_json_begin(int argc, char **argv) {
 		unsigned char *content;
 		unsigned long contentSize;
 		fprintf(stderr, "Inflating file ...\n");
-		int result = extractGamestate(f, &content, &contentSize);
+        QByteArray arr(f.readAll());
+		int result = extractGamestate(arr, &content, &contentSize);
 		f.close();
 
 		if (result != 0) {

@@ -44,13 +44,15 @@ if(SSV_BUILD_WIDGETS)
             src/frontends/widgets/mainwindow.cpp src/frontends/widgets/mainwindow.h
             src/frontends/widgets/numerictableitem.cpp src/frontends/widgets/numerictableitem.h
             src/frontends/widgets/settingsdialog.cpp src/frontends/widgets/settingsdialog.h
-            src/frontends/widgets/techtreedialog.cpp src/frontends/widgets/techtreedialog.h
             src/frontends/widgets/views/economy_view.cpp src/frontends/widgets/views/economy_view.h
             src/frontends/widgets/views/fleets_view.cpp src/frontends/widgets/views/fleets_view.h
             src/frontends/widgets/views/overview_view.cpp src/frontends/widgets/views/overview_view.h
             src/frontends/widgets/views/techs_view.cpp src/frontends/widgets/views/techs_view.h
             src/frontends/widgets/views/research_view.h src/frontends/widgets/views/research_view.cpp
             src/frontends/widgets/views/strategic_resources_view.h src/frontends/widgets/views/strategic_resources_view.cpp)
+    if (NOT EMSCRIPTEN)
+        target_sources(ssv_frontend_widgets PRIVATE src/frontends/widgets/techtreedialog.cpp src/frontends/widgets/techtreedialog.h)
+    endif()
     target_compile_definitions(ssv_frontend_widgets PRIVATE SSV_VERSION="${SSV_BUILD_VERSION}")
     target_link_libraries(ssv_frontend_widgets Qt6::Widgets)
     target_include_directories(ssv_frontend_widgets PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
@@ -72,7 +74,7 @@ add_library(ssv_parser STATIC
         src/core/parser.cpp src/core/parser.h)
 target_link_libraries(ssv_parser Qt6::Core)
 
-add_executable(stellaris_stat_viewer WIN32 MACOSX_BUNDLE
+set(CORE_SOURCES
         src/main.cpp src/frontends.h.in
         src/core/galaxy_model.cpp src/core/galaxy_model.h
         src/core/galaxy_state.cpp src/core/galaxy_state.h
@@ -85,29 +87,25 @@ add_executable(stellaris_stat_viewer WIN32 MACOSX_BUNDLE
         src/core/puff/puff.c src/core/puff/puff.h
         src/core/extract_gamestate.cpp src/core/extract_gamestate.h
         src/core/techtree.cpp src/core/techtree.h)
+if (EMSCRIPTEN)
+    qt_add_executable(stellaris_stat_viewer ${CORE_SOURCES})
+else()
+    add_executable(stellaris_stat_viewer WIN32 MACOSX_BUNDLE ${CORE_SOURCES})
+endif()
 target_compile_definitions(stellaris_stat_viewer PRIVATE SSV_VERSION="${SSV_BUILD_VERSION}")
-target_link_libraries(stellaris_stat_viewer ssv_parser Qt6::Core)
+target_link_libraries(stellaris_stat_viewer PRIVATE ssv_parser PRIVATE Qt6::Core)
 target_include_directories(stellaris_stat_viewer PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 if(SSV_BUILD_WIDGETS)
-    target_link_libraries(stellaris_stat_viewer ssv_frontend_widgets)
+    target_link_libraries(stellaris_stat_viewer PRIVATE ssv_frontend_widgets)
 endif()
 if(SSV_BUILD_JSON)
-    target_link_libraries(stellaris_stat_viewer ssv_frontend_json)
+    target_link_libraries(stellaris_stat_viewer PRIVATE ssv_frontend_json)
     if(MSVC)
         add_executable(ssv_json src/win_json_main.cpp
-            src/core/galaxy_model.cpp src/core/galaxy_model.h
-            src/core/galaxy_state.cpp src/core/galaxy_state.h
-            src/core/gametranslator.cpp src/core/gametranslator.h
-            src/core/empire.cpp src/core/empire.h
-            src/core/fleet.cpp src/core/fleet.h
-            src/core/ship.cpp src/core/ship.h
-            src/core/ship_design.cpp src/core/ship_design.h
-            src/core/technology.cpp src/core/technology.h
-            src/core/puff/puff.c src/core/puff/puff.h
-            src/core/extract_gamestate.cpp src/core/extract_gamestate.h)
+            ${CORE_SOURCES})
         target_compile_definitions(ssv_json PRIVATE SSV_VERSION="${SSV_BUILD_VERSION}")
-        target_link_libraries(ssv_json ssv_parser ssv_frontend_json Qt6::Core)
+        target_link_libraries(ssv_json PRIVATE ssv_parser PRIVATE ssv_frontend_json PRIVATE Qt6::Core)
         target_include_directories(ssv_json PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
     endif()
 endif()

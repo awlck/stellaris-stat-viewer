@@ -55,9 +55,11 @@ public:
 signals:
 	void modelChanged(const Galaxy::State *newModel);
 
+#ifndef EMSCRIPTEN
 protected:
 	void dragEnterEvent(QDragEnterEvent *event) override;
 	void dropEvent(QDropEvent *event) override;
+#endif  // !EMSCRIPTEN
 
 private slots:
 	void aboutQtSelected();
@@ -66,24 +68,30 @@ private slots:
 	void openFileSelected();
 	void quitSelected() const;
 	void settingsSelected();
+
+#ifndef EMSCRIPTEN
 	void techTreeSelected();
+    void saveDirModified(const QString &dir);
+#endif  // !EMSCRIPTEN
 
 #ifdef SSV_BUILD_JSON
 	void exportStatsSelected();
-#endif
+#endif  // SSV_BUILD_JSON
 
 	void parserProgressUpdate(Parsing::Parser *parser, qint64 current, qint64 max) const;
 	void galaxyProgressUpdate(Galaxy::StateFactory *factory, int current, int max) const;
-
-	void saveDirModified(const QString &dir);
 
 private:
 	void gamestateLoadBegin();
 	void gamestateLoadSwitch() const;
 	void gamestateLoadFinishing() const;
 	void gamestateLoadDone();
+
+#ifndef EMSCRIPTEN
 	void loadFromFile(const QFileInfo& file);
 	bool hackilyWaitOnFile(const QString &file);
+#endif  // !EMSCRIPTEN
+    void loadFromFile(const QString &name, const QByteArray &content);
 
 	QAction *aboutQtAction;
 	QAction *aboutSsvAction;
@@ -91,7 +99,6 @@ private:
 	QAction *openFileAction;
 	QAction *quitAction;
 	QAction *settingsAction;
-	QAction *techTreeAction;
 	QLabel *statusLabel;
 	QMenu *fileMenu;
 	QMenu *helpMenu;
@@ -101,7 +108,7 @@ private:
 
 #ifdef SSV_BUILD_JSON
 	QAction *exportStatsAction;
-#endif
+#endif  // SSV_BUILD_JSON
 	
 	Galaxy::State *state = nullptr;
 	GameTranslator *translator;
@@ -112,10 +119,14 @@ private:
 	StrategicResourcesView* strategicResourcesView;
 	TechView *techView;
 
+#ifndef EMSCRIPTEN
 	QFileSystemWatcher *newSaveWatcher;
 	QStringList knownSaveFiles;
 	bool isOpeningFile = false;
 	qint64 autoOpeningBegun;
+
+    QAction *techTreeAction;
+#endif  // !EMSCRIPTEN
 };
 
 #endif //STELLARIS_STAT_VIEWER_MAINWINDOW_H
