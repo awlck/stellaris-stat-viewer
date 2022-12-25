@@ -289,6 +289,9 @@ void MainWindow::dropEvent(QDropEvent *event) {
 }
 
 void MainWindow::loadFromFile(const QFileInfo& file) {
+#ifdef SSV_WITH_GALAXY_MAP
+	galaxyMapView->stopDrawing();
+#endif
 	delete state;
 	gamestateLoadBegin();
 	Parsing::MemBuf *buf;
