@@ -1,0 +1,9 @@
+"Stellaris Stat Viewer" Copyright (C) 2019-21 Adrian "ArdiMaster" Welcker.
+Licensed under the Apache License 2.0; see file LICENSE for details.
+
+This software includes "puff.h/puff.c" Copyright (C) 2002-2013 Mark Adler.
+Licensed under the zlib license; see file src/core/puff/puff.h for details.
+
+This software uses the Qt Framework, Copyright (C) 2016 The Qt Company Ltd.
+Licensed under the LGPL3 license; see https://code.qt.io/cgit/qt/qtbase.git/tree/LICENSE.LGPLv3?h=6.2.1 for details.
+For source code, visit https://code.qt.io/cgit/qt/qtbase.git/tree/?h=6.2.1

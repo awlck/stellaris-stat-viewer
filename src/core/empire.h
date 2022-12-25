@@ -24,6 +24,8 @@
 #include <QtCore/QMap>
 #include <QtCore/QStringList>
 
+class GameTranslator;
+
 namespace Parsing { struct AstNode; }
 
 namespace Galaxy {
@@ -42,12 +44,12 @@ namespace Galaxy {
 		quint32 getOwnedSystemsCount() const;
 		const QMap<QString, double> &getIncomes() const;
 		const QStringList &getTechnologies() const;
+		static Empire *createFromAst(const Parsing::AstNode *tree, State *parent, const GameTranslator *translator);
 #ifdef SSV_WITH_GALAXY_MAP
 		inline const QString &getMapColor() const {
 			return mapColorName;
 		}
 #endif
-		static Empire *createFromAst(const Parsing::AstNode *tree, State *parent);
 	private:
 		qint64 index;
 		QString name;

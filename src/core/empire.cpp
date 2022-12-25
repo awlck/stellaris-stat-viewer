@@ -17,8 +17,11 @@
 
 #include "empire.h"
 
+#include <QtCore/QRegularExpression>
+
 #include "model_private_macros.h"
 #include "galaxy_state.h"
+#include "gametranslator.h"
 #include "parser.h"
 
 using Parsing::AstNode;
@@ -58,12 +61,47 @@ namespace Galaxy {
 		return technologies;
 	}
 
-	Empire *Empire::createFromAst(const AstNode *tree, State *parent) {
+	Empire *Empire::createFromAst(const AstNode *tree, State *parent, const GameTranslator *translator) {
 		Empire *state = new Empire(parent);
 		state->index = static_cast<qint64>(QString(tree->myName).toLongLong());
 		AstNode *nameNode = tree->findChildWithName("name");
 		CHECK_PTR(nameNode);
-		state->name = nameNode->val.Str;
+		if (nameNode->type == Parsing::NT_COMPOUND) {
+			// Starting with 3.4 (I think), "name" doesn't hold the name directly.
+			auto *keyNode = nameNode->findChildWithName("key");
+			if (!keyNode || keyNode->type != Parsing::NT_STRING) {
+				delete state;
+				return nullptr;
+			}
+			auto* varsNode = nameNode->findChildWithName("variables");
+			// For player empires, the "key" is simply the name.
+			if (!varsNode || !translator) {
+				if (translator) state->name = translator->getTranslationOf(keyNode->val.Str);
+				else state->name = keyNode->val.Str;
+			} else {  // we need to go deeper.
+				QMap<QString, QString> vars;
+				// load all the variables into a convenient format
+				ITERATE_CHILDREN(varsNode, var) {
+					vars[var->val.firstChild->val.Str] = var->val.lastChild->val.firstChild->val.Str;
+				}
+				// get the format string
+				QString format = translator->getTranslationOf(keyNode->val.Str);
+				QRegularExpression angles("<(.*?)>");
+				QRegularExpression squares("\\[(.*?)\\]");
+				QRegularExpressionMatch amatch;
+				while ((amatch = angles.match(format)).hasMatch())
+					format.replace(amatch.captured(0), translator->getTranslationOf(vars[amatch.captured(1)]));
+				auto smatch = squares.match(format);
+				if (smatch.hasMatch())
+					format.replace(smatch.captured(0), translator->getTranslationOf(vars[smatch.captured(1)]));
+				state->name = translator->getTranslationOf(format);
+			}
+		} else if (nameNode->type == Parsing::NT_STRING) {
+			state->name = nameNode->val.Str;
+		} else {
+			delete state;
+			return nullptr;
+		}
 
 #ifdef SSV_WITH_GALAXY_MAP
 		AstNode *flagNode = tree->findChildWithName("flag");
